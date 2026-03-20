@@ -279,7 +279,7 @@
   </div>
   <div id="player-body">
     <div id="game-frame-wrap">
-      <iframe id="game-frame" sandbox="allow-scripts allow-same-origin" allowfullscreen></iframe>
+      <iframe id="game-frame" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" allowfullscreen></iframe>
       <div id="player-below">
         <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
           <h2 id="player-name"></h2>
@@ -450,7 +450,45 @@ const PAYPAL     = "fahadatawi42@gmail.com";
 const CATEGORIES = ["All","Action","Puzzle","Racing","Adventure","Arcade","Strategy","Sports","Other"];
 const BASE_THUMBS = 36, BASE_HEART = 41;
 
-let games      = JSON.parse(localStorage.getItem("vtrx_games")   || "[]");
+// ─── Default Games (always visible to everyone) ───────────────────────────────
+const DEFAULT_GAMES = [
+  {
+    id: 'default-stickman-war',
+    name: 'VTRX Stickman War!',
+    description: 'VTRX Stickman War! is a strategic army-builder where you command waves of stickman soldiers through escalating battles against increasingly powerful enemies. Earn coins, upgrade your army, and conquer every level!',
+    category: 'Action',
+    url: 'games/stickman-war.html',
+    coverImage: null,
+    thumbsDelta: 0,
+    heartDelta: 0,
+    isDefault: true
+  },
+  {
+    id: 'default-mech-fps',
+    name: 'VTRX Mech FPS!',
+    description: 'VTRX Mech FPS! is a FPS where you battle an escalating series of powerful boss mechs. Switch between weapons, aim carefully, and survive wave after wave of increasingly deadly enemies.',
+    category: 'Action',
+    url: 'games/mech-fps.html',
+    coverImage: null,
+    thumbsDelta: 0,
+    heartDelta: 0,
+    isDefault: true
+  },
+  {
+    id: 'default-nuke-tycoon',
+    name: 'VTRX Nuke Tycoon!',
+    description: 'VTRX Nuke Tycoon! is an immersive, high-stakes 3D strategy game where you build mines, launch nukes and missiles, and deploy soldiers, tanks and jets to dominate the map against AI opponents.',
+    category: 'Action',
+    url: 'games/nuke-tycoon.html',
+    coverImage: null,
+    thumbsDelta: 0,
+    heartDelta: 0,
+    isDefault: true
+  }
+];
+
+// Merge default games with any admin-added games from localStorage
+let games      = [...DEFAULT_GAMES, ...JSON.parse(localStorage.getItem("vtrx_games")   || "[]")];
 let credits    = JSON.parse(localStorage.getItem("vtrx_credits") || "[]");
 let voted      = JSON.parse(localStorage.getItem("vtrx_voted")   || "{}");
 let isAdmin    = false;
@@ -512,12 +550,12 @@ function renderGrid() {
       <div class="card-info">
         <div class="card-title">${esc(game.name)}</div>
         <div class="card-desc">${esc(game.description)}</div>
-        ${isAdmin ? `<button class="card-delete" data-id="${game.id}">Delete</button>` : ""}
+        ${isAdmin && !game.isDefault ? `<button class="card-delete" data-id="${game.id}">Delete</button>` : ""}
       </div>`;
     card.querySelector(".card-overlay").onclick = () => openGame(game);
     card.querySelector(".card-thumb").onclick   = () => openGame(game);
     card.querySelector(".card-info").onclick    = () => openGame(game);
-    if (isAdmin) {
+    if (isAdmin && !game.isDefault) {
       card.querySelector(".card-delete").onclick = e => {
         e.stopPropagation();
         if (confirm(`Delete "${game.name}"?`)) deleteGame(game.id);
@@ -532,7 +570,9 @@ function gamepadSVG(size) {
 }
 
 function esc(s) { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
-function saveGames()   { localStorage.setItem("vtrx_games",   JSON.stringify(games));   }
+
+// Only save admin-added games (not the hardcoded defaults) to localStorage
+function saveGames()   { localStorage.setItem("vtrx_games",   JSON.stringify(games.filter(g => !g.isDefault))); }
 function saveCredits() { localStorage.setItem("vtrx_credits", JSON.stringify(credits)); }
 function saveVoted()   { localStorage.setItem("vtrx_voted",   JSON.stringify(voted));   }
 
@@ -547,12 +587,18 @@ function openGame(game) {
   document.getElementById("player-desc").textContent  = game.description;
   document.getElementById("player-cat-badge").textContent = game.category;
 
-  const v = voted[game.id] || { thumbs: false, heart: false };
   updateReactions(game);
 
   const iframe = document.getElementById("game-frame");
-  const doc = iframe.contentDocument || iframe.contentWindow.document;
-  doc.open(); doc.write(game.code); doc.close();
+  if (game.url) {
+    // Default games load from their own file
+    iframe.src = game.url;
+  } else {
+    // Admin-added games run their inline code
+    iframe.removeAttribute("src");
+    const doc = iframe.contentDocument || iframe.contentWindow.document;
+    doc.open(); doc.write(game.code); doc.close();
+  }
 
   renderSuggestions(game);
 }
@@ -604,8 +650,7 @@ function closePlayer() {
   document.getElementById("player").classList.remove("visible");
   document.getElementById("home-page").style.display = "";
   const iframe = document.getElementById("game-frame");
-  const doc = iframe.contentDocument || iframe.contentWindow.document;
-  doc.open(); doc.write(""); doc.close();
+  iframe.src = "about:blank";
 }
 
 // Fullscreen
@@ -733,6 +778,8 @@ function submitGame() {
 }
 
 function deleteGame(id) {
+  const game = games.find(g => g.id === id);
+  if (!game || game.isDefault) return; // can't delete default games
   games = games.filter(g => g.id !== id);
   saveGames();
   renderGrid();
