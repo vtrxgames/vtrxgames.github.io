@@ -468,18 +468,47 @@ async function apiFetch(path, opts) {
   return null;
 }
 
-let botCount = 32;
 let realOnlineCount = 0;
 
-function updateOnlineDisplay() {
-  document.getElementById("online-count").textContent = realOnlineCount + botCount;
+// Deterministic bot count: same for ALL users at any given moment.
+// Based on wall-clock time so refreshing mid-window shows the same number.
+const BOT_BASE      = 32;
+const BOT_INTERVALS = [180,180,240,180,300,240,180,240]; // seconds per step
+const BOT_CHANGES   = [  2, -5,  7, -3,  4, -6,  3, -4]; // delta per step
+const BOT_REF_MS    = 1748000000000; // fixed epoch (ms) - do not change
+
+function getBotCount() {
+  let elapsed = Math.floor((Date.now() - BOT_REF_MS) / 1000);
+  let count = BOT_BASE;
+  let i = 0;
+  while (elapsed > 0) {
+    const interval = BOT_INTERVALS[i % BOT_INTERVALS.length];
+    if (elapsed < interval) break;
+    elapsed -= interval;
+    count += BOT_CHANGES[i % BOT_CHANGES.length];
+    count = Math.max(22, Math.min(60, count));
+    i++;
+  }
+  return count;
 }
 
-function fluctuateBots() {
-  const change = Math.floor(Math.random() * 7) - 3;
-  botCount = Math.max(22, Math.min(40, botCount + change));
-  updateOnlineDisplay();
-  setTimeout(fluctuateBots, Math.random() * 180000 + 120000);
+function msUntilNextBotChange() {
+  let elapsed = Math.floor((Date.now() - BOT_REF_MS) / 1000);
+  let i = 0;
+  while (true) {
+    const interval = BOT_INTERVALS[i % BOT_INTERVALS.length];
+    if (elapsed < interval) return (interval - elapsed) * 1000;
+    elapsed -= interval;
+    i++;
+  }
+}
+
+function updateOnlineDisplay() {
+  document.getElementById('online-count').textContent = realOnlineCount + getBotCount();
+}
+
+function scheduleBotRefresh() {
+  setTimeout(function() { updateOnlineDisplay(); scheduleBotRefresh(); }, msUntilNextBotChange());
 }
 
 async function fetchOnline() {
@@ -556,7 +585,7 @@ let activePreset    = null;
 
 // ─── Online Users ─────────────────────────────────────────────────────────────
 updateOnlineDisplay();
-fluctuateBots();
+scheduleBotRefresh();
 pingOnline();
 setInterval(pingOnline, 30000);
 
