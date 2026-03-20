@@ -468,14 +468,28 @@ async function apiFetch(path, opts) {
   return null;
 }
 
+let botCount = Math.floor(Math.random() * 10) + 22;
+let realOnlineCount = 0;
+
+function updateOnlineDisplay() {
+  document.getElementById("online-count").textContent = realOnlineCount + botCount;
+}
+
+function fluctuateBots() {
+  const change = Math.floor(Math.random() * 7) - 3;
+  botCount = Math.max(22, Math.min(40, botCount + change));
+  updateOnlineDisplay();
+  setTimeout(fluctuateBots, Math.random() * 180000 + 120000);
+}
+
 async function fetchOnline() {
   const data = await apiFetch("/stats/online");
-  if (data && data.online != null) document.getElementById("online-count").textContent = data.online;
+  if (data && data.online != null) { realOnlineCount = data.online; updateOnlineDisplay(); }
 }
 
 async function pingOnline() {
   const data = await apiFetch("/stats/online/ping", { method: "POST", body: JSON.stringify({ sessionId: SESSION_ID }) });
-  if (data && data.online != null) document.getElementById("online-count").textContent = data.online;
+  if (data && data.online != null) { realOnlineCount = data.online; updateOnlineDisplay(); }
 }
 
 async function fetchReactions(gameId) {
@@ -541,6 +555,8 @@ let donateRawAmount = "";
 let activePreset    = null;
 
 // ─── Online Users ─────────────────────────────────────────────────────────────
+updateOnlineDisplay();
+fluctuateBots();
 pingOnline();
 setInterval(pingOnline, 30000);
 
@@ -656,15 +672,22 @@ function updateReactions(game) { updateReactionsUI(null); }
 
 async function react(type) {
   if (!currentGame) return;
+  if (isAdmin) {
+    // Admin always adds +1, no toggle, unlimited
+    currentReactions = { ...currentReactions, [type]: currentReactions[type] + 1 };
+    updateReactionsUI(currentReactions);
+    const updated = await postReaction(currentGame.id, type, 1);
+    if (updated) updateReactionsUI(updated);
+    return;
+  }
+  // Regular users toggle (can only like once, unlike to remove)
   const v = voted[currentGame.id] || { thumbs: false, heart: false };
   const already = v[type];
   const delta = already ? -1 : 1;
   voted[currentGame.id] = { ...v, [type]: !already };
   saveVoted();
-  // Optimistic update
   currentReactions = { ...currentReactions, [type]: Math.max(0, currentReactions[type] + delta) };
   updateReactionsUI(currentReactions);
-  // Sync to API
   const updated = await postReaction(currentGame.id, type, delta);
   if (updated) updateReactionsUI(updated);
 }
