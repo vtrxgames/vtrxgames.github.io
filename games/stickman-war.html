@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VTRX Games!</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0000; --card: #130000; --border: #2a0000;
+      --secondary: #1a0000; --primary: #dc2626;
+      --primary-glow: rgba(220,38,38,0.35);
+      --muted: #6b4040; --text: #f5e8e8; --text-dim: #a07070;
+    }
+
+    body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
+
+    /* ── Header ─────────────────────────────────────────── */
+    #header {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(13,0,0,0.95); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px; height: 64px;
+      display: flex; align-items: center; gap: 16px;
+    }
+    #logo { display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; flex-shrink: 0; }
+    #logo-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: #2a0000; }
+    #logo-text { font-weight: 900; font-size: 18px; letter-spacing: -0.5px; }
+    #logo-sub { font-size: 11px; color: var(--text-dim); opacity: 0.55; }
+    #header-right { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+    #music-btn {
+      width: 36px; height: 36px; border-radius: 8px;
+      background: rgba(220,38,38,0.08); border: 1px solid rgba(220,38,38,0.3);
+      color: var(--text-dim); font-size: 18px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    #music-btn.playing { background: rgba(220,38,38,0.25); border-color: #dc2626; color: #dc2626; }
+    #online-badge {
+      display: flex; align-items: center; gap: 6px; font-size: 13px;
+      font-weight: 600; color: var(--text-dim);
+      background: rgba(220,38,38,0.08); border: 1px solid rgba(220,38,38,0.25);
+      border-radius: 999px; padding: 4px 12px;
+    }
+    #online-dot { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 6px #22c55e; }
+    .header-btn {
+      padding: 8px 20px; background: var(--primary); color: #fff;
+      border: 1px solid var(--primary); border-radius: 6px;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+    }
+    #add-btn {
+      width: 36px; height: 36px; border-radius: 8px; background: var(--primary);
+      color: #fff; border: none; font-size: 22px; font-weight: 700; cursor: pointer;
+      display: none; align-items: center; justify-content: center;
+      box-shadow: 0 4px 16px var(--primary-glow);
+    }
+    #add-btn.visible { display: flex; }
+
+    /* ── Main / Hero ─────────────────────────────────────── */
+    #main { max-width: 1280px; margin: 0 auto; padding: 40px 24px; }
+    #hero { text-align: center; margin-bottom: 40px; }
+    #hero-founded { font-size: 15px; font-weight: 900; margin-bottom: 14px; text-shadow: 0 0 20px rgba(220,38,38,0.4); }
+    #hero-h1 { font-size: clamp(28px,5vw,52px); font-weight: 900; text-shadow: 0 0 40px rgba(220,38,38,0.55); margin-bottom: 10px; }
+    #hero-desc { color: var(--text-dim); font-size: 16px; }
+
+    /* ── Category Filter ─────────────────────────────────── */
+    #cat-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 32px; }
+    .cat-btn {
+      flex-shrink: 0; padding: 6px 16px; border-radius: 999px; font-size: 13px;
+      font-weight: 500; cursor: pointer; border: 1px solid var(--border);
+      background: var(--secondary); color: var(--text-dim); transition: all .2s;
+    }
+    .cat-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: 0 2px 12px var(--primary-glow); }
+
+    /* ── Games Grid ──────────────────────────────────────── */
+    #grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px,1fr)); gap: 16px; }
+    .game-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden; cursor: pointer;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .game-card:hover { transform: translateY(-4px); box-shadow: 0 8px 30px var(--primary-glow); }
+    .card-thumb {
+      aspect-ratio: 16/9; position: relative; overflow: hidden;
+      background: linear-gradient(135deg,#3d0000,#0d0000);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .card-thumb img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
+    .card-overlay {
+      position: absolute; inset: 0; display: flex; align-items: center;
+      justify-content: center; background: rgba(0,0,0,0.55);
+      opacity: 0; transition: opacity .2s;
+    }
+    .game-card:hover .card-overlay { opacity: 1; }
+    .play-btn {
+      background: var(--primary); color: #fff; border: none; border-radius: 999px;
+      padding: 8px 20px; font-size: 13px; font-weight: 700; cursor: pointer;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .card-cat-badge {
+      position: absolute; top: 8px; right: 8px;
+      background: rgba(0,0,0,0.65); backdrop-filter: blur(4px);
+      color: #fff; font-size: 11px; padding: 2px 8px; border-radius: 999px;
+    }
+    .card-info { padding: 12px; }
+    .card-title { font-weight: 700; font-size: 14px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+    .card-desc { font-size: 12px; color: var(--text-dim); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .card-delete { margin-top: 8px; font-size: 11px; color: #f87171; background: none; border: 1px solid rgba(239,68,68,0.3); border-radius: 4px; padding: 3px 8px; cursor: pointer; }
+
+    /* ── Empty State ─────────────────────────────────────── */
+    #empty { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 0; text-align: center; }
+    #empty-icon { width: 72px; height: 72px; border-radius: 16px; background: var(--secondary); display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
+    #empty h2 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+    #empty p { color: var(--text-dim); font-size: 14px; max-width: 280px; }
+
+    /* ── Game Player ─────────────────────────────────────── */
+    #player { display: none; flex-direction: column; min-height: 100vh; }
+    #player.visible { display: flex; }
+    #player-bar {
+      display: flex; align-items: center; gap: 16px;
+      padding: 0 24px; height: 52px;
+      border-bottom: 1px solid var(--border); background: var(--card); flex-shrink: 0;
+    }
+    #back-btn { display: flex; align-items: center; gap: 8px; background: none; border: none; color: var(--text-dim); font-size: 13px; cursor: pointer; }
+    #player-title { font-weight: 700; color: #fff; font-size: 15px; }
+    #player-cat { font-size: 11px; background: rgba(228,65,65,0.2); color: var(--primary); padding: 2px 10px; border-radius: 999px; }
+    #fs-btn { margin-left: auto; display: flex; align-items: center; gap: 7px; padding: 7px 16px; background: var(--primary); color: #fff; border: none; border-radius: 7px; font-size: 13px; font-weight: 600; cursor: pointer; flex-shrink: 0; }
+    #player-body { display: flex; flex: 1; }
+    #game-frame-wrap { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    #game-frame { flex: 1; min-height: 60vh; border: none; width: 100%; }
+    #player-below { padding: 28px 32px; background: var(--bg); border-top: 1px solid var(--border); }
+    #player-name { font-size: 22px; font-weight: 900; margin-bottom: 4px; }
+    #player-hint { font-size: 11px; color: var(--text-dim); text-decoration: underline; }
+    #reactions { display: flex; gap: 10px; margin: 10px 0 4px; }
+    .react-btn {
+      display: flex; align-items: center; gap: 6px;
+      background: rgba(220,38,38,0.08); border: 1px solid rgba(220,38,38,0.25);
+      border-radius: 999px; padding: 5px 14px; cursor: pointer;
+      font-size: 15px; color: #fff; font-weight: 600; transition: all .2s;
+    }
+    .react-btn.active { background: rgba(220,38,38,0.3); border-color: #dc2626; }
+    .react-count { font-size: 13px; color: var(--text-dim); }
+    .react-btn.active .react-count { color: #fca5a5; }
+    #player-cat-badge { display: inline-block; background: rgba(220,38,38,.15); color: var(--primary); font-size: 11px; padding: 3px 10px; border-radius: 999px; margin-bottom: 14px; }
+    #player-desc { color: var(--text-dim); font-size: 15px; line-height: 1.7; max-width: 800px; }
+    #sidebar { width: 260px; flex-shrink: 0; padding: 20px; border-left: 1px solid var(--border); background: var(--card); overflow-y: auto; }
+    #sidebar h3 { font-size: 13px; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 14px; }
+    .suggestion {
+      display: flex; gap: 10px; align-items: center; padding: 10px;
+      border-radius: 8px; cursor: pointer; border: 1px solid transparent;
+      transition: all .2s; margin-bottom: 8px;
+    }
+    .suggestion:hover { background: var(--secondary); border-color: var(--border); }
+    .sug-thumb { width: 56px; height: 40px; border-radius: 6px; overflow: hidden; flex-shrink: 0; background: linear-gradient(135deg,#3d0000,#0d0000); display: flex; align-items: center; justify-content: center; }
+    .sug-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .sug-name { font-size: 13px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
+    .sug-cat { font-size: 11px; color: var(--text-dim); }
+    #exit-fs-btn { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: none; align-items: center; gap: 7px; padding: 8px 16px; background: var(--primary); color: #fff; border: none; border-radius: 7px; font-size: 13px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 18px rgba(0,0,0,0.6); }
+
+    /* ── Credits Page ─────────────────────────────────────── */
+    #credits-page { display: none; min-height: 100vh; position: relative; }
+    #credits-page.visible { display: block; }
+    #credits-bar { display: flex; align-items: center; gap: 16px; padding: 0 24px; height: 52px; border-bottom: 1px solid #2a0000; }
+    #credits-back { display: flex; align-items: center; gap: 8px; background: none; border: none; color: #a07070; font-size: 13px; cursor: pointer; }
+    #credits-title { font-weight: 700; font-size: 15px; color: #fff; border-left: 1px solid #2a0000; padding-left: 16px; }
+    #credits-add { margin-left: auto; margin-right: 68px; width: 32px; height: 32px; border-radius: 6px; background: #dc2626; color: #fff; border: none; font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+    #credits-logo { position: absolute; top: 8px; right: 16px; width: 56px; height: 56px; border-radius: 50%; object-fit: cover; pointer-events: none; }
+    #credits-content { max-width: 600px; margin: 60px auto; padding: 0 24px; }
+    #credits-content h1 { font-size: 32px; font-weight: 900; margin-bottom: 40px; }
+    #credit-add-form { background: #130000; border: 1px solid #2a0000; border-radius: 10px; padding: 20px; margin-bottom: 32px; display: none; }
+    #credit-input { width: 100%; background: #1a0000; border: 1px solid #3a0000; color: #fff; border-radius: 6px; padding: 10px 14px; font-size: 14px; outline: none; margin-bottom: 12px; font-family: inherit; }
+    #credit-form-btns { display: flex; gap: 10px; }
+    .credit-cancel { flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #2a0000; background: none; color: #a07070; font-size: 14px; cursor: pointer; }
+    .credit-save { flex: 1; padding: 8px; border-radius: 6px; background: #dc2626; color: #fff; border: none; font-size: 14px; font-weight: 600; cursor: pointer; }
+    #credits-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .credit-item { display: flex; align-items: center; justify-content: space-between; background: #130000; border: 1px solid #2a0000; border-radius: 8px; padding: 12px 16px; font-size: 15px; }
+    .credit-del { background: none; border: none; color: #6b4040; cursor: pointer; font-size: 18px; line-height: 1; }
+
+    /* ── Modals ───────────────────────────────────────────── */
+    .backdrop { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.75); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; padding: 16px; }
+    .modal { background: var(--card); border: 1px solid var(--border); border-radius: 16px; width: 100%; max-width: 600px; box-shadow: 0 25px 60px rgba(0,0,0,0.5); display: flex; flex-direction: column; max-height: 92vh; }
+    .modal-sm { max-width: 360px; }
+    .modal-md { max-width: 420px; }
+    .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .modal-title { font-size: 18px; font-weight: 700; color: #fff; }
+    .modal-close { background: none; border: none; color: var(--muted); font-size: 24px; cursor: pointer; line-height: 1; }
+    .modal-body { padding: 24px; overflow-y: auto; flex: 1; }
+    .modal-foot { display: flex; gap: 12px; padding: 0 24px 24px; flex-shrink: 0; }
+    .field { margin-bottom: 20px; }
+    label.lbl { display: block; font-size: 13px; font-weight: 500; color: var(--text-dim); margin-bottom: 6px; }
+    .inp {
+      width: 100%; background: var(--secondary); border: 1px solid var(--border);
+      color: var(--text); border-radius: 8px; padding: 10px 14px;
+      font-size: 14px; outline: none; font-family: inherit;
+    }
+    .inp:focus { border-color: var(--primary); }
+    textarea.inp { resize: none; }
+    select.inp { cursor: pointer; }
+    .btn-cancel { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: none; color: var(--text-dim); font-size: 14px; cursor: pointer; }
+    .btn-confirm { flex: 1; padding: 10px; border-radius: 8px; background: var(--primary); color: #fff; border: none; font-size: 14px; font-weight: 600; cursor: pointer; }
+    .err-msg { color: #f75e5e; font-size: 13px; margin-bottom: 12px; }
+    .upload-zone { width: 100%; aspect-ratio: 16/9; border-radius: 8px; border: 2px dashed var(--border); background: var(--secondary); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--text-dim); cursor: pointer; }
+    #cover-preview { display: none; position: relative; width: 100%; aspect-ratio: 16/9; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+    #cover-preview img { width: 100%; height: 100%; object-fit: cover; }
+    #cover-preview button { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.7); color: #fff; border: none; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 18px; }
+    .upload-file-btn { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; color: var(--primary); background: none; border: 1px solid rgba(220,38,38,0.4); border-radius: 6px; padding: 5px 12px; cursor: pointer; }
+    #code-file-badge { display: none; align-items: center; gap: 8px; background: rgba(220,38,38,0.1); border: 1px solid rgba(234,82,82,0.3); border-radius: 8px; padding: 8px 12px; margin-bottom: 8px; font-size: 12px; color: var(--primary); font-weight: 500; }
+    /* Donation */
+    #donate-amount { width: 100%; background: var(--secondary); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 12px 14px; font-size: 22px; font-weight: 700; outline: none; text-align: center; letter-spacing: 1px; font-family: inherit; }
+    .preset-btns { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+    .preset-btn { padding: 6px 16px; border-radius: 999px; font-size: 13px; font-weight: 600; border: 1px solid var(--border); background: var(--secondary); color: var(--text-dim); cursor: pointer; }
+    .preset-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    #paypal-btn { width: 100%; padding: 13px; border-radius: 8px; background: #003087; color: #fff; border: none; font-size: 16px; font-weight: 700; cursor: pointer; }
+    #paypal-btn:disabled { opacity: 0.4; cursor: default; }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════ HOME PAGE ══════════════════ -->
+<div id="home-page">
+
+  <!-- Header -->
+  <header id="header">
+    <div id="logo" onclick="handleLogoClick()">
+      <img id="logo-img" src="vtrx-logo.png" alt="VTRX" onerror="this.style.background='#3d0000'" />
+      <div>
+        <div id="logo-text">VTRX <span style="color:var(--primary)">Games!</span></div>
+        <div id="logo-sub">ֆȶօռɛӄɨʟʟɛʀ!</div>
+      </div>
+    </div>
+    <div id="header-right">
+      <button id="music-btn" onclick="toggleMusic()" title="Toggle music">🔇</button>
+      <div id="online-badge">
+        <div id="online-dot"></div>
+        <span id="online-count" style="color:#fff;font-weight:700">--</span>
+        <span>online</span>
+      </div>
+      <button class="header-btn" onclick="openDonation()">Donations</button>
+      <button class="header-btn" onclick="showCredits()">Credits</button>
+      <button id="add-btn" onclick="openAddModal()">+</button>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main id="main">
+    <div id="hero">
+      <p id="hero-founded"><strong>Founded and created by VTRX!</strong></p>
+      <h1 id="hero-h1">VTRX Games!</h1>
+      <p id="hero-desc">Discover and play awesome browser games on VTRX Games! If there are any bugs, reports, or suggestions you can email me at <strong style="text-decoration:underline">vtrx1.official@gmail.com</strong></p>
+    </div>
+    <div id="cat-row"></div>
+    <div id="games-area">
+      <div id="empty">
+        <div id="empty-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#6b4040" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5S14.67 12 15.5 12s1.5.67 1.5 1.5S16.33 15 15.5 15zm3-3c-.83 0-1.5-.67-1.5-1.5S17.67 10 18.5 10s1.5.67 1.5 1.5S19.33 12 18.5 12z"/></svg>
+        </div>
+        <h2>No games yet</h2>
+        <p>Games will appear here once they're added</p>
+      </div>
+      <div id="grid"></div>
+    </div>
+  </main>
+</div>
+
+<!-- ══════════════════ GAME PLAYER ══════════════════ -->
+<div id="player">
+  <div id="player-bar">
+    <button id="back-btn" onclick="closePlayer()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Back to Games
+    </button>
+    <div style="width:1px;height:16px;background:var(--border)"></div>
+    <span id="player-title"></span>
+    <span id="player-cat"></span>
+    <button id="fs-btn" onclick="toggleFullscreen()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+      Fullscreen
+    </button>
+  </div>
+  <div id="player-body">
+    <div id="game-frame-wrap">
+      <iframe id="game-frame" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" allowfullscreen></iframe>
+      <div id="player-below">
+        <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+          <h2 id="player-name"></h2>
+          <span id="player-hint">Click fullscreen, press twice then wait 2 seconds to play</span>
+        </div>
+        <div id="reactions">
+          <button class="react-btn" id="thumbs-btn" onclick="react('thumbs')">👍 <span class="react-count" id="thumbs-count">36</span></button>
+          <button class="react-btn" id="heart-btn" onclick="react('heart')">❤️ <span class="react-count" id="heart-count">41</span></button>
+        </div>
+        <div id="player-cat-badge"></div>
+        <p id="player-desc"></p>
+      </div>
+    </div>
+    <div id="sidebar">
+      <h3>More Games</h3>
+      <div id="suggestions"></div>
+    </div>
+  </div>
+</div>
+<button id="exit-fs-btn" onclick="toggleFullscreen()">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>
+  Exit Fullscreen
+</button>
+
+<!-- ══════════════════ CREDITS PAGE ══════════════════ -->
+<div id="credits-page">
+  <img id="credits-logo" src="vtrx-logo.png" alt="VTRX" onerror="this.style.display='none'" />
+  <div id="credits-bar">
+    <button id="credits-back" onclick="hideCredits()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Back to Games
+    </button>
+    <span id="credits-title">Credits</span>
+    <button id="credits-add" onclick="handleCreditsAdd()">+</button>
+  </div>
+  <div id="credits-content">
+    <h1>Credits</h1>
+    <div id="credit-add-form">
+      <input id="credit-input" placeholder="Enter name..." onkeydown="creditKeydown(event)" />
+      <div id="credit-form-btns">
+        <button class="credit-cancel" onclick="hideCreditForm()">Cancel</button>
+        <button class="credit-save" onclick="saveCredit()">Save</button>
+      </div>
+    </div>
+    <p id="credits-empty" style="color:#6b4040;font-size:14px">No credits added yet.</p>
+    <ul id="credits-list"></ul>
+  </div>
+</div>
+
+<!-- ══════════════════ ADMIN MODAL ══════════════════ -->
+<div id="admin-modal" class="backdrop" style="display:none">
+  <div class="modal modal-sm">
+    <div class="modal-head">
+      <h2 class="modal-title">Admin Access</h2>
+      <button class="modal-close" onclick="closeAdminModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <p style="color:var(--text-dim);font-size:13px;margin-bottom:20px">Enter your admin password to continue</p>
+      <div class="field">
+        <input type="password" class="inp" id="admin-pw" placeholder="Password" onkeydown="if(event.key==='Enter')submitAdmin()" />
+      </div>
+      <p id="admin-err" class="err-msg" style="display:none">Incorrect password</p>
+      <div style="display:flex;gap:12px">
+        <button class="btn-cancel" onclick="closeAdminModal()">Cancel</button>
+        <button class="btn-confirm" onclick="submitAdmin()">Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ ADD GAME MODAL ══════════════════ -->
+<div id="add-modal" class="backdrop" style="display:none">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 class="modal-title">Add New Game</h2>
+      <button class="modal-close" onclick="closeAddModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="field"><label class="lbl">Game Name</label><input class="inp" id="game-name" placeholder="e.g. Space Shooter" /></div>
+      <div class="field"><label class="lbl">Description</label><textarea class="inp" id="game-desc" rows="3" placeholder="Describe the game..."></textarea></div>
+      <div class="field">
+        <label class="lbl">Category</label>
+        <select class="inp" id="game-cat">
+          <option>Action</option><option>Puzzle</option><option>Racing</option>
+          <option>Adventure</option><option>Arcade</option><option>Strategy</option>
+          <option>Sports</option><option selected>Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="lbl">Cover Image <span style="opacity:.5;font-size:11px">(optional)</span></label>
+        <div id="cover-upload-zone" class="upload-zone" onclick="document.getElementById('cover-file').click()">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span style="font-size:13px;font-weight:500">Upload cover image</span>
+          <small style="font-size:11px;opacity:0.6">PNG, JPG, GIF up to 5MB</small>
+        </div>
+        <div id="cover-preview">
+          <img id="cover-img" alt="cover" />
+          <button onclick="clearCover()">×</button>
+        </div>
+        <input type="file" id="cover-file" accept="image/*" style="display:none" onchange="onCoverFile(event)" />
+      </div>
+      <div class="field">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <label class="lbl" style="margin:0">Game Code (HTML/JS)</label>
+          <button class="upload-file-btn" onclick="document.getElementById('code-file').click()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Upload file
+          </button>
+        </div>
+        <div id="code-file-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <span id="code-file-name" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+          <button style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px" onclick="clearCodeFile()">×</button>
+        </div>
+        <textarea class="inp" id="game-code" rows="8" style="font-family:'Courier New',monospace;font-size:12px" placeholder="Paste your HTML/JS code here, or upload a file above..."></textarea>
+        <input type="file" id="code-file" accept=".html,.htm,.js" style="display:none" onchange="onCodeFile(event)" />
+      </div>
+      <p id="add-err" class="err-msg" style="display:none"></p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeAddModal()">Cancel</button>
+      <button class="btn-confirm" id="add-submit-btn" onclick="submitGame()">Add Game</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ DONATION MODAL ══════════════════ -->
+<div id="donation-modal" class="backdrop" style="display:none">
+  <div class="modal modal-md">
+    <div style="display:flex;justify-content:center;padding-top:18px;padding-bottom:4px">
+      <img src="vtrx-logo.png" alt="VTRX" style="width:48px;height:48px;border-radius:50%;object-fit:cover" onerror="this.style.display='none'" />
+    </div>
+    <div class="modal-head">
+      <h2 class="modal-title">Support VTRX Games</h2>
+      <button class="modal-close" onclick="closeDonation()">×</button>
+    </div>
+    <div class="modal-body">
+      <p style="color:var(--text-dim);font-size:14px;margin-bottom:24px;line-height:1.6">
+        Love VTRX Games? Your donation helps keep the platform running and new games coming. Every bit helps! If u have problems donating, u can log in to your paypal and send to vtrx1.official@gmail.com.
+      </p>
+      <div class="field">
+        <label class="lbl">Enter Amount (CAD)</label>
+        <input id="donate-amount" type="text" inputmode="decimal" placeholder="$0.00" oninput="onDonateInput(event)" />
+        <div class="preset-btns" id="presets"></div>
+      </div>
+      <div style="background:rgba(220,38,38,0.07);border:1px solid rgba(220,38,38,0.2);border-radius:8px;padding:12px 16px;margin-bottom:20px;font-size:13px;color:var(--text-dim)">
+        You will be redirected to PayPal to complete your donation securely.
+      </div>
+    </div>
+    <div class="modal-foot" style="flex-direction:column;gap:10px">
+      <button id="paypal-btn" onclick="donate()" disabled>
+        <span style="font-style:italic;font-size:18px;font-weight:700;color:#fff">Pay</span><span style="color:#009cde;font-style:italic;font-size:18px;font-weight:700">Pal</span>
+        &nbsp;— Donate
+      </button>
+      <button class="btn-cancel" onclick="closeDonation()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<audio id="bg-audio" loop>
+  <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+// ─── State ────────────────────────────────────────────────────────────────────
+const ADMIN_PW   = "VultorexVTRX!";
+const PAYPAL     = "fahadatawi42@gmail.com";
+const CATEGORIES = ["All","Action","Puzzle","Racing","Adventure","Arcade","Strategy","Sports","Other"];
+const BASE_THUMBS = 36, BASE_HEART = 41;
+
+// ─── Default Games (always visible to everyone) ───────────────────────────────
+const DEFAULT_GAMES = [
+  {
+    id: 'default-stickman-war',
+    name: 'VTRX Stickman War!',
+    description: 'VTRX Stickman War! is a strategic army-builder where you command waves of stickman soldiers through escalating battles against increasingly powerful enemies. Earn coins, upgrade your army, and conquer every level!',
+    category: 'Action',
+    url: 'games/stickman-war.html',
+    coverImage: null,
+    thumbsDelta: 0,
+    heartDelta: 0,
+    isDefault: true
+  },
+  {
+    id: 'default-mech-fps',
+    name: 'VTRX Mech FPS!',
+    description: 'VTRX Mech FPS! is a FPS where you battle an escalating series of powerful boss mechs. Switch between weapons, aim carefully, and survive wave after wave of increasingly deadly enemies.',
+    category: 'Action',
+    url: 'games/mech-fps.html',
+    coverImage: null,
+    thumbsDelta: 0,
+    heartDelta: 0,
+    isDefault: true
+  },
+  {
+    id: 'default-nuke-tycoon',
+    name: 'VTRX Nuke Tycoon!',
+    description: 'VTRX Nuke Tycoon! is an immersive, high-stakes 3D strategy game where you build mines, launch nukes and missiles, and deploy soldiers, tanks and jets to dominate the map against AI opponents.',
+    category: 'Action',
+    url: 'games/nuke-tycoon.html',
+    coverImage: null,
+    thumbsDelta: 0,
+    heartDelta: 0,
+    isDefault: true
+  }
+];
+
+// Merge default games with any admin-added games from localStorage
+let games      = [...DEFAULT_GAMES, ...JSON.parse(localStorage.getItem("vtrx_games")   || "[]")];
+let credits    = JSON.parse(localStorage.getItem("vtrx_credits") || "[]");
+let voted      = JSON.parse(localStorage.getItem("vtrx_voted")   || "{}");
+let isAdmin    = false;
+let showAdminBtn = false;
+let logoClicks = 0, logoTimer = null;
+let currentGame = null;
+let currentCat  = "All";
+let pendingAdminAction = null; // 'add-game' | 'add-credit'
+let coverData  = null;
+let codeFileActive = false;
+let donateRawAmount = "";
+let activePreset    = null;
+
+// ─── Online Users ─────────────────────────────────────────────────────────────
+let onlineCount = Math.floor(Math.random() * 20) + 18;
+document.getElementById("online-count").textContent = onlineCount;
+setInterval(() => {
+  onlineCount = Math.min(50, Math.max(12, onlineCount + Math.floor(Math.random() * 7) - 3));
+  document.getElementById("online-count").textContent = onlineCount;
+}, Math.random() * 60000 + 60000);
+
+// ─── Category Buttons ─────────────────────────────────────────────────────────
+function buildCats() {
+  const row = document.getElementById("cat-row");
+  row.innerHTML = "";
+  CATEGORIES.forEach(c => {
+    const b = document.createElement("button");
+    b.className = "cat-btn" + (c === currentCat ? " active" : "");
+    b.textContent = c;
+    b.onclick = () => { currentCat = c; renderGrid(); buildCats(); };
+    row.appendChild(b);
+  });
+}
+
+// ─── Games Grid ───────────────────────────────────────────────────────────────
+function renderGrid() {
+  const filtered = currentCat === "All" ? games : games.filter(g => g.category === currentCat);
+  const grid    = document.getElementById("grid");
+  const empty   = document.getElementById("empty");
+  grid.innerHTML = "";
+
+  if (filtered.length === 0) {
+    empty.style.display = "flex";
+    empty.querySelector("h2").textContent = currentCat !== "All" ? "No games found" : "No games yet";
+    empty.querySelector("p").textContent  = currentCat !== "All" ? "Try a different category" : "Games will appear here once they're added";
+    return;
+  }
+  empty.style.display = "none";
+
+  filtered.forEach(game => {
+    const card = document.createElement("div");
+    card.className = "game-card";
+    card.innerHTML = `
+      <div class="card-thumb">
+        ${game.coverImage ? `<img src="${game.coverImage}" alt="${esc(game.name)}" />` : gamepadSVG(36)}
+        <div class="card-overlay"><button class="play-btn">▶ Play Now</button></div>
+        <span class="card-cat-badge">${esc(game.category)}</span>
+      </div>
+      <div class="card-info">
+        <div class="card-title">${esc(game.name)}</div>
+        <div class="card-desc">${esc(game.description)}</div>
+        ${isAdmin && !game.isDefault ? `<button class="card-delete" data-id="${game.id}">Delete</button>` : ""}
+      </div>`;
+    card.querySelector(".card-overlay").onclick = () => openGame(game);
+    card.querySelector(".card-thumb").onclick   = () => openGame(game);
+    card.querySelector(".card-info").onclick    = () => openGame(game);
+    if (isAdmin && !game.isDefault) {
+      card.querySelector(".card-delete").onclick = e => {
+        e.stopPropagation();
+        if (confirm(`Delete "${game.name}"?`)) deleteGame(game.id);
+      };
+    }
+    grid.appendChild(card);
+  });
+}
+
+function gamepadSVG(size) {
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="white" style="opacity:.15"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5S14.67 12 15.5 12s1.5.67 1.5 1.5S16.33 15 15.5 15zm3-3c-.83 0-1.5-.67-1.5-1.5S17.67 10 18.5 10s1.5.67 1.5 1.5S19.33 12 18.5 12z"/></svg>`;
+}
+
+function esc(s) { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
+
+// Only save admin-added games (not the hardcoded defaults) to localStorage
+function saveGames()   { localStorage.setItem("vtrx_games",   JSON.stringify(games.filter(g => !g.isDefault))); }
+function saveCredits() { localStorage.setItem("vtrx_credits", JSON.stringify(credits)); }
+function saveVoted()   { localStorage.setItem("vtrx_voted",   JSON.stringify(voted));   }
+
+// ─── Game Player ──────────────────────────────────────────────────────────────
+function openGame(game) {
+  currentGame = game;
+  document.getElementById("home-page").style.display = "none";
+  document.getElementById("player").classList.add("visible");
+  document.getElementById("player-title").textContent = game.name;
+  document.getElementById("player-cat").textContent   = game.category;
+  document.getElementById("player-name").textContent  = game.name;
+  document.getElementById("player-desc").textContent  = game.description;
+  document.getElementById("player-cat-badge").textContent = game.category;
+
+  updateReactions(game);
+
+  const iframe = document.getElementById("game-frame");
+  if (game.url) {
+    // Default games load from their own file
+    iframe.src = game.url;
+  } else {
+    // Admin-added games run their inline code
+    iframe.removeAttribute("src");
+    const doc = iframe.contentDocument || iframe.contentWindow.document;
+    doc.open(); doc.write(game.code); doc.close();
+  }
+
+  renderSuggestions(game);
+}
+
+function updateReactions(game) {
+  const v = voted[game.id] || { thumbs: false, heart: false };
+  const tBtn = document.getElementById("thumbs-btn");
+  const hBtn = document.getElementById("heart-btn");
+  tBtn.className = "react-btn" + (v.thumbs ? " active" : "");
+  hBtn.className = "react-btn" + (v.heart ? " active" : "");
+  document.getElementById("thumbs-count").textContent = BASE_THUMBS + (game.thumbsDelta || 0);
+  document.getElementById("heart-count").textContent  = BASE_HEART  + (game.heartDelta  || 0);
+}
+
+function react(type) {
+  if (!currentGame) return;
+  if (isAdmin) {
+    if (type === "thumbs") currentGame.thumbsDelta = (currentGame.thumbsDelta || 0) + 1;
+    else                   currentGame.heartDelta  = (currentGame.heartDelta  || 0) + 1;
+  } else {
+    const v = voted[currentGame.id] || { thumbs: false, heart: false };
+    const already = v[type];
+    voted[currentGame.id] = { ...v, [type]: !already };
+    saveVoted();
+    if (type === "thumbs") currentGame.thumbsDelta = (currentGame.thumbsDelta || 0) + (already ? -1 : 1);
+    else                   currentGame.heartDelta  = (currentGame.heartDelta  || 0) + (already ? -1 : 1);
+  }
+  updateReactions(currentGame);
+}
+
+function renderSuggestions(game) {
+  const el = document.getElementById("suggestions");
+  el.innerHTML = "";
+  const others = games.filter(g => g.id !== game.id);
+  if (others.length === 0) { el.innerHTML = `<p style="color:var(--text-dim);font-size:13px">No other games yet.</p>`; return; }
+  others.forEach(g => {
+    const d = document.createElement("div");
+    d.className = "suggestion";
+    d.innerHTML = `
+      <div class="sug-thumb">${g.coverImage ? `<img src="${g.coverImage}" alt="${esc(g.name)}">` : gamepadSVG(20)}</div>
+      <div style="flex:1;min-width:0"><div class="sug-name">${esc(g.name)}</div><div class="sug-cat">${esc(g.category)}</div></div>`;
+    d.onclick = () => openGame(g);
+    el.appendChild(d);
+  });
+}
+
+function closePlayer() {
+  currentGame = null;
+  document.getElementById("player").classList.remove("visible");
+  document.getElementById("home-page").style.display = "";
+  const iframe = document.getElementById("game-frame");
+  iframe.src = "about:blank";
+}
+
+// Fullscreen
+function toggleFullscreen() {
+  const iframe = document.getElementById("game-frame");
+  if (!document.fullscreenElement) { iframe.requestFullscreen?.(); }
+  else { document.exitFullscreen?.(); }
+}
+document.addEventListener("fullscreenchange", () => {
+  const btn = document.getElementById("exit-fs-btn");
+  btn.style.display = document.fullscreenElement ? "flex" : "none";
+});
+
+// ─── Admin ────────────────────────────────────────────────────────────────────
+function handleLogoClick() {
+  logoClicks++;
+  clearTimeout(logoTimer);
+  logoTimer = setTimeout(() => { logoClicks = 0; }, 2000);
+  if (logoClicks >= 5) {
+    logoClicks = 0;
+    showAdminBtn = !showAdminBtn;
+    document.getElementById("add-btn").classList.toggle("visible", showAdminBtn);
+    if (showAdminBtn && !isAdmin) openAdminModal("add-game");
+  }
+}
+
+function openAdminModal(action) {
+  pendingAdminAction = action || null;
+  document.getElementById("admin-modal").style.display = "flex";
+  document.getElementById("admin-pw").value = "";
+  document.getElementById("admin-err").style.display = "none";
+  setTimeout(() => document.getElementById("admin-pw").focus(), 50);
+}
+
+function closeAdminModal() {
+  document.getElementById("admin-modal").style.display = "none";
+  pendingAdminAction = null;
+}
+
+function submitAdmin() {
+  const pw = document.getElementById("admin-pw").value;
+  if (pw === ADMIN_PW) {
+    isAdmin = true;
+    closeAdminModal();
+    renderGrid();
+    if (pendingAdminAction === "add-game")    openAddModal();
+    if (pendingAdminAction === "add-credit")  showCreditForm();
+  } else {
+    document.getElementById("admin-err").style.display = "block";
+  }
+}
+
+// ─── Add Game ─────────────────────────────────────────────────────────────────
+function openAddModal() {
+  if (!isAdmin) { openAdminModal("add-game"); return; }
+  document.getElementById("add-modal").style.display = "flex";
+  document.getElementById("game-name").value = "";
+  document.getElementById("game-desc").value = "";
+  document.getElementById("game-code").value = "";
+  document.getElementById("game-cat").value  = "Other";
+  document.getElementById("add-err").style.display = "none";
+  clearCover(); clearCodeFile();
+}
+function closeAddModal() { document.getElementById("add-modal").style.display = "none"; }
+
+function onCoverFile(e) {
+  const f = e.target.files[0];
+  if (!f) return;
+  if (f.size > 5*1024*1024) { alert("Image must be under 5MB"); return; }
+  const r = new FileReader();
+  r.onload = ev => {
+    coverData = ev.target.result;
+    document.getElementById("cover-img").src = coverData;
+    document.getElementById("cover-upload-zone").style.display = "none";
+    document.getElementById("cover-preview").style.display = "block";
+  };
+  r.readAsDataURL(f);
+}
+function clearCover() {
+  coverData = null;
+  document.getElementById("cover-upload-zone").style.display = "flex";
+  document.getElementById("cover-preview").style.display = "none";
+  document.getElementById("cover-file").value = "";
+}
+function onCodeFile(e) {
+  const f = e.target.files[0];
+  if (!f) return;
+  if (!/\.(html?|js)$/i.test(f.name)) { alert("Please upload an .html or .js file"); return; }
+  const r = new FileReader();
+  r.onload = ev => {
+    document.getElementById("game-code").value = ev.target.result;
+    document.getElementById("code-file-name").textContent = f.name;
+    document.getElementById("code-file-badge").style.display = "flex";
+    codeFileActive = true;
+  };
+  r.readAsText(f);
+}
+function clearCodeFile() {
+  document.getElementById("code-file-badge").style.display = "none";
+  document.getElementById("code-file").value = "";
+  codeFileActive = false;
+}
+
+function submitGame() {
+  const name = document.getElementById("game-name").value.trim();
+  const desc = document.getElementById("game-desc").value.trim();
+  const code = document.getElementById("game-code").value.trim();
+  const cat  = document.getElementById("game-cat").value;
+  const errEl = document.getElementById("add-err");
+
+  if (!name || !desc || !code) {
+    errEl.textContent = "Name, description and code are required";
+    errEl.style.display = "block"; return;
+  }
+  errEl.style.display = "none";
+
+  const game = {
+    id: Date.now(), name, description: desc, code, category: cat,
+    coverImage: coverData || null, thumbsDelta: 0, heartDelta: 0
+  };
+  games.push(game);
+  saveGames();
+  closeAddModal();
+  renderGrid();
+}
+
+function deleteGame(id) {
+  const game = games.find(g => g.id === id);
+  if (!game || game.isDefault) return; // can't delete default games
+  games = games.filter(g => g.id !== id);
+  saveGames();
+  renderGrid();
+}
+
+// ─── Credits ──────────────────────────────────────────────────────────────────
+function showCredits() {
+  document.getElementById("home-page").style.display = "none";
+  document.getElementById("credits-page").classList.add("visible");
+  renderCredits();
+}
+function hideCredits() {
+  document.getElementById("credits-page").classList.remove("visible");
+  document.getElementById("home-page").style.display = "";
+}
+function renderCredits() {
+  const list = document.getElementById("credits-list");
+  const emptyEl = document.getElementById("credits-empty");
+  list.innerHTML = "";
+  emptyEl.style.display = credits.length === 0 ? "block" : "none";
+  credits.forEach(c => {
+    const li = document.createElement("li");
+    li.className = "credit-item";
+    li.innerHTML = `<span>${esc(c.name)}</span>${isAdmin ? `<button class="credit-del" data-id="${c.id}">×</button>` : ""}`;
+    if (isAdmin) li.querySelector(".credit-del").onclick = () => {
+      credits = credits.filter(x => x.id !== c.id);
+      saveCredits(); renderCredits();
+    };
+    list.appendChild(li);
+  });
+}
+function handleCreditsAdd() {
+  if (!isAdmin) { openAdminModal("add-credit"); return; }
+  showCreditForm();
+}
+function showCreditForm() {
+  document.getElementById("credit-add-form").style.display = "block";
+  document.getElementById("credit-input").value = "";
+  document.getElementById("credit-input").focus();
+}
+function hideCreditForm() { document.getElementById("credit-add-form").style.display = "none"; }
+function saveCredit() {
+  const name = document.getElementById("credit-input").value.trim();
+  if (!name) return;
+  credits.push({ id: Date.now(), name });
+  saveCredits(); renderCredits(); hideCreditForm();
+}
+function creditKeydown(e) { if (e.key === "Enter") saveCredit(); if (e.key === "Escape") hideCreditForm(); }
+
+// ─── Donation ─────────────────────────────────────────────────────────────────
+function buildPresets() {
+  const el = document.getElementById("presets");
+  ["1","5","10","25","50"].forEach(p => {
+    const b = document.createElement("button");
+    b.className = "preset-btn";
+    b.textContent = "$" + p;
+    b.onclick = () => {
+      donateRawAmount = p;
+      activePreset = p;
+      document.getElementById("donate-amount").value = "$" + p;
+      document.querySelectorAll(".preset-btn").forEach(x => x.classList.toggle("active", x.textContent === "$"+p));
+      updateDonateBtn();
+    };
+    el.appendChild(b);
+  });
+}
+function onDonateInput(e) {
+  donateRawAmount = e.target.value.replace(/[^0-9.]/g, "");
+  e.target.value = donateRawAmount ? "$" + donateRawAmount : "";
+  activePreset = null;
+  document.querySelectorAll(".preset-btn").forEach(x => x.classList.remove("active"));
+  updateDonateBtn();
+}
+function updateDonateBtn() {
+  const num = parseFloat(donateRawAmount);
+  const btn = document.getElementById("paypal-btn");
+  btn.disabled = !(num > 0);
+  btn.innerHTML = `<span style="font-style:italic;font-size:18px;font-weight:700;color:#fff">Pay</span><span style="color:#009cde;font-style:italic;font-size:18px;font-weight:700">Pal</span>&nbsp;— Donate ${num > 0 ? "$"+num.toFixed(2) : ""}`;
+}
+function openDonation() {
+  donateRawAmount = ""; activePreset = null;
+  document.getElementById("donate-amount").value = "";
+  document.querySelectorAll(".preset-btn").forEach(x => x.classList.remove("active"));
+  updateDonateBtn();
+  document.getElementById("donation-modal").style.display = "flex";
+}
+function closeDonation() { document.getElementById("donation-modal").style.display = "none"; }
+function donate() {
+  const num = parseFloat(donateRawAmount);
+  if (!num || num <= 0) return;
+  window.open(`https://www.paypal.com/send?recipient=${encodeURIComponent(PAYPAL)}&amount=${num.toFixed(2)}&currencyCode=CAD&note=${encodeURIComponent("VTRX Games Donation")}`, "_blank");
+}
+
+// ─── Background Music ─────────────────────────────────────────────────────────
+const audio = document.getElementById("bg-audio");
+let musicPlaying = false;
+function tryPlay() { audio.play().then(() => setMusicState(true)).catch(() => {}); }
+function setMusicState(playing) {
+  musicPlaying = playing;
+  const btn = document.getElementById("music-btn");
+  btn.textContent = playing ? "🔊" : "🔇";
+  btn.classList.toggle("playing", playing);
+}
+function toggleMusic() {
+  if (audio.paused) tryPlay();
+  else { audio.pause(); setMusicState(false); }
+}
+audio.addEventListener("play",  () => setMusicState(true));
+audio.addEventListener("pause", () => setMusicState(false));
+document.addEventListener("click", function once() {
+  tryPlay(); document.removeEventListener("click", once);
+}, { once: true });
+tryPlay();
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+buildCats();
+buildPresets();
+renderGrid();
+</script>
+</body>
+</html>
