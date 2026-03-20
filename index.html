@@ -1,9 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
-  <meta name="monetag" content="9176b6a6a1dca74f0ece0c30e1758f60">
-  <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>VTRX Games!</title>
@@ -453,6 +450,44 @@ const PAYPAL     = "fahadatawi42@gmail.com";
 const CATEGORIES = ["All","Action","Puzzle","Racing","Adventure","Arcade","Strategy","Sports","Other"];
 const BASE_THUMBS = 36, BASE_HEART = 41;
 
+// ─── API (shared reactions + online count) ────────────────────────────────────
+const API_URL = "https://fa458057-f594-40ac-a531-0e8547eb6920-00-2hllnmkn37yf.riker.replit.dev/api";
+
+// Unique session ID per browser tab (persists across refreshes)
+const SESSION_ID = (() => {
+  let id = localStorage.getItem("vtrx_session");
+  if (!id) { id = Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem("vtrx_session", id); }
+  return id;
+})();
+
+async function apiFetch(path, opts) {
+  try {
+    const res = await fetch(API_URL + path, { headers: { "Content-Type": "application/json" }, ...opts });
+    if (res.ok) return await res.json();
+  } catch {}
+  return null;
+}
+
+async function fetchOnline() {
+  const data = await apiFetch("/stats/online");
+  if (data && data.online != null) document.getElementById("online-count").textContent = data.online;
+}
+
+async function pingOnline() {
+  const data = await apiFetch("/stats/online/ping", { method: "POST", body: JSON.stringify({ sessionId: SESSION_ID }) });
+  if (data && data.online != null) document.getElementById("online-count").textContent = data.online;
+}
+
+async function fetchReactions(gameId) {
+  const data = await apiFetch("/stats/reactions/" + gameId);
+  return data || { thumbs: 0, heart: 0 };
+}
+
+async function postReaction(gameId, type, delta) {
+  const data = await apiFetch("/stats/reactions/" + gameId + "/" + type, { method: "POST", body: JSON.stringify({ delta }) });
+  return data || null;
+}
+
 // ─── Default Games (always visible to everyone) ───────────────────────────────
 const DEFAULT_GAMES = [
   {
@@ -506,12 +541,8 @@ let donateRawAmount = "";
 let activePreset    = null;
 
 // ─── Online Users ─────────────────────────────────────────────────────────────
-let onlineCount = Math.floor(Math.random() * 20) + 18;
-document.getElementById("online-count").textContent = onlineCount;
-setInterval(() => {
-  onlineCount = Math.min(50, Math.max(12, onlineCount + Math.floor(Math.random() * 7) - 3));
-  document.getElementById("online-count").textContent = onlineCount;
-}, Math.random() * 60000 + 60000);
+pingOnline();
+setInterval(pingOnline, 30000);
 
 // ─── Category Buttons ─────────────────────────────────────────────────────────
 function buildCats() {
@@ -590,7 +621,9 @@ function openGame(game) {
   document.getElementById("player-desc").textContent  = game.description;
   document.getElementById("player-cat-badge").textContent = game.category;
 
-  updateReactions(game);
+  currentReactions = { thumbs: 0, heart: 0 };
+  updateReactionsUI(currentReactions);
+  fetchReactions(game.id).then(counts => updateReactionsUI(counts));
 
   const iframe = document.getElementById("game-frame");
   if (game.url) {
@@ -606,30 +639,34 @@ function openGame(game) {
   renderSuggestions(game);
 }
 
-function updateReactions(game) {
+let currentReactions = { thumbs: 0, heart: 0 };
+
+function updateReactionsUI(counts) {
+  if (counts) currentReactions = counts;
+  const game = currentGame;
+  if (!game) return;
   const v = voted[game.id] || { thumbs: false, heart: false };
-  const tBtn = document.getElementById("thumbs-btn");
-  const hBtn = document.getElementById("heart-btn");
-  tBtn.className = "react-btn" + (v.thumbs ? " active" : "");
-  hBtn.className = "react-btn" + (v.heart ? " active" : "");
-  document.getElementById("thumbs-count").textContent = BASE_THUMBS + (game.thumbsDelta || 0);
-  document.getElementById("heart-count").textContent  = BASE_HEART  + (game.heartDelta  || 0);
+  document.getElementById("thumbs-btn").className = "react-btn" + (v.thumbs ? " active" : "");
+  document.getElementById("heart-btn").className  = "react-btn" + (v.heart  ? " active" : "");
+  document.getElementById("thumbs-count").textContent = BASE_THUMBS + currentReactions.thumbs;
+  document.getElementById("heart-count").textContent  = BASE_HEART  + currentReactions.heart;
 }
 
-function react(type) {
+function updateReactions(game) { updateReactionsUI(null); }
+
+async function react(type) {
   if (!currentGame) return;
-  if (isAdmin) {
-    if (type === "thumbs") currentGame.thumbsDelta = (currentGame.thumbsDelta || 0) + 1;
-    else                   currentGame.heartDelta  = (currentGame.heartDelta  || 0) + 1;
-  } else {
-    const v = voted[currentGame.id] || { thumbs: false, heart: false };
-    const already = v[type];
-    voted[currentGame.id] = { ...v, [type]: !already };
-    saveVoted();
-    if (type === "thumbs") currentGame.thumbsDelta = (currentGame.thumbsDelta || 0) + (already ? -1 : 1);
-    else                   currentGame.heartDelta  = (currentGame.heartDelta  || 0) + (already ? -1 : 1);
-  }
-  updateReactions(currentGame);
+  const v = voted[currentGame.id] || { thumbs: false, heart: false };
+  const already = v[type];
+  const delta = already ? -1 : 1;
+  voted[currentGame.id] = { ...v, [type]: !already };
+  saveVoted();
+  // Optimistic update
+  currentReactions = { ...currentReactions, [type]: Math.max(0, currentReactions[type] + delta) };
+  updateReactionsUI(currentReactions);
+  // Sync to API
+  const updated = await postReaction(currentGame.id, type, delta);
+  if (updated) updateReactionsUI(updated);
 }
 
 function renderSuggestions(game) {
