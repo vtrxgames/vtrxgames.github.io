@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VTRX Drone Strike!</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #2a3a2a; display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: monospace; overflow: hidden; user-select: none; }
+    #wrap { position: relative; width: 900px; height: 600px; }
+    canvas { display: block; cursor: none; border: 2px solid #4a6a4a; box-shadow: 0 0 60px rgba(80,140,60,0.3); }
+    #overlay {
+      position: absolute; inset: 0; background: rgba(20,35,18,0.93);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10;
+    }
+    #overlay.hidden { display: none; }
+    #overlay h1 { font-size: 36px; font-weight: 900; letter-spacing: 3px; margin-bottom: 6px; text-transform: uppercase; }
+    .sub { font-size: 11px; letter-spacing: 3px; margin-bottom: 24px; }
+    .ctrl-table { border-collapse: collapse; margin-bottom: 22px; }
+    .ctrl-table td { padding: 4px 16px; font-size: 12px; }
+    .ctrl-table td:first-child { color: #fff; font-weight: 700; text-align: right; border-right: 1px solid #2a4a2a; }
+    .ctrl-table td:last-child { color: #6aaa6a; }
+    .info-line { font-size: 12px; color: #5a9a5a; margin-bottom: 4px; }
+    .info-warn { font-size: 12px; color: #7a5050; margin-bottom: 22px; }
+    #main-btn {
+      padding: 12px 40px; background: #dc2626; color: #fff; border: none;
+      border-radius: 5px; font-size: 15px; font-weight: 700; cursor: pointer;
+      letter-spacing: 2px; text-transform: uppercase;
+      box-shadow: 0 4px 24px rgba(220,38,38,0.5); transition: all .2s;
+    }
+    #main-btn:hover { background: #ef4444; transform: scale(1.03); }
+    #score-final { font-size: 20px; color: #fbbf24; font-weight: 700; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="canvas" width="900" height="600"></canvas>
+  <div id="overlay">
+    <h1 style="color:#dc2626">VTRX Drone Strike!</h1>
+    <div class="sub" style="color:#5a9a5a">OVERHEAD AERIAL STRIKE &middot; 10 LEVELS</div>
+    <table class="ctrl-table">
+      <tr><td>W A S D / Arrows</td><td>Fly drone</td></tr>
+      <tr><td>Mouse</td><td>Aim targeting reticle</td></tr>
+      <tr><td>SPACE / Click</td><td>Fire missile at reticle</td></tr>
+    </table>
+    <div class="info-line">You are the drone — fire down at enemy tanks below.</div>
+    <div class="info-warn">More tanks, higher speed each level. Don't waste shots!</div>
+    <button id="main-btn">LAUNCH MISSION</button>
+  </div>
+</div>
+<script>
+const canvas  = document.getElementById('canvas');
+const ctx     = canvas.getContext('2d');
+const overlay = document.getElementById('overlay');
+const W = 900, H = 600;
+const HUD_H = 48;          // top HUD bar height
+const PLAY_H = H - HUD_H; // playfield height
+
+// World
+const WORLD = 1800;
+const TILE  = 160;
+const TGRID = Math.ceil(WORLD / TILE) + 2;
+
+// Level configs
+const LEVELS = [
+  { tanks:3,  missiles:5,  speed:0.7,  turn:0.018 },
+  { tanks:4,  missiles:6,  speed:0.95, turn:0.021 },
+  { tanks:5,  missiles:7,  speed:1.25, turn:0.024 },
+  { tanks:6,  missiles:8,  speed:1.55, turn:0.027 },
+  { tanks:7,  missiles:9,  speed:1.85, turn:0.030 },
+  { tanks:8,  missiles:10, speed:2.15, turn:0.033 },
+  { tanks:9,  missiles:11, speed:2.50, turn:0.036 },
+  { tanks:10, missiles:12, speed:2.90, turn:0.039 },
+  { tanks:11, missiles:13, speed:3.30, turn:0.042 },
+  { tanks:12, missiles:14, speed:3.70, turn:0.045 },
+];
+
+// State
+let state = 'menu', currentLevel = 0, score = 0, missilesLeft = 0;
+let player = {}, tanks = [], missiles = [], explosions = [], particles = [], smokeTrails = [];
+let keys = {}, mouse = { x: W/2, y: H/2 }, frame = 0;
+
+// Pre-generate terrain (overhead look)
+const terrainGrid = new Uint8Array(TGRID * TGRID);
+for (let i = 0; i < terrainGrid.length; i++) terrainGrid[i] = Math.random() * 6 | 0;
+// Pre-generate tree/bush positions
+const foliage = [];
+for (let i = 0; i < 300; i++) {
+  foliage.push({ x: Math.random() * WORLD, y: Math.random() * WORLD, r: 6 + Math.random() * 10, type: Math.random() > 0.5 ? 0 : 1 });
+}
+// Scatter some ponds/patches
+const patches = [];
+for (let i = 0; i < 40; i++) {
+  patches.push({ x: Math.random() * WORLD, y: Math.random() * WORLD, w: 60 + Math.random() * 120, h: 40 + Math.random() * 80, type: Math.random() > 0.6 ? 'pond' : 'dirt' });
+}
+
+function sampleTerrain(wx, wy) {
+  const tx = (((wx / TILE) | 0) % TGRID + TGRID) % TGRID;
+  const ty = (((wy / TILE) | 0) % TGRID + TGRID) % TGRID;
+  return terrainGrid[ty * TGRID + tx];
+}
+
+// World → screen
+function ws(wx) { return W/2 + (wx - player.x); }
+function hs(wy) { return HUD_H + PLAY_H/2 + (wy - player.y); }
+
+function drawTerrain() {
+  // Sky/background for the overhead — overcast bright rainy day
+  ctx.fillStyle = '#6a8a58'; // base grass
+  ctx.fillRect(0, HUD_H, W, PLAY_H);
+
+  // Draw terrain tiles
+  const startTX = Math.floor((player.x - W/2) / TILE);
+  const startTY = Math.floor((player.y - PLAY_H/2) / TILE);
+  const endTX   = startTX + Math.ceil(W / TILE) + 2;
+  const endTY   = startTY + Math.ceil(PLAY_H / TILE) + 2;
+
+  const tileColors = [
+    '#6a8a58', '#5e7e4e', '#72925f', '#648455',
+    '#7a9a65', '#638052', '#6d8c5b', '#609050',
+  ];
+
+  for (let ty = startTY; ty <= endTY; ty++) {
+    for (let tx = startTX; tx <= endTX; tx++) {
+      const wtx = ((tx % TGRID) + TGRID) % TGRID;
+      const wty = ((ty % TGRID) + TGRID) % TGRID;
+      const t = terrainGrid[wty * TGRID + wtx];
+      ctx.fillStyle = tileColors[t % tileColors.length];
+      const sx = ws(tx * TILE), sy = hs(ty * TILE);
+      ctx.fillRect(sx, sy, TILE + 1, TILE + 1);
+    }
+  }
+
+  // Roads (grid pattern)
+  ctx.strokeStyle = '#8a9a7a'; ctx.lineWidth = 14;
+  for (let rx = 0; rx < WORLD; rx += 600) {
+    const sx = ws(rx);
+    if (sx < -20 || sx > W+20) continue;
+    ctx.beginPath(); ctx.moveTo(sx, HUD_H); ctx.lineTo(sx, H); ctx.stroke();
+  }
+  for (let ry = 0; ry < WORLD; ry += 600) {
+    const sy = hs(ry);
+    if (sy < HUD_H-20 || sy > H+20) continue;
+    ctx.beginPath(); ctx.moveTo(0, sy); ctx.lineTo(W, sy); ctx.stroke();
+  }
+  // Road centre lines
+  ctx.strokeStyle = '#a0b08a'; ctx.lineWidth = 2; ctx.setLineDash([18, 18]);
+  for (let rx = 0; rx < WORLD; rx += 600) {
+    const sx = ws(rx);
+    if (sx < -20 || sx > W+20) continue;
+    ctx.beginPath(); ctx.moveTo(sx, HUD_H); ctx.lineTo(sx, H); ctx.stroke();
+  }
+  for (let ry = 0; ry < WORLD; ry += 600) {
+    const sy = hs(ry);
+    if (sy < HUD_H-20 || sy > H+20) continue;
+    ctx.beginPath(); ctx.moveTo(0, sy); ctx.lineTo(W, sy); ctx.stroke();
+  }
+  ctx.setLineDash([]);
+
+  // Patches (ponds, dirt)
+  for (const p of patches) {
+    const sx = ws(p.x), sy = hs(p.y);
+    if (sx < -200 || sx > W+200 || sy < HUD_H-200 || sy > H+200) continue;
+    if (p.type === 'pond') {
+      ctx.fillStyle = '#7aaccf';
+      ctx.beginPath(); ctx.ellipse(sx, sy, p.w/2, p.h/2, 0, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle = '#5a9abf'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.ellipse(sx, sy, p.w/2, p.h/2, 0, 0, Math.PI*2); ctx.stroke();
+    } else {
+      ctx.fillStyle = '#9a8060';
+      ctx.beginPath(); ctx.ellipse(sx, sy, p.w/2, p.h/2, 0.4, 0, Math.PI*2); ctx.fill();
+    }
+  }
+
+  // Foliage (trees/bushes from above)
+  for (const f of foliage) {
+    const sx = ws(f.x), sy = hs(f.y);
+    if (sx < -20 || sx > W+20 || sy < HUD_H-20 || sy > H+20) continue;
+    if (f.type === 0) { // tree (dark green circle with shadow)
+      ctx.fillStyle = 'rgba(0,0,0,0.2)';
+      ctx.beginPath(); ctx.arc(sx+3, sy+3, f.r, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#2a5a1a';
+      ctx.beginPath(); ctx.arc(sx, sy, f.r, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#3a7a28';
+      ctx.beginPath(); ctx.arc(sx-f.r*0.2, sy-f.r*0.2, f.r*0.65, 0, Math.PI*2); ctx.fill();
+    } else { // bush
+      ctx.fillStyle = 'rgba(0,0,0,0.15)';
+      ctx.beginPath(); ctx.ellipse(sx+2, sy+2, f.r*1.2, f.r*0.8, 0, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#4a7a32';
+      ctx.beginPath(); ctx.ellipse(sx, sy, f.r*1.2, f.r*0.8, 0, 0, Math.PI*2); ctx.fill();
+    }
+  }
+
+  // Overcast rain overlay (subtle)
+  ctx.fillStyle = 'rgba(180,200,180,0.07)';
+  ctx.fillRect(0, HUD_H, W, PLAY_H);
+
+  // Rain streaks
+  ctx.strokeStyle = 'rgba(200,220,220,0.12)'; ctx.lineWidth = 0.8;
+  for (let i = 0; i < 80; i++) {
+    const rx = ((i * 137 + frame * 3) % W);
+    const ry = HUD_H + ((i * 89 + frame * 5) % PLAY_H);
+    ctx.beginPath(); ctx.moveTo(rx, ry); ctx.lineTo(rx - 2, ry + 10); ctx.stroke();
+  }
+}
+
+function drawDroneShadow() {
+  const sx = W/2, sy = HUD_H + PLAY_H/2;
+  // Drone shadow on ground
+  ctx.save();
+  ctx.globalAlpha = 0.25;
+  ctx.fillStyle = '#000';
+  ctx.beginPath(); ctx.ellipse(sx+4, sy+4, 22, 14, 0, 0, Math.PI*2); ctx.fill();
+  ctx.restore();
+  // Drone body (small, seen from above)
+  ctx.save();
+  ctx.translate(sx, sy);
+  ctx.fillStyle = '#334433';
+  ctx.beginPath(); ctx.ellipse(0, 0, 14, 8, 0, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = '#4a6a4a'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.ellipse(0, 0, 14, 8, 0, 0, Math.PI*2); ctx.stroke();
+  // Arms
+  [[-14,-12],[14,-12],[-14,12],[14,12]].forEach(([ax,ay])=>{
+    ctx.strokeStyle='#2a3a2a'; ctx.lineWidth=2.5;
+    ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(ax,ay); ctx.stroke();
+    ctx.save(); ctx.translate(ax,ay); ctx.rotate(frame*0.4);
+    ctx.strokeStyle='rgba(180,220,180,0.5)'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(-7,0); ctx.lineTo(7,0); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0,-7); ctx.lineTo(0,7); ctx.stroke();
+    ctx.restore();
+    ctx.fillStyle='#445544'; ctx.beginPath(); ctx.arc(ax,ay,2.5,0,Math.PI*2); ctx.fill();
+  });
+  // Camera lens
+  ctx.fillStyle='#111'; ctx.beginPath(); ctx.arc(0,0,4,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='rgba(0,180,255,0.7)'; ctx.beginPath(); ctx.arc(0,0,2.5,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+}
+
+function drawTankTopDown(tank) {
+  if (tank.dead) return;
+  const sx = ws(tank.x), sy = hs(tank.y);
+  if (sx < -60 || sx > W+60 || sy < HUD_H-60 || sy > H+60) return;
+
+  ctx.save();
+  ctx.translate(sx, sy);
+  ctx.rotate(tank.angle);
+
+  // Shadow
+  ctx.save(); ctx.translate(3,3); ctx.globalAlpha=0.3;
+  ctx.fillStyle='#000'; ctx.fillRect(-20,-14,40,28); ctx.restore();
+
+  // Tracks
+  ctx.fillStyle='#2a2a1a'; ctx.fillRect(-20,-14,6,28); ctx.fillRect(14,-14,6,28);
+  // Track notches
+  ctx.strokeStyle='#3a3a2a'; ctx.lineWidth=1;
+  for(let i=0;i<5;i++){ const ty=-12+i*6; ctx.beginPath(); ctx.moveTo(-20,ty); ctx.lineTo(-14,ty); ctx.stroke(); ctx.beginPath(); ctx.moveTo(14,ty); ctx.lineTo(20,ty); ctx.stroke(); }
+
+  // Hull
+  ctx.fillStyle='#4a5e20'; ctx.fillRect(-14,-11,28,22);
+  ctx.strokeStyle='#35470f'; ctx.lineWidth=1.2; ctx.strokeRect(-14,-11,28,22);
+
+  // Armour stripe
+  ctx.fillStyle='#556828'; ctx.fillRect(-14,-11,28,7);
+
+  // Turret
+  ctx.fillStyle='#384f12';
+  ctx.beginPath(); ctx.ellipse(0,0,9,8,0,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle='#28380c'; ctx.lineWidth=1; ctx.stroke();
+
+  // Barrel (point toward player from turret)
+  ctx.save(); ctx.rotate(tank.turretAngle - tank.angle);
+  ctx.fillStyle='#1e2e08'; ctx.fillRect(0,-2.5,20,5); ctx.restore();
+
+  // Threat dot
+  ctx.fillStyle='#dd2222'; ctx.beginPath(); ctx.arc(0,0,3,0,Math.PI*2); ctx.fill();
+
+  ctx.restore();
+
+  // Name tag
+  ctx.save();
+  ctx.fillStyle='rgba(255,60,60,0.8)'; ctx.font='bold 9px monospace'; ctx.textAlign='center';
+  ctx.fillText('▼', sx, sy-22);
+  ctx.restore();
+}
+
+function drawMissileTopDown(m) {
+  const sx = ws(m.x), sy = hs(m.y);
+  if (sx < -20 || sx > W+20 || sy < HUD_H-20 || sy > H+20) return;
+
+  // Trail
+  for (let i = 1; i < m.trail.length; i++) {
+    const ta = { x: ws(m.trail[i].x),   y: hs(m.trail[i].y) };
+    const tb = { x: ws(m.trail[i-1].x), y: hs(m.trail[i-1].y) };
+    ctx.globalAlpha = (i / m.trail.length) * 0.7;
+    ctx.strokeStyle = '#ff8800'; ctx.lineWidth = 3 * (i/m.trail.length);
+    ctx.beginPath(); ctx.moveTo(tb.x,tb.y); ctx.lineTo(ta.x,ta.y); ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+
+  ctx.save(); ctx.translate(sx, sy); ctx.rotate(m.angle);
+  // Body
+  ctx.fillStyle = '#ddd'; ctx.fillRect(-12,-3,24,6);
+  // Nose
+  ctx.fillStyle='#ff3300'; ctx.beginPath(); ctx.moveTo(12,0); ctx.arc(12,0,4,0,Math.PI*2); ctx.fill();
+  // Fins
+  ctx.fillStyle='#aaa';
+  ctx.beginPath(); ctx.moveTo(-10,-3); ctx.lineTo(-16,-8); ctx.lineTo(-12,-3); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(-10, 3); ctx.lineTo(-16, 8); ctx.lineTo(-12, 3); ctx.fill();
+  // Exhaust
+  ctx.fillStyle='#ff6600'; ctx.beginPath(); ctx.arc(-12,0,4,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#ffcc00'; ctx.beginPath(); ctx.arc(-12,0,2.5,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+}
+
+function drawExplosionTopDown(e) {
+  const sx = ws(e.x), sy = hs(e.y);
+  const prog = e.age/e.maxAge;
+  const r = e.size * (1 + prog * 0.6);
+  ctx.save(); ctx.globalAlpha = (1-prog)*0.9;
+  const grad = ctx.createRadialGradient(sx,sy,0,sx,sy,r);
+  grad.addColorStop(0,'#fff'); grad.addColorStop(0.15,'#ffff00');
+  grad.addColorStop(0.4,'#ff6600'); grad.addColorStop(0.75,'#cc2200'); grad.addColorStop(1,'transparent');
+  ctx.fillStyle=grad; ctx.beginPath(); ctx.arc(sx,sy,r,0,Math.PI*2); ctx.fill();
+  // Shockwave
+  ctx.strokeStyle=`rgba(255,160,0,${(1-prog)*0.4})`; ctx.lineWidth=3;
+  ctx.beginPath(); ctx.arc(sx,sy,r*1.5*prog,0,Math.PI*2); ctx.stroke();
+  ctx.restore();
+}
+
+function drawParticlesTopDown() {
+  for (const p of particles) {
+    const sx=ws(p.x), sy=hs(p.y);
+    ctx.save(); ctx.globalAlpha=p.alpha; ctx.fillStyle=p.color;
+    ctx.beginPath(); ctx.arc(sx,sy,p.r,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+}
+
+function drawCrosshair() {
+  const x=mouse.x, y=mouse.y;
+  // Outer ring
+  ctx.save();
+  ctx.strokeStyle='rgba(255,30,30,0.9)'; ctx.lineWidth=1.8;
+  ctx.beginPath(); ctx.arc(x,y,22,0,Math.PI*2); ctx.stroke();
+  // Inner circle
+  ctx.strokeStyle='rgba(255,80,80,0.5)'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.arc(x,y,10,0,Math.PI*2); ctx.stroke();
+  // Cross lines
+  ctx.strokeStyle='rgba(255,30,30,0.9)'; ctx.lineWidth=1.5;
+  const cs=30, cg=12;
+  ctx.beginPath();
+  ctx.moveTo(x-cs,y); ctx.lineTo(x-cg,y);
+  ctx.moveTo(x+cg,y); ctx.lineTo(x+cs,y);
+  ctx.moveTo(x,y-cs); ctx.lineTo(x,y-cg);
+  ctx.moveTo(x,y+cg); ctx.lineTo(x,y+cs);
+  ctx.stroke();
+  // Corner tick marks
+  ctx.strokeStyle='rgba(255,180,0,0.7)'; ctx.lineWidth=1.5;
+  const tr=22, tl=8, ta=Math.PI/4;
+  for(let i=0;i<4;i++){
+    const a=ta+i*Math.PI/2;
+    ctx.beginPath();
+    ctx.moveTo(x+Math.cos(a-0.3)*tr, y+Math.sin(a-0.3)*tr);
+    ctx.lineTo(x+Math.cos(a)*  (tr+tl), y+Math.sin(a)*  (tr+tl));
+    ctx.lineTo(x+Math.cos(a+0.3)*tr, y+Math.sin(a+0.3)*tr);
+    ctx.stroke();
+  }
+  // Center dot
+  ctx.fillStyle='rgba(255,30,30,0.9)'; ctx.beginPath(); ctx.arc(x,y,2.5,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+}
+
+function drawHUD() {
+  const cfg=LEVELS[currentLevel], alive=tanks.filter(t=>!t.dead).length;
+
+  // Top bar background (slightly frosted)
+  ctx.fillStyle='rgba(20,35,20,0.88)';
+  ctx.fillRect(0,0,W,HUD_H);
+  ctx.strokeStyle='#4a7a4a'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(0,HUD_H); ctx.lineTo(W,HUD_H); ctx.stroke();
+
+  // Left: Level + score
+  ctx.textAlign='left'; ctx.fillStyle='#7ad07a'; ctx.font='bold 13px monospace';
+  ctx.fillText(`LVL ${currentLevel+1}/10`, 16, 20);
+  ctx.fillStyle='#4a8a4a'; ctx.font='10px monospace'; ctx.fillText(`SCORE: ${score}`, 16, 36);
+
+  // Center: Missile bar
+  ctx.textAlign='center'; ctx.fillStyle='#7ada7a'; ctx.font='bold 10px monospace';
+  ctx.fillText('MISSILES', W/2, 14);
+  const iw=20,ig=5, totalW=cfg.missiles*(iw+ig)-ig, startX=W/2-totalW/2;
+  for(let i=0;i<cfg.missiles;i++){
+    const used=i>=missilesLeft;
+    ctx.fillStyle=used?'#222':'#dc2626';
+    if(!used){ctx.shadowColor='#dc2626';ctx.shadowBlur=10;}
+    ctx.beginPath();
+    if(ctx.roundRect) ctx.roundRect(startX+i*(iw+ig),18,iw,8,3); else ctx.rect(startX+i*(iw+ig),18,iw,8);
+    ctx.fill(); ctx.shadowBlur=0;
+  }
+  ctx.fillStyle='#6a3535'; ctx.font='9px monospace'; ctx.fillText(`${missilesLeft} LEFT`,W/2,41);
+
+  // Right: Tanks
+  ctx.textAlign='right'; ctx.font='bold 14px monospace';
+  ctx.fillStyle=alive>0?'#ff6a6a':'#4ade80';
+  ctx.fillText(`TANKS: ${alive}`, W-14, 22);
+  ctx.font='10px monospace'; ctx.fillStyle='#4a7a4a';
+  ctx.fillText(`LEVEL ${currentLevel+1} — DESTROY ALL`,W-14,37);
+
+  // Radar (top-right corner)
+  const rcx=W-62, rcy=HUD_H+62, rr=46;
+  ctx.fillStyle='rgba(10,25,10,0.8)';
+  ctx.beginPath(); ctx.arc(rcx,rcy,rr,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle='#2a5a2a'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.arc(rcx,rcy,rr,0,Math.PI*2); ctx.stroke();
+  ctx.beginPath(); ctx.arc(rcx,rcy,rr*0.5,0,Math.PI*2); ctx.stroke();
+  // Grid lines
+  ctx.strokeStyle='rgba(40,100,40,0.3)'; ctx.lineWidth=0.5;
+  ctx.beginPath(); ctx.moveTo(rcx-rr,rcy); ctx.lineTo(rcx+rr,rcy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(rcx,rcy-rr); ctx.lineTo(rcx,rcy+rr); ctx.stroke();
+  // Player dot
+  ctx.fillStyle='#4aff4a'; ctx.beginPath(); ctx.arc(rcx,rcy,3.5,0,Math.PI*2); ctx.fill();
+  // Tank blips
+  for(const t of tanks){
+    if(t.dead) continue;
+    const d=Math.hypot(t.x-player.x,t.y-player.y); if(d>1800) continue;
+    const a=Math.atan2(t.y-player.y,t.x-player.x);
+    const nd=Math.min(d/1000,1)*rr*0.88;
+    ctx.fillStyle=((frame>>3)&1)?'#ff4444':'#cc2222';
+    ctx.beginPath(); ctx.arc(rcx+Math.cos(a)*nd, rcy+Math.sin(a)*nd, 3,0,Math.PI*2); ctx.fill();
+  }
+  // Missile blips
+  for(const m of missiles){
+    const d=Math.hypot(m.x-player.x,m.y-player.y); if(d>1800) continue;
+    const a=Math.atan2(m.y-player.y,m.x-player.x);
+    const nd=Math.min(d/1000,1)*rr*0.88;
+    ctx.fillStyle='#ffaa00';
+    ctx.beginPath(); ctx.arc(rcx+Math.cos(a)*nd, rcy+Math.sin(a)*nd, 2,0,Math.PI*2); ctx.fill();
+  }
+  ctx.fillStyle='#2a6a2a'; ctx.textAlign='center'; ctx.font='8px monospace';
+  ctx.fillText('RADAR',rcx,rcy+rr+10);
+
+  // Bottom bar
+  ctx.fillStyle='rgba(10,25,10,0.8)'; ctx.fillRect(0,H-26,W,26);
+  ctx.strokeStyle='#2a5a2a'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(0,H-26); ctx.lineTo(W,H-26); ctx.stroke();
+  ctx.fillStyle='#3a7a3a'; ctx.textAlign='center'; ctx.font='10px monospace';
+  ctx.fillText('W A S D / ARROWS = Fly Drone   ·   MOUSE = Aim   ·   SPACE or CLICK = Fire Missile', W/2, H-8);
+}
+
+// Init
+function initGame()  { currentLevel=0; score=0; initLevel(); }
+function initLevel() {
+  const cfg=LEVELS[currentLevel];
+  player={ x:WORLD/2, y:WORLD/2, vx:0, vy:0, maxSpd:5, accel:0.3, friction:0.85 };
+  missilesLeft=cfg.missiles; missiles=[]; explosions=[]; particles=[]; smokeTrails=[]; tanks=[];
+  for(let i=0;i<cfg.tanks;i++){
+    let tx,ty,tries=0;
+    do{ tx=150+Math.random()*(WORLD-300); ty=150+Math.random()*(WORLD-300); tries++; }
+    while(tries<20 && Math.hypot(tx-player.x,ty-player.y)<120);
+    tanks.push({ x:tx, y:ty, angle:Math.random()*Math.PI*2, turretAngle:0,
+      speed:cfg.speed, turnSpeed:cfg.turn, patrolTimer:0, patrolTarget:{x:tx,y:ty}, dead:false });
+  }
+}
+
+// Update
+function updatePlayer(){
+  if(keys['a']||keys['A']||keys['ArrowLeft'])  player.vx-=player.accel;
+  if(keys['d']||keys['D']||keys['ArrowRight']) player.vx+=player.accel;
+  if(keys['w']||keys['W']||keys['ArrowUp'])    player.vy-=player.accel;
+  if(keys['s']||keys['S']||keys['ArrowDown'])  player.vy+=player.accel;
+  const spd=Math.hypot(player.vx,player.vy);
+  if(spd>player.maxSpd){ player.vx=player.vx/spd*player.maxSpd; player.vy=player.vy/spd*player.maxSpd; }
+  player.vx*=player.friction; player.vy*=player.friction;
+  player.x=((player.x+player.vx)%WORLD+WORLD)%WORLD;
+  player.y=((player.y+player.vy)%WORLD+WORLD)%WORLD;
+}
+
+function updateTanks(){
+  for(const tank of tanks){
+    if(tank.dead) continue;
+    if(--tank.patrolTimer<=0){
+      tank.patrolTimer=60+Math.random()*120;
+      tank.patrolTarget={x:200+Math.random()*(WORLD-400),y:200+Math.random()*(WORLD-400)};
+    }
+    const dx=tank.patrolTarget.x-tank.x, dy=tank.patrolTarget.y-tank.y;
+    if(Math.hypot(dx,dy)>8){
+      const ta=Math.atan2(dy,dx); let da=ta-tank.angle;
+      while(da>Math.PI)da-=Math.PI*2; while(da<-Math.PI)da+=Math.PI*2;
+      tank.angle+=da*tank.turnSpeed*3;
+      tank.x+=Math.cos(tank.angle)*tank.speed; tank.y+=Math.sin(tank.angle)*tank.speed;
+    }
+    // Turret tracks player
+    tank.turretAngle=Math.atan2(player.y-tank.y,player.x-tank.x);
+    tank.x=((tank.x%WORLD)+WORLD)%WORLD; tank.y=((tank.y%WORLD)+WORLD)%WORLD;
+  }
+}
+
+function updateMissiles(){
+  for(let i=missiles.length-1;i>=0;i--){
+    const m=missiles[i];
+    m.trail.push({x:m.x,y:m.y}); if(m.trail.length>20) m.trail.shift();
+    m.x+=m.vx; m.y+=m.vy; m.age++;
+    let hit=false;
+    for(const t of tanks){
+      if(t.dead) continue;
+      if(Math.hypot(m.x-t.x,m.y-t.y)<38){
+        t.dead=true; spawnExplosion(t.x,t.y,55);
+        score+=100*(currentLevel+1);
+        missiles.splice(i,1); hit=true; playSound('explode'); checkLevelEnd(); break;
+      }
+    }
+    if(!hit&&m.age>280){ missiles.splice(i,1); checkAmmoOut(); }
+  }
+}
+
+function updateExplosions(){ for(let i=explosions.length-1;i>=0;i--){ if(++explosions[i].age>=explosions[i].maxAge) explosions.splice(i,1); } }
+function updateParticles(){
+  for(let i=particles.length-1;i>=0;i--){
+    const p=particles[i]; p.x+=p.vx; p.y+=p.vy; p.vx*=0.96; p.vy*=0.96; p.alpha-=p.decay; p.r*=0.97;
+    if(p.alpha<=0) particles.splice(i,1);
+  }
+}
+
+function spawnExplosion(wx,wy,size){
+  explosions.push({x:wx,y:wy,age:0,maxAge:55,size:size||50});
+  for(let i=0;i<22;i++){
+    const a=Math.random()*Math.PI*2, spd=1+Math.random()*4;
+    particles.push({x:wx,y:wy,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,
+      r:3+Math.random()*5,alpha:1,decay:0.014+Math.random()*0.018,
+      color:['#ff6600','#ffbb00','#ff2200','#ffff00','#bbbbbb'][Math.random()*5|0]});
+  }
+}
+
+function fireMissile(){
+  if(missilesLeft<=0||state!=='playing') return;
+  missilesLeft--;
+  playSound('fire');
+  // World position of crosshair
+  const tx=player.x+(mouse.x-W/2);
+  const ty=player.y+(mouse.y-HUD_H-PLAY_H/2);
+  const dx=tx-player.x, dy=ty-player.y;
+  const dist=Math.hypot(dx,dy)||1;
+  const spd=18;
+  missiles.push({x:player.x,y:player.y,
+    vx:(dx/dist)*spd, vy:(dy/dist)*spd,
+    angle:Math.atan2(dy,dx), trail:[],age:0 });
+}
+
+function checkLevelEnd(){
+  if(tanks.every(t=>t.dead)) setTimeout(()=>{state=currentLevel>=9?'win':'levelComplete';showOverlay();},1400);
+}
+function checkAmmoOut(){
+  if(missilesLeft===0&&missiles.length===0&&tanks.some(t=>!t.dead)) setTimeout(()=>{state='lose';showOverlay();},700);
+}
+
+function showOverlay(){
+  overlay.classList.remove('hidden'); overlay.innerHTML='';
+  const cfg=LEVELS[currentLevel];
+  if(state==='levelComplete'){
+    const nc=LEVELS[currentLevel+1];
+    overlay.innerHTML=`<h1 style="color:#fbbf24">LEVEL ${currentLevel+1} CLEAR!</h1>
+      <div class="sub" style="color:#aaa">ALL TANKS ELIMINATED</div>
+      <div id="score-final">SCORE: ${score}</div>
+      <div class="info-line">Next level: <b style="color:#fff">${nc.tanks} tanks</b> &middot; <b style="color:#dc2626">${nc.missiles} missiles</b></div>
+      <div class="info-warn" style="margin-bottom:24px">Enemy tanks move faster!</div>
+      <button id="main-btn" style="background:#d97706;box-shadow:0 4px 24px rgba(217,119,6,.5)">NEXT LEVEL &rarr;</button>`;
+    document.getElementById('main-btn').addEventListener('click',()=>{currentLevel++;state='playing';overlay.classList.add('hidden');initLevel();});
+  } else if(state==='win'){
+    overlay.innerHTML=`<h1 style="color:#4ade80">MISSION COMPLETE!</h1>
+      <div class="sub" style="color:#4ade80">ALL 10 LEVELS CONQUERED</div>
+      <div id="score-final">FINAL SCORE: ${score}</div>
+      <div class="info-line">Elite drone commander. All tanks destroyed.</div>
+      <div class="info-warn" style="margin-bottom:24px">Can you beat your score?</div>
+      <button id="main-btn" style="background:#16a34a;box-shadow:0 4px 24px rgba(22,163,74,.5)">PLAY AGAIN</button>`;
+    document.getElementById('main-btn').addEventListener('click',()=>{state='playing';overlay.classList.add('hidden');initGame();});
+  } else {
+    const d=tanks.filter(t=>t.dead).length;
+    overlay.innerHTML=`<h1 style="color:#dc2626">MISSION FAILED</h1>
+      <div class="sub" style="color:#f87171">OUT OF AMMUNITION</div>
+      <div id="score-final">SCORE: ${score}</div>
+      <div class="info-line">Level ${currentLevel+1} &middot; Tanks destroyed: ${d}/${cfg.tanks}</div>
+      <div class="info-warn" style="margin-bottom:24px">Aim carefully — every missile counts.</div>
+      <button id="main-btn">TRY AGAIN</button>`;
+    document.getElementById('main-btn').addEventListener('click',()=>{state='playing';overlay.classList.add('hidden');initGame();});
+  }
+}
+
+// Audio
+let audioCtx=null;
+function getAudio(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx;}
+function playSound(type){
+  try{
+    const ac=getAudio(),o=ac.createOscillator(),g=ac.createGain();
+    o.connect(g);g.connect(ac.destination);
+    if(type==='fire'){o.type='sawtooth';o.frequency.setValueAtTime(850,ac.currentTime);o.frequency.exponentialRampToValueAtTime(100,ac.currentTime+0.2);g.gain.setValueAtTime(0.35,ac.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.2);o.start();o.stop(ac.currentTime+0.2);}
+    else{o.type='square';o.frequency.setValueAtTime(200,ac.currentTime);o.frequency.exponentialRampToValueAtTime(20,ac.currentTime+0.55);g.gain.setValueAtTime(0.55,ac.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.55);o.start();o.stop(ac.currentTime+0.55);}
+  }catch(e){}
+}
+
+// Loop
+function loop(){
+  frame++;
+  ctx.clearRect(0,0,W,H);
+
+  if(state==='playing'){
+    updatePlayer(); updateTanks(); updateMissiles(); updateExplosions(); updateParticles();
+  }
+
+  drawTerrain();
+
+  // Tanks sorted back to front (by y for slight isometric feel)
+  [...tanks].sort((a,b)=>a.y-b.y).forEach(drawTankTopDown);
+
+  drawParticlesTopDown();
+  for(const e of explosions) drawExplosionTopDown(e);
+  for(const m of missiles) drawMissileTopDown(m);
+
+  drawDroneShadow();
+  drawCrosshair();
+  drawHUD();
+
+  requestAnimationFrame(loop);
+}
+
+// Input
+document.addEventListener('keydown',e=>{ keys[e.key]=true; if(e.key===' '){e.preventDefault();fireMissile();} });
+document.addEventListener('keyup',  e=>{ keys[e.key]=false; });
+canvas.addEventListener('mousemove',e=>{ const r=canvas.getBoundingClientRect(); mouse.x=e.clientX-r.left; mouse.y=e.clientY-r.top; });
+canvas.addEventListener('click',()=>fireMissile());
+canvas.addEventListener('contextmenu',e=>e.preventDefault());
+document.getElementById('main-btn').addEventListener('click',()=>{ state='playing'; overlay.classList.add('hidden'); initGame(); });
+
+loop();
+</script>
+</body>
+</html>
