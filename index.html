@@ -474,7 +474,7 @@ let realOnlineCount = 0;
 // Based on wall-clock time so refreshing mid-window shows the same number.
 const BOT_BASE      = 32;
 const BOT_INTERVALS = [180,180,240,180,300,240,180,240]; // seconds per step
-const BOT_CHANGES   = [  2, -5,  7, -3,  4, -6,  3, -4]; // delta per step
+const BOT_CHANGES   = [  3, -5,  7, -3,  20, -7,  3, -4]; // delta per step
 const BOT_REF_MS    = 1748000000000; // fixed epoch (ms) - do not change
 
 function getBotCount() {
@@ -486,7 +486,7 @@ function getBotCount() {
     if (elapsed < interval) break;
     elapsed -= interval;
     count += BOT_CHANGES[i % BOT_CHANGES.length];
-    count = Math.max(22, Math.min(60, count));
+    count = Math.max(33, Math.min(65, count));
     i++;
   }
   return count;
