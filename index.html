@@ -448,7 +448,7 @@
 const ADMIN_PW   = "VultorexVTRX!";
 const PAYPAL     = "fahadatawi42@gmail.com";
 const CATEGORIES = ["All","Action","Puzzle","Racing","Adventure","Arcade","Strategy","Sports","Other"];
-const BASE_THUMBS = 36, BASE_HEART = 41;
+const BASE_THUMBS = 48, BASE_HEART = 63;
 
 // ─── API (shared reactions + online count) ────────────────────────────────────
 const API_URL = "https://fa458057-f594-40ac-a531-0e8547eb6920-00-2hllnmkn37yf.riker.replit.dev/api";
@@ -486,7 +486,7 @@ function getBotCount() {
     if (elapsed < interval) break;
     elapsed -= interval;
     count += BOT_CHANGES[i % BOT_CHANGES.length];
-    count = Math.max(33, Math.min(65, count));
+    count = Math.max(23, Math.min(42, count));
     i++;
   }
   return count;
