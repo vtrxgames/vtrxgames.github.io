@@ -448,7 +448,7 @@
 const ADMIN_PW   = "VultorexVTRX!";
 const PAYPAL     = "fahadatawi42@gmail.com";
 const CATEGORIES = ["All","Action","Puzzle","Racing","Adventure","Arcade","Strategy","Sports","Other"];
-const BASE_THUMBS = 48, BASE_HEART = 63;
+const BASE_THUMBS = 36, BASE_HEART = 41;
 
 // ─── API (shared reactions + online count) ────────────────────────────────────
 const API_URL = "https://fa458057-f594-40ac-a531-0e8547eb6920-00-2hllnmkn37yf.riker.replit.dev/api";
@@ -468,47 +468,18 @@ async function apiFetch(path, opts) {
   return null;
 }
 
+let botCount = Math.floor(Math.random() * 10) + 22;
 let realOnlineCount = 0;
 
-// Deterministic bot count: same for ALL users at any given moment.
-// Based on wall-clock time so refreshing mid-window shows the same number.
-const BOT_BASE      = 32;
-const BOT_INTERVALS = [180,180,240,180,300,240,180,240]; // seconds per step
-const BOT_CHANGES   = [  3, -5,  7, -3,  20, -7,  3, -4]; // delta per step
-const BOT_REF_MS    = 1748000000000; // fixed epoch (ms) - do not change
-
-function getBotCount() {
-  let elapsed = Math.floor((Date.now() - BOT_REF_MS) / 1000);
-  let count = BOT_BASE;
-  let i = 0;
-  while (elapsed > 0) {
-    const interval = BOT_INTERVALS[i % BOT_INTERVALS.length];
-    if (elapsed < interval) break;
-    elapsed -= interval;
-    count += BOT_CHANGES[i % BOT_CHANGES.length];
-    count = Math.max(17, Math.min(28, count));
-    i++;
-  }
-  return count;
-}
-
-function msUntilNextBotChange() {
-  let elapsed = Math.floor((Date.now() - BOT_REF_MS) / 1000);
-  let i = 0;
-  while (true) {
-    const interval = BOT_INTERVALS[i % BOT_INTERVALS.length];
-    if (elapsed < interval) return (interval - elapsed) * 1000;
-    elapsed -= interval;
-    i++;
-  }
-}
-
 function updateOnlineDisplay() {
-  document.getElementById('online-count').textContent = realOnlineCount + getBotCount();
+  document.getElementById("online-count").textContent = realOnlineCount + botCount;
 }
 
-function scheduleBotRefresh() {
-  setTimeout(function() { updateOnlineDisplay(); scheduleBotRefresh(); }, msUntilNextBotChange());
+function fluctuateBots() {
+  const change = Math.floor(Math.random() * 7) - 3;
+  botCount = Math.max(22, Math.min(40, botCount + change));
+  updateOnlineDisplay();
+  setTimeout(fluctuateBots, Math.random() * 180000 + 120000);
 }
 
 async function fetchOnline() {
@@ -545,18 +516,6 @@ const DEFAULT_GAMES = [
     isDefault: true
   },
   {
-  id: 'default-drone-strike',
-  name: 'VTRX Drone Strike!',
-  description: '
-VTRX Drone Strike! is a fast-paced, overhead aerial combat game where you pilot a tactical drone to eliminate ground forces across 10 escalating levels. Using a high-tech targeting reticle, you must hunt down enemy tanks that increase in speed and maneuverability as the mission progresses.',
-  category: 'Action',
-  url: 'games/drone-strike.html',
-  coverImage: 'VTRX%20Drone%20Strike!%20Coverpage.PNG',   // or null
-  thumbsDelta: 0,
-  heartDelta: 0,
-  isDefault: true
-},
-  {
     id: 'default-mech-fps',
     name: 'VTRX Mech FPS!',
     description: 'VTRX Mech FPS! is a FPS where you battle an escalating series of powerful boss mechs. Switch between weapons, aim carefully, and survive wave after wave of increasingly deadly enemies.',
@@ -574,6 +533,17 @@ VTRX Drone Strike! is a fast-paced, overhead aerial combat game where you pilot 
     category: 'Action',
     url: 'games/nuke-tycoon.html',
     coverImage: 'VTRX%20Nuke%20Tycoon!%20Coverpage.PNG',
+    thumbsDelta: 0,
+    heartDelta: 0,
+    isDefault: true
+  },
+  {
+    id: 'default-drone-strike',
+    name: 'VTRX Drone Strike!',
+    description: 'VTRX Drone Strike! is a fast-paced, overhead aerial combat game where you pilot a tactical drone to eliminate ground forces across 10 escalating levels. Using a high-tech targeting reticle, you must hunt down enemy tanks that increase in speed and maneuverability as the mission progresses.',
+    category: 'Action',
+    url: 'games/drone-strike.html',
+    coverImage: 'VTRX%20Drone%20Strike!%20Coverpage.PNG',
     thumbsDelta: 0,
     heartDelta: 0,
     isDefault: true
@@ -597,7 +567,7 @@ let activePreset    = null;
 
 // ─── Online Users ─────────────────────────────────────────────────────────────
 updateOnlineDisplay();
-scheduleBotRefresh();
+fluctuateBots();
 pingOnline();
 setInterval(pingOnline, 30000);
 
@@ -1003,40 +973,5 @@ buildCats();
 buildPresets();
 renderGrid();
 </script>
-  <script>
-  atOptions = {
-    'key' : 'e247a813d3b56771d1b40c4a766dc404',
-    'format' : 'iframe',
-    'height' : 60,
-    'width' : 468,
-    'params' : {}
-  };
-</script>
-  <script>
-  atOptions = {
-    'key' : 'edcd4887835e10af6e1caa06f467015f',
-    'format' : 'iframe',
-    'height' : 300,
-    'width' : 160,
-    'params' : {}
-  };
-</script>
-  <script>
-  atOptions = {
-    'key' : 'd5b9aadd3811c86f8a3450dcdca3cf82',
-    'format' : 'iframe',
-    'height' : 50,
-    'width' : 320,
-    'params' : {}
-  };
-</script>
-<script src="https://www.highperformanceformat.com/d5b9aadd3811c86f8a3450dcdca3cf82/invoke.js"></script>
-<script src="https://www.highperformanceformat.com/edcd4887835e10af6e1caa06f467015f/invoke.js"></script>
-  <script async="async" data-cfasync="false" src="https://pl28952306.profitablecpmratenetwork.com/8c16c26ae41d830807bd1257d15993a9/invoke.js"></script>
-<div id="container-8c16c26ae41d830807bd1257d15993a9"></div>
-  https://www.profitablecpmratenetwork.com/efacryyv?key=f13376f542d989e578612f48da21247d
-  <script src="https://pl28952013.profitablecpmratenetwork.com/cd/3e/b2/cd3eb2c4852b165cee5b0c2cfa3b7fab.js"></script>
-<script src="https://www.highperformanceformat.com/e247a813d3b56771d1b40c4a766dc404/invoke.js"></script>
-  <script src="https://pl28951958.profitablecpmratenetwork.com/16/6e/4e/166e4e3833f5e6d355576be0d757eaef.js"></script>
 </body>
 </html>
