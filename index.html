@@ -486,7 +486,7 @@ function getBotCount() {
     if (elapsed < interval) break;
     elapsed -= interval;
     count += BOT_CHANGES[i % BOT_CHANGES.length];
-    count = Math.max(23, Math.min(42, count));
+    count = Math.max(17, Math.min(28, count));
     i++;
   }
   return count;
