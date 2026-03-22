@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VTRX Dash!</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0a0a0a;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    font-family: 'Arial Black', Arial, sans-serif;
+    overflow: hidden;
+    color: #fff;
+  }
+  #gameContainer { position: relative; width: 900px; height: 500px; }
+  canvas {
+    display: block;
+    border: 2px solid #cc0000;
+    box-shadow: 0 0 30px #cc000088, 0 0 60px #cc000033;
+    background: #0d0d0d;
+  }
+  #ui { position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; }
+  #levelSelect {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.93);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    z-index: 10; pointer-events: all;
+  }
+  #levelSelect h1 {
+    font-size: 52px; color: #cc0000;
+    text-shadow: 0 0 20px #ff0000, 0 0 40px #cc000088;
+    letter-spacing: 6px; margin-bottom: 6px;
+  }
+  #levelSelect p.tagline { color: #666; font-size: 12px; letter-spacing: 3px; margin-bottom: 36px; }
+  .levelGrid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 24px; }
+  .levelBtn {
+    width: 110px; height: 86px;
+    background: linear-gradient(135deg, #1a0000, #2a0000);
+    border: 2px solid #550000; border-radius: 8px;
+    cursor: pointer; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    transition: all 0.15s; position: relative; overflow: hidden; pointer-events: all;
+  }
+  .levelBtn:hover { border-color: #cc0000; box-shadow: 0 0 14px #cc000066; transform: translateY(-2px); }
+  .levelBtn .lnum { font-size: 22px; font-weight: 900; color: #cc0000; text-shadow: 0 0 8px #ff0000; }
+  .levelBtn .lname { font-size: 9px; color: #777; letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; }
+  .levelBtn .lstar { font-size: 10px; color: #880000; margin-top: 3px; }
+  .levelBtn .ldiff {
+    font-size: 8px; margin-top: 3px; padding: 1px 6px;
+    border-radius: 3px; text-transform: uppercase; letter-spacing: 1px;
+  }
+  .levelBtn .lcheck {
+    position: absolute; top: 5px; right: 7px;
+    font-size: 14px; color: #00cc44;
+    text-shadow: 0 0 6px #00ff55;
+  }
+  .diff-easy   { background: #002200; color: #00cc44; }
+  .diff-normal { background: #221100; color: #ffcc00; }
+  .diff-hard   { background: #2a0000; color: #ff6600; }
+  .diff-harder { background: #2a0000; color: #ff3300; }
+  .diff-insane { background: #2a0000; color: #cc0000; }
+  #overlay {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.86);
+    display: none; flex-direction: column; align-items: center; justify-content: center;
+    z-index: 9; pointer-events: all;
+  }
+  #overlay.show { display: flex; }
+  #overlay h2 { font-size: 46px; margin-bottom: 8px; letter-spacing: 4px; }
+  #overlay .sub { font-size: 13px; color: #777; margin-bottom: 26px; letter-spacing: 2px; }
+  #overlay .pct { font-size: 20px; color: #cc0000; margin-bottom: 18px; }
+  .btn {
+    padding: 11px 30px; margin: 5px;
+    background: linear-gradient(135deg, #330000, #550000);
+    border: 2px solid #cc0000; color: #fff;
+    font-size: 13px; font-family: 'Arial Black', Arial, sans-serif;
+    letter-spacing: 2px; cursor: pointer; border-radius: 4px;
+    transition: all 0.15s; text-transform: uppercase; pointer-events: all;
+  }
+  .btn:hover { background: linear-gradient(135deg, #550000, #880000); box-shadow: 0 0 14px #cc000066; }
+  .btn-dim { background: linear-gradient(135deg, #111, #1a1a1a) !important; border-color: #333 !important; color: #666 !important; }
+  #hud {
+    position: absolute; top: 12px; left: 14px; right: 14px;
+    display: flex; justify-content: space-between; align-items: center; pointer-events: none;
+  }
+  #hudLevel { font-size: 12px; color: #cc0000; letter-spacing: 2px; }
+  #hudPct { font-size: 12px; color: #666; letter-spacing: 2px; }
+  #progressBar {
+    position: absolute; bottom: 0; left: 0; height: 3px;
+    background: linear-gradient(90deg, #cc0000, #ff4444);
+    box-shadow: 0 0 6px #ff0000;
+  }
+  .controls-hint { position: absolute; bottom: 10px; right: 12px; font-size: 10px; color: #2a2a2a; letter-spacing: 1px; }
+</style>
+</head>
+<body>
+<div id="gameContainer">
+  <canvas id="gameCanvas" width="900" height="500"></canvas>
+  <div id="ui">
+    <div id="levelSelect">
+      <h1>VTRX DASH</h1>
+      <p class="tagline">SPACE / CLICK TO JUMP &bull; DON&apos;T DIE</p>
+      <div class="levelGrid" id="levelGrid"></div>
+    </div>
+    <div id="overlay">
+      <h2 id="overlayTitle">YOU DIED</h2>
+      <div class="sub" id="overlaySub"></div>
+      <div class="pct" id="overlayPct"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
+        <button class="btn" id="btnRestart">RETRY</button>
+        <button class="btn" id="btnNext" style="display:none">NEXT LEVEL</button>
+        <button class="btn btn-dim" id="btnMenu">MENU</button>
+      </div>
+    </div>
+    <div id="hud">
+      <span id="hudLevel">LEVEL 1</span>
+      <span id="hudPct">0%</span>
+    </div>
+    <div id="progressBar"></div>
+    <div class="controls-hint">SPACE / CLICK to jump</div>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height;
+const TILE = 60;
+const GROUND_Y = H - TILE; // 440 — top of ground
+
+// ── OBSTACLE HELPERS ──
+// makeBlock: block sits ON the ground, th = height in tiles
+function makeBlock(tx, th, tw) {
+  tw = tw || 1;
+  return { type:'block', x:tx*TILE, y:GROUND_Y - th*TILE, w:tw*TILE, h:th*TILE };
+}
+// makeSpike: spike sits on ground at tile tx
+function makeSpike(tx) {
+  return { type:'spike', x:tx*TILE, y:GROUND_Y };
+}
+// makeSaw: spinning saw, center hovers just above ground
+function makeSaw(tx) {
+  return { type:'saw', x:tx*TILE + TILE/2, y:GROUND_Y - 30, r:26 };
+}
+// makeSawHigh: elevated saw, ty = tiles above ground (center)
+function makeSawHigh(tx, ty) {
+  return { type:'saw', x:tx*TILE + TILE/2, y:GROUND_Y - ty*TILE, r:22 };
+}
+// makePlatform: floating platform, ty = tiles above ground (top surface)
+function makePlatform(tx, ty, tw) {
+  return { type:'platform', x:tx*TILE, y:GROUND_Y - ty*TILE, w:tw*TILE, h:10 };
+}
+
+// Physics cheat-sheet (vy=-16, g=0.72):
+//  air time ≈ 44 frames
+//  max height ≈ 178 px  (block top must be > GROUND_Y - 178 = 262 to be clearable)
+//  jump dist at speed s ≈ 44*s px
+//   level 1  speed=6:  264 px = 4.4 tiles  → safe consecutive spikes = 3
+//   level 5  speed=8:  352 px = 5.9 tiles  → safe consecutive spikes = 4
+//   level 8  speed=9.5:418 px = 7.0 tiles  → safe consecutive spikes = 5
+//   level 10 speed=10.5:462 px = 7.7 tiles → safe consecutive spikes = 6
+
+const LEVELS = [
+// 1 — Ignition  Easy ★
+{ name:'Ignition', diff:'Easy',   diffClass:'diff-easy',   stars:1, length:55,
+  accentColor:'#cc0000', bgColor:'#0d0000', gridColor:'#1a0000',
+  obstacles:[
+    makeSpike(10),
+    makeSpike(14), makeSpike(15),
+    makeBlock(20,1),
+    makeSpike(25), makeSpike(26),
+    makeSpike(31),
+    makeBlock(36,1),
+    makeSpike(41), makeSpike(42),
+    makeSpike(47),
+    makeSpike(52),
+  ]
+},
+// 2 — Ember  Easy ★
+{ name:'Ember', diff:'Easy',   diffClass:'diff-easy',   stars:1, length:62,
+  accentColor:'#cc2200', bgColor:'#0d0000', gridColor:'#1a0000',
+  obstacles:[
+    makeSpike(9), makeSpike(10),
+    makeBlock(15,1),
+    makeSpike(19), makeSpike(20), makeSpike(21),
+    makeSaw(27),
+    makeSpike(32), makeSpike(33),
+    makeBlock(38,1),
+    makeSpike(43), makeSpike(44),
+    makeSaw(49),
+    makeSpike(54), makeSpike(55),
+    makeSpike(60),
+  ]
+},
+// 3 — Flare  Normal ★★
+{ name:'Flare', diff:'Normal', diffClass:'diff-normal', stars:2, length:68,
+  accentColor:'#dd1100', bgColor:'#100000', gridColor:'#1c0000',
+  obstacles:[
+    makeSpike(8), makeSpike(9),
+    makeBlock(13,2),
+    makeSpike(17), makeSpike(18), makeSpike(19),
+    makeSaw(24),
+    makeSpike(28), makeSpike(29), makeSpike(30),
+    makeBlock(34,1),
+    makeSaw(39),
+    makeSpike(43), makeSpike(44), makeSpike(45),
+    makeBlock(50,2),
+    makeSpike(54), makeSpike(55),
+    makeSaw(60),
+    makeSpike(64), makeSpike(65),
+  ]
+},
+// 4 — Scorched  Normal ★★
+{ name:'Scorched', diff:'Normal', diffClass:'diff-normal', stars:2, length:75,
+  accentColor:'#ee0000', bgColor:'#100000', gridColor:'#1c0000',
+  obstacles:[
+    makeSpike(7), makeSpike(8), makeSpike(9),
+    makeBlock(13,1),
+    makeSaw(18),
+    makeSpike(22), makeSpike(23), makeSpike(24), makeSpike(25),
+    makeBlock(30,2),
+    makeSpike(34), makeSpike(35), makeSpike(36),
+    makeSaw(41),
+    makeSpike(45), makeSpike(46), makeSpike(47),
+    makeBlock(52,1),
+    makeSaw(57),
+    makeSpike(61), makeSpike(62), makeSpike(63), makeSpike(64),
+    makeBlock(69,2),
+    makeSpike(73),
+  ]
+},
+// 5 — Inferno  Hard ★★★
+{ name:'Inferno', diff:'Hard',   diffClass:'diff-hard',   stars:3, length:82,
+  accentColor:'#ff1100', bgColor:'#120000', gridColor:'#1e0000',
+  obstacles:[
+    makeSpike(6), makeSpike(7), makeSpike(8),
+    makeBlock(12,2),
+    makeSpike(16), makeSpike(17), makeSpike(18), makeSpike(19),
+    makeSaw(24), makeSaw(25),
+    makeSpike(29), makeSpike(30), makeSpike(31),
+    makeBlock(35,2),
+    makeSpike(39), makeSpike(40), makeSpike(41), makeSpike(42),
+    makeSaw(47),
+    makeSpike(51), makeSpike(52), makeSpike(53),
+    makeBlock(57,1),
+    makeSaw(62), makeSaw(63),
+    makeSpike(67), makeSpike(68), makeSpike(69), makeSpike(70),
+    makeBlock(75,2),
+    makeSpike(79), makeSpike(80),
+  ]
+},
+// 6 — Blaze  Hard ★★★
+{ name:'Blaze', diff:'Hard',   diffClass:'diff-hard',   stars:3, length:88,
+  accentColor:'#ff2200', bgColor:'#120000', gridColor:'#200000',
+  obstacles:[
+    makeSpike(5), makeSpike(6), makeSpike(7), makeSpike(8),
+    makeBlock(12,2),
+    makeSaw(17), makeSaw(18),
+    makeSpike(22), makeSpike(23), makeSpike(24), makeSpike(25),
+    makeBlock(30,1),
+    makeSpike(34), makeSpike(35), makeSpike(36),
+    makeSaw(41), makeSaw(42),
+    makeSpike(46), makeSpike(47), makeSpike(48), makeSpike(49),
+    makeBlock(53,2),
+    makeSaw(58),
+    makeSpike(62), makeSpike(63), makeSpike(64), makeSpike(65),
+    makeSaw(70), makeSaw(71),
+    makeSpike(75), makeSpike(76), makeSpike(77),
+    makeBlock(81,1),
+    makeSpike(85), makeSpike(86),
+  ]
+},
+// 7 — Furnace  Harder ★★★★
+{ name:'Furnace', diff:'Harder', diffClass:'diff-harder', stars:4, length:95,
+  accentColor:'#ff3300', bgColor:'#130000', gridColor:'#220000',
+  obstacles:[
+    makeSpike(5), makeSpike(6), makeSpike(7), makeSpike(8),
+    makeBlock(12,2),
+    makeSpike(16), makeSpike(17), makeSpike(18), makeSpike(19), makeSpike(20),
+    makeSaw(25), makeSaw(26),
+    makeSpike(30), makeSpike(31), makeSpike(32), makeSpike(33),
+    makeBlock(37,2),
+    makeSaw(42), makeSaw(43),
+    makeSpike(47), makeSpike(48), makeSpike(49), makeSpike(50), makeSpike(51),
+    makeBlock(55,1),
+    makeSaw(60), makeSaw(61), makeSaw(62),
+    makeSpike(66), makeSpike(67), makeSpike(68), makeSpike(69),
+    makeBlock(74,2),
+    makeSaw(79), makeSaw(80),
+    makeSpike(84), makeSpike(85), makeSpike(86), makeSpike(87), makeSpike(88),
+    makeBlock(92,1),
+  ]
+},
+// 8 — Meltdown  Harder ★★★★
+{ name:'Meltdown', diff:'Harder', diffClass:'diff-harder', stars:4, length:100,
+  accentColor:'#ff4400', bgColor:'#140000', gridColor:'#230000',
+  obstacles:[
+    makeSpike(4), makeSpike(5), makeSpike(6), makeSpike(7), makeSpike(8),
+    makeBlock(12,2),
+    makeSaw(17), makeSaw(18), makeSaw(19),
+    makeSpike(23), makeSpike(24), makeSpike(25), makeSpike(26), makeSpike(27),
+    makeBlock(31,1),
+    makeSaw(36), makeSaw(37),
+    makeSpike(41), makeSpike(42), makeSpike(43), makeSpike(44), makeSpike(45),
+    makeBlock(49,2),
+    makeSaw(54), makeSaw(55), makeSaw(56),
+    makeSpike(60), makeSpike(61), makeSpike(62), makeSpike(63),
+    makeBlock(67,1),
+    makeSaw(72), makeSaw(73), makeSaw(74),
+    makeSpike(78), makeSpike(79), makeSpike(80), makeSpike(81), makeSpike(82),
+    makeBlock(86,2),
+    makeSaw(91), makeSaw(92),
+    makeSpike(96), makeSpike(97), makeSpike(98),
+  ]
+},
+// 9 — Apocalypse  Insane ★★★★★
+{ name:'Apocalypse', diff:'Insane', diffClass:'diff-insane', stars:5, length:108,
+  accentColor:'#ff5500', bgColor:'#150000', gridColor:'#250000',
+  obstacles:[
+    makeSpike(4), makeSpike(5), makeSpike(6), makeSpike(7), makeSpike(8),
+    makeBlock(12,2),
+    makeSaw(16), makeSaw(17), makeSaw(18),
+    makeSpike(22), makeSpike(23), makeSpike(24), makeSpike(25), makeSpike(26),
+    makeBlock(30,1),
+    makeSaw(34), makeSaw(35), makeSaw(36),
+    makeSpike(40), makeSpike(41), makeSpike(42), makeSpike(43), makeSpike(44), makeSpike(45),
+    makeBlock(49,2),
+    makeSaw(53), makeSaw(54), makeSaw(55), makeSaw(56),
+    makeSpike(60), makeSpike(61), makeSpike(62), makeSpike(63), makeSpike(64),
+    makeBlock(68,1),
+    makeSaw(72), makeSaw(73), makeSaw(74),
+    makeSpike(78), makeSpike(79), makeSpike(80), makeSpike(81), makeSpike(82), makeSpike(83),
+    makeBlock(87,2),
+    makeSaw(91), makeSaw(92), makeSaw(93), makeSaw(94),
+    makeSpike(98), makeSpike(99), makeSpike(100), makeSpike(101), makeSpike(102),
+    makeBlock(105,1),
+  ]
+},
+// 10 — VTRX Core  Insane ★★★★★
+{ name:'VTRX Core', diff:'Insane', diffClass:'diff-insane', stars:5, length:118,
+  accentColor:'#ff0000', bgColor:'#160000', gridColor:'#280000',
+  obstacles:[
+    makeSpike(3), makeSpike(4), makeSpike(5), makeSpike(6), makeSpike(7), makeSpike(8),
+    makeBlock(12,2),
+    makeSaw(16), makeSaw(17), makeSaw(18), makeSaw(19),
+    makeSpike(23), makeSpike(24), makeSpike(25), makeSpike(26), makeSpike(27), makeSpike(28),
+    makeBlock(32,1),
+    makeSaw(36), makeSaw(37), makeSaw(38), makeSaw(39),
+    makeSpike(43), makeSpike(44), makeSpike(45), makeSpike(46), makeSpike(47),
+    makeBlock(51,2),
+    makeSaw(55), makeSaw(56), makeSaw(57), makeSaw(58),
+    makeSpike(62), makeSpike(63), makeSpike(64), makeSpike(65), makeSpike(66), makeSpike(67),
+    makeBlock(71,1),
+    makeSaw(75), makeSaw(76), makeSaw(77), makeSaw(78), makeSaw(79),
+    makeSpike(83), makeSpike(84), makeSpike(85), makeSpike(86), makeSpike(87),
+    makeBlock(91,2),
+    makeSaw(95), makeSaw(96), makeSaw(97), makeSaw(98),
+    makeSpike(102), makeSpike(103), makeSpike(104), makeSpike(105), makeSpike(106), makeSpike(107),
+    makeBlock(111,1),
+    makeSpike(114), makeSpike(115), makeSpike(116),
+  ]
+},
+];
+
+// ── COMPLETED LEVELS (localStorage) ──
+function getCompleted() {
+  try { return JSON.parse(localStorage.getItem('vtrx_completed') || '[]'); }
+  catch(e) { return []; }
+}
+function markCompleted(idx) {
+  const c = getCompleted();
+  if (!c.includes(idx)) { c.push(idx); localStorage.setItem('vtrx_completed', JSON.stringify(c)); }
+}
+
+// ── LEVEL SELECT UI ──
+function buildLevelGrid() {
+  const grid = document.getElementById('levelGrid');
+  grid.innerHTML = '';
+  const completed = getCompleted();
+  LEVELS.forEach((lvl, i) => {
+    const btn = document.createElement('div');
+    btn.className = 'levelBtn';
+    const stars = '★'.repeat(lvl.stars) + '☆'.repeat(5 - lvl.stars);
+    const check = completed.includes(i) ? '<span class="lcheck">✓</span>' : '';
+    btn.innerHTML = `
+      ${check}
+      <span class="lnum">${i+1}</span>
+      <span class="lname">${lvl.name}</span>
+      <span class="lstar">${stars}</span>
+      <span class="ldiff ${lvl.diffClass}">${lvl.diff}</span>
+    `;
+    btn.addEventListener('click', () => startLevel(i));
+    grid.appendChild(btn);
+  });
+}
+buildLevelGrid();
+
+// ── GAME STATE ──
+let state = 'menu';
+let currentLevelIdx = 0;
+let attempts = 0;
+let sawAngle = 0;
+let camX = 0;
+
+const player = {
+  x: 100, y: 0,
+  vy: 0, w: 36, h: 36,
+  grounded: false, onPlatform: false,
+};
+
+const GRAVITY = 0.72;
+const JUMP_VY = -16;
+const MAX_FALL = 18;
+const PLAYER_X = 100;
+
+function startLevel(idx) {
+  currentLevelIdx = idx;
+  attempts = 0;
+  document.getElementById('levelSelect').style.display = 'none';
+  beginRun();
+}
+
+function beginRun() {
+  const lvl = LEVELS[currentLevelIdx];
+  state = 'playing';
+  attempts++;
+  player.x = PLAYER_X;
+  player.y = GROUND_Y - player.h;
+  player.vy = 0;
+  player.grounded = true;
+  player.onPlatform = false;
+  camX = 0;
+  sawAngle = 0;
+  document.getElementById('overlay').classList.remove('show');
+  document.getElementById('hudLevel').textContent = `LEVEL ${currentLevelIdx+1} — ${lvl.name.toUpperCase()}`;
+  document.getElementById('hudPct').textContent = '0%';
+  document.getElementById('progressBar').style.width = '0%';
+}
+
+function showDeath() {
+  state = 'dead';
+  const pct = Math.min(99, Math.floor(camX / (LEVELS[currentLevelIdx].length * TILE) * 100));
+  document.getElementById('overlayTitle').textContent = 'YOU DIED';
+  document.getElementById('overlayTitle').style.color = '#cc0000';
+  document.getElementById('overlaySub').textContent = `attempt ${attempts}`;
+  document.getElementById('overlayPct').textContent = `reached ${pct}%`;
+  document.getElementById('btnNext').style.display = 'none';
+  document.getElementById('btnRestart').style.display = '';
+  document.getElementById('overlay').classList.add('show');
+}
+
+function showWin() {
+  state = 'win';
+  markCompleted(currentLevelIdx);
+  document.getElementById('overlayTitle').textContent = 'LEVEL COMPLETE!';
+  document.getElementById('overlayTitle').style.color = '#ffcc00';
+  document.getElementById('overlaySub').textContent = `completed in ${attempts} attempt${attempts===1?'':'s'}`;
+  document.getElementById('overlayPct').textContent = '100% ✓';
+  document.getElementById('overlayPct').style.color = '#00cc44';
+  document.getElementById('btnRestart').style.display = 'none';
+  const btnNext = document.getElementById('btnNext');
+  btnNext.style.display = currentLevelIdx < LEVELS.length - 1 ? '' : 'none';
+  document.getElementById('overlay').classList.add('show');
+}
+
+document.getElementById('btnRestart').onclick = () => beginRun();
+document.getElementById('btnNext').onclick = () => { currentLevelIdx++; attempts = 0; beginRun(); };
+document.getElementById('btnMenu').onclick = () => {
+  state = 'menu';
+  document.getElementById('overlay').classList.remove('show');
+  document.getElementById('levelSelect').style.display = 'flex';
+  buildLevelGrid();
+};
+
+// ── INPUT ──
+document.addEventListener('keydown', e => {
+  if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') { e.preventDefault(); doJump(); }
+});
+canvas.addEventListener('mousedown', doJump);
+canvas.addEventListener('touchstart', e => { e.preventDefault(); doJump(); });
+
+function doJump() {
+  if (state !== 'playing') return;
+  if (player.grounded || player.onPlatform) {
+    player.vy = JUMP_VY;
+    player.grounded = false;
+    player.onPlatform = false;
+  }
+}
+
+// ── COLLISION HELPERS ──
+function rectOverlap(ax,ay,aw,ah, bx,by,bw,bh) {
+  return ax < bx+bw && ax+aw > bx && ay < by+bh && ay+ah > by;
+}
+function circleRect(cx,cy,cr, rx,ry,rw,rh) {
+  const nx = Math.max(rx, Math.min(cx, rx+rw));
+  const ny = Math.max(ry, Math.min(cy, ry+rh));
+  const dx = cx-nx, dy = cy-ny;
+  return dx*dx + dy*dy < cr*cr;
+}
+function triHit(px,py,pw,ph, tx,ty) {
+  // spike triangle: base at (tx, ty), tip at (tx+TILE/2, ty-TILE)
+  // shrink player hitbox by 5px each side
+  const hx = px+5, hy = py+5, hw = pw-10, hh = ph-10;
+  const corners = [[hx,hy],[hx+hw,hy],[hx,hy+hh],[hx+hw,hy+hh]];
+  const ax = tx+TILE/2, ay = ty-TILE;
+  const bx2 = tx, by2 = ty;
+  const cx2 = tx+TILE, cy2 = ty;
+  for (const [px2,py2] of corners) {
+    const d1 = (px2-bx2)*(ay-by2)-(ax-bx2)*(py2-by2);
+    const d2 = (px2-cx2)*(by2-cy2)-(bx2-cx2)*(py2-cy2);
+    const d3 = (px2-ax)*(cy2-ay)-(cx2-ax)*(py2-ay);
+    const hasNeg = (d1<0)||(d2<0)||(d3<0);
+    const hasPos = (d1>0)||(d2>0)||(d3>0);
+    if (!(hasNeg && hasPos)) return true;
+  }
+  return false;
+}
+
+// ── UPDATE ──
+function update() {
+  const lvl = LEVELS[currentLevelIdx];
+  const totalLen = lvl.length * TILE;
+  const speed = 6 + currentLevelIdx * 0.5;
+
+  camX += speed;
+  if (camX >= totalLen) { showWin(); return; }
+
+  player.vy += GRAVITY;
+  if (player.vy > MAX_FALL) player.vy = MAX_FALL;
+  player.y += player.vy;
+
+  player.grounded = false;
+  player.onPlatform = false;
+
+  const px = player.x, pw = player.w, ph = player.h;
+  let py = player.y;
+
+  // ground
+  if (py + ph >= GROUND_Y) {
+    player.y = GROUND_Y - ph;
+    player.vy = 0;
+    player.grounded = true;
+    py = player.y;
+  }
+  // ceiling = death
+  if (py < 0) { showDeath(); return; }
+
+  // obstacles
+  for (const obs of lvl.obstacles) {
+    const ox = obs.x - camX + PLAYER_X;
+    if (ox > W + 100 || ox < -200) continue;
+
+    if (obs.type === 'block') {
+      const bx = ox, by = obs.y, bw = obs.w, bh = obs.h;
+      if (rectOverlap(px,py,pw,ph, bx,by,bw,bh)) {
+        const prevBot = py + ph - player.vy;
+        if (player.vy >= 0 && prevBot <= by + 5) {
+          player.y = by - ph;
+          player.vy = 0;
+          player.grounded = true;
+        } else {
+          showDeath(); return;
+        }
+      }
+    } else if (obs.type === 'platform') {
+      const bx = ox, by = obs.y, bw = obs.w, bh = obs.h;
+      const prevBot = py + ph - player.vy;
+      if (player.vy >= 0 && prevBot <= by + 6 && py + ph >= by && px+pw > bx && px < bx+bw) {
+        player.y = by - ph;
+        player.vy = 0;
+        player.onPlatform = true;
+      }
+    } else if (obs.type === 'spike') {
+      if (triHit(px, py, pw, ph, ox, obs.y)) { showDeath(); return; }
+    } else if (obs.type === 'saw') {
+      const sx = ox - TILE/2 + obs.x - Math.floor(obs.x/TILE)*TILE; // use stored center offset
+      const scx = obs.x - Math.floor(obs.x/TILE)*TILE === 0 ? ox + 0 : ox; // center already in obs.x offset
+      // obs.x = tx*TILE, center = ox is already at tx*TILE - camX + PLAYER_X, we added TILE/2 in helper
+      // So actual center screen x = obs.x - camX + PLAYER_X, but obs.x has +TILE/2 baked in from makeSaw
+      const scx2 = obs.x - camX + PLAYER_X;
+      const scy = obs.y;
+      if (circleRect(scx2, scy, obs.r - 4, px+4, py+4, pw-8, ph-8)) {
+        showDeath(); return;
+      }
+    }
+  }
+
+  const pct = Math.min(100, Math.floor(camX / totalLen * 100));
+  document.getElementById('hudPct').textContent = pct + '%';
+  document.getElementById('progressBar').style.width = pct + '%';
+}
+
+// ── DRAW ──
+function drawBg(lvl) {
+  ctx.fillStyle = lvl.bgColor;
+  ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle = lvl.gridColor;
+  ctx.lineWidth = 1;
+  const off = camX % TILE;
+  for (let x = -off; x < W; x += TILE) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+  for (let y = 0; y < H; y += TILE) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+}
+
+function drawGround(lvl) {
+  const g = ctx.createLinearGradient(0,GROUND_Y,0,H);
+  g.addColorStop(0,'#220000'); g.addColorStop(1,'#0a0000');
+  ctx.fillStyle = g;
+  ctx.fillRect(0,GROUND_Y,W,TILE);
+  ctx.strokeStyle = lvl.accentColor;
+  ctx.lineWidth = 2;
+  ctx.shadowBlur = 8; ctx.shadowColor = lvl.accentColor;
+  ctx.beginPath(); ctx.moveTo(0,GROUND_Y); ctx.lineTo(W,GROUND_Y); ctx.stroke();
+  ctx.shadowBlur = 0;
+  ctx.strokeStyle = '#330000'; ctx.lineWidth = 1;
+  const off = camX % TILE;
+  for (let x = -off; x < W; x += TILE) ctx.strokeRect(x, GROUND_Y, TILE, TILE);
+}
+
+function drawObstacles(lvl) {
+  sawAngle += 0.05;
+  for (const obs of lvl.obstacles) {
+    const ox = obs.x - camX + PLAYER_X;
+    if (ox > W+120 || ox < -120) continue;
+
+    if (obs.type === 'block') {
+      const g = ctx.createLinearGradient(ox, obs.y, ox+obs.w, obs.y+obs.h);
+      g.addColorStop(0,'#3a0000'); g.addColorStop(1,'#550000');
+      ctx.fillStyle = g;
+      ctx.fillRect(ox, obs.y, obs.w, obs.h);
+      ctx.strokeStyle = lvl.accentColor; ctx.lineWidth = 2;
+      ctx.shadowBlur = 5; ctx.shadowColor = lvl.accentColor;
+      ctx.strokeRect(ox, obs.y, obs.w, obs.h);
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = '#440000'; ctx.lineWidth = 1;
+      ctx.strokeRect(ox+3, obs.y+3, obs.w-6, obs.h-6);
+
+    } else if (obs.type === 'platform') {
+      ctx.fillStyle = '#440000';
+      ctx.fillRect(ox, obs.y, obs.w, obs.h);
+      ctx.fillStyle = lvl.accentColor;
+      ctx.fillRect(ox, obs.y, obs.w, 3);
+      ctx.shadowBlur = 8; ctx.shadowColor = lvl.accentColor;
+      ctx.strokeStyle = lvl.accentColor; ctx.lineWidth = 1;
+      ctx.strokeRect(ox, obs.y, obs.w, obs.h);
+      ctx.shadowBlur = 0;
+
+    } else if (obs.type === 'spike') {
+      const sx = ox, sy = obs.y;
+      ctx.beginPath();
+      ctx.moveTo(sx + TILE/2, sy - TILE);
+      ctx.lineTo(sx, sy);
+      ctx.lineTo(sx + TILE, sy);
+      ctx.closePath();
+      const g2 = ctx.createLinearGradient(sx, sy-TILE, sx, sy);
+      g2.addColorStop(0, lvl.accentColor); g2.addColorStop(1,'#220000');
+      ctx.fillStyle = g2; ctx.fill();
+      ctx.strokeStyle = '#ff5555'; ctx.lineWidth = 1.5;
+      ctx.shadowBlur = 6; ctx.shadowColor = lvl.accentColor;
+      ctx.stroke(); ctx.shadowBlur = 0;
+
+    } else if (obs.type === 'saw') {
+      const scx = obs.x - camX + PLAYER_X;
+      const scy = obs.y;
+      ctx.save();
+      ctx.translate(scx, scy);
+      ctx.rotate(sawAngle);
+      const teeth = 10;
+      for (let t = 0; t < teeth; t++) {
+        const a1 = (t/teeth)*Math.PI*2;
+        const a2 = ((t+0.5)/teeth)*Math.PI*2;
+        const a3 = ((t+1)/teeth)*Math.PI*2;
+        ctx.beginPath();
+        ctx.moveTo(Math.cos(a1)*obs.r, Math.sin(a1)*obs.r);
+        ctx.lineTo(Math.cos(a2)*(obs.r+9), Math.sin(a2)*(obs.r+9));
+        ctx.lineTo(Math.cos(a3)*obs.r, Math.sin(a3)*obs.r);
+        ctx.fillStyle = lvl.accentColor; ctx.fill();
+      }
+      ctx.beginPath(); ctx.arc(0,0,obs.r,0,Math.PI*2);
+      ctx.strokeStyle = '#ff4444'; ctx.lineWidth = 2.5;
+      ctx.shadowBlur = 10; ctx.shadowColor = lvl.accentColor;
+      ctx.stroke(); ctx.shadowBlur = 0;
+      ctx.beginPath(); ctx.arc(0,0,obs.r*0.45,0,Math.PI*2);
+      ctx.fillStyle = '#1a0000'; ctx.fill();
+      ctx.strokeStyle = '#cc0000'; ctx.lineWidth = 1.5; ctx.stroke();
+      ctx.restore();
+    }
+  }
+}
+
+function drawPlayer(lvl) {
+  const px = player.x, py = player.y, pw = player.w, ph = player.h;
+  ctx.save();
+  ctx.shadowBlur = 18; ctx.shadowColor = lvl.accentColor;
+  const pg = ctx.createLinearGradient(px,py,px+pw,py+ph);
+  pg.addColorStop(0,'#ff5555'); pg.addColorStop(1,'#880000');
+  ctx.fillStyle = pg;
+  ctx.fillRect(px,py,pw,ph);
+  ctx.strokeStyle = '#ff2222'; ctx.lineWidth = 2;
+  ctx.strokeRect(px,py,pw,ph);
+  ctx.shadowBlur = 0;
+  // inner cross detail
+  ctx.strokeStyle = 'rgba(255,180,180,0.35)'; ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(px+pw/2, py+4); ctx.lineTo(px+pw/2, py+ph-4);
+  ctx.moveTo(px+4, py+ph/2); ctx.lineTo(px+pw-4, py+ph/2);
+  ctx.stroke();
+  // center dot
+  ctx.beginPath(); ctx.arc(px+pw/2, py+ph/2, 4, 0, Math.PI*2);
+  ctx.fillStyle = '#fff'; ctx.fill();
+  ctx.restore();
+}
+
+// ── MAIN LOOP ──
+let lastTime = 0;
+function tick(ts) {
+  if (state === 'playing') update();
+  const lvl = LEVELS[currentLevelIdx];
+  if (state !== 'menu') {
+    drawBg(lvl);
+    drawObstacles(lvl);
+    drawGround(lvl);
+    drawPlayer(lvl);
+    // attempt counter
+    ctx.fillStyle = '#333';
+    ctx.font = '11px Arial';
+    ctx.fillText(`ATTEMPT ${attempts}`, W-100, 28);
+  } else {
+    ctx.fillStyle = '#0d0000';
+    ctx.fillRect(0,0,W,H);
+    ctx.strokeStyle = '#150000'; ctx.lineWidth = 1;
+    for (let x = 0; x < W; x += TILE) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+    for (let y = 0; y < H; y += TILE) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+  }
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+</script>
+</body>
+</html>
