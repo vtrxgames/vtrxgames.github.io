@@ -448,7 +448,7 @@
 const ADMIN_PW   = "VultorexVTRX!";
 const PAYPAL     = "fahadatawi42@gmail.com";
 const CATEGORIES = ["All","Action","Puzzle","Racing","Adventure","Arcade","Strategy","Sports","Other"];
-const BASE_THUMBS = 86, BASE_HEART = 91;
+const BASE_THUMBS = 36, BASE_HEART = 41;
 
 // ─── API (shared reactions + online count) ────────────────────────────────────
 const API_URL = "https://fa458057-f594-40ac-a531-0e8547eb6920-00-2hllnmkn37yf.riker.replit.dev/api";
@@ -553,19 +553,19 @@ const DEFAULT_GAMES = [
     name: 'VTRX FlippyBird!',
     description: 'VTRX FlippyBird! is an intense, arcade-style survival game that puts a high-speed spin on a classic formula. Navigate the VTRX bird through a gauntlet of glowing red pipes across 10 brutal levels, from Easy all the way to VTRX Max.',
     category: 'Arcade',
-    url: 'games/flippy-bird.html',
-    coverImage: 'VTRX%20Flippy%20Bird!%20Coverpage.PNG',
+    url: 'games/vtrx-flippy-bird.html',
+    coverImage: 'VTRX%20FlippyBird!%20Coverpage.PNG',
     thumbsDelta: 0,
     heartDelta: 0,
     isDefault: true
   },
   {
-    id: 'default-dash',
+    id: 'default-vtrx-dash',
     name: 'VTRX Dash!',
-    description: 'VTRX Dash! is a high-octane, rhythm-based side-scroller where precision and timing are your only allies. Navigate through 10 increasingly intense levels from Ignition to VTRX Core, jumping over spikes, dodging spinning saws, and crossing floating platforms.',
+    description: 'VTRX Dash! is a high-octane, rhythm-based side-scroller with 10 levels of increasing danger. Jump over spikes, dodge spinning saws, and survive increasingly brutal geometry-style obstacles from Easy all the way to Insane difficulty.',
     category: 'Arcade',
-    url: 'games/dash.html',
-    coverImage: 'games/VTRX_Dash!_Coverpage_1774202698807.PNG',
+    url: 'games/vtrx-dash.html',
+    coverImage: 'VTRX%20Dash!%20Coverpage.PNG',
     thumbsDelta: 0,
     heartDelta: 0,
     isDefault: true
@@ -573,10 +573,10 @@ const DEFAULT_GAMES = [
   {
     id: 'default-snipe-shot',
     name: 'VTRX SnipeShot!',
-    description: 'VTRX SnipeShot! is a high-precision, tactical marksman simulation that tests your reflexes and steady hand. Eliminate shifting targets using a high-tech red-dot scope across 10 escalating missions, from Static Training to VTRX Protocol.',
+    description: 'VTRX SnipeShot! is a high-precision, tactical marksmanship game across 10 missions of increasing difficulty. Track and eliminate moving targets with limited ammo, from Training grounds all the way to VTRX HQ.',
     category: 'Action',
-    url: 'games/snipe-shot.html',
-    coverImage: 'games/VTRX_SnipeShot!_Coverpage_1774202711524.PNG',
+    url: 'games/vtrx-snipe-shot.html',
+    coverImage: 'VTRX%20SnipeShot!%20Coverpage.PNG',
     thumbsDelta: 0,
     heartDelta: 0,
     isDefault: true
@@ -584,7 +584,13 @@ const DEFAULT_GAMES = [
 ];
 
 // Merge default games with any admin-added games from localStorage
-let games      = [...DEFAULT_GAMES, ...JSON.parse(localStorage.getItem("vtrx_games")   || "[]")];
+// Filter out localStorage games whose URL or name already matches a default (prevents duplicates)
+const defaultUrls  = new Set(DEFAULT_GAMES.map(g => g.url));
+const defaultNames = new Set(DEFAULT_GAMES.map(g => g.name.toLowerCase().trim()));
+const savedGames = JSON.parse(localStorage.getItem("vtrx_games") || "[]").filter(g =>
+  !defaultUrls.has(g.url) && !defaultNames.has((g.name || "").toLowerCase().trim())
+);
+let games      = [...DEFAULT_GAMES, ...savedGames];
 let credits    = JSON.parse(localStorage.getItem("vtrx_credits") || "[]");
 let voted      = JSON.parse(localStorage.getItem("vtrx_voted")   || "{}");
 let isAdmin    = false;
@@ -1006,50 +1012,6 @@ buildCats();
 buildPresets();
 renderGrid();
 </script>
-  <script>
-  atOptions = {
-    'key' : 'edcd4887835e10af6e1caa06f467015f',
-    'format' : 'iframe',
-    'height' : 300,
-    'width' : 160,
-    'params' : {}
-  };
-</script>
-<script src="https://www.highperformanceformat.com/edcd4887835e10af6e1caa06f467015f/invoke.js"></script>
-  <script>
-  atOptions = {
-    'key' : 'd5b9aadd3811c86f8a3450dcdca3cf82',
-    'format' : 'iframe',
-    'height' : 50,
-    'width' : 320,
-    'params' : {}
-  };
-</script>
-<script src="https://www.highperformanceformat.com/d5b9aadd3811c86f8a3450dcdca3cf82/invoke.js"></script>
-  <script src="https://pl28951958.profitablecpmratenetwork.com/16/6e/4e/166e4e3833f5e6d355576be0d757eaef.js"></script>
-  https://www.profitablecpmratenetwork.com/efacryyv?key=f13376f542d989e578612f48da21247d
-  <script src="https://pl28952013.profitablecpmratenetwork.com/cd/3e/b2/cd3eb2c4852b165cee5b0c2cfa3b7fab.js"></script>
-  <script async="async" data-cfasync="false" src="https://pl28952306.profitablecpmratenetwork.com/8c16c26ae41d830807bd1257d15993a9/invoke.js"></script>
-<div id="container-8c16c26ae41d830807bd1257d15993a9"></div>
-  <script>
-  atOptions = {
-    'key' : 'e247a813d3b56771d1b40c4a766dc404',
-    'format' : 'iframe',
-    'height' : 60,
-    'width' : 468,
-    'params' : {}
-  };
-</script>
-<script src="https://www.highperformanceformat.com/e247a813d3b56771d1b40c4a766dc404/invoke.js"></script>
-  <script>
-  atOptions = {
-    'key' : 'edcd4887835e10af6e1caa06f467015f',
-    'format' : 'iframe',
-    'height' : 300,
-    'width' : 160,
-    'params' : {}
-  };
-</script>
-<script src="https://www.highperformanceformat.com/edcd4887835e10af6e1caa06f467015f/invoke.js"></script>
 </body>
 </html>
+
