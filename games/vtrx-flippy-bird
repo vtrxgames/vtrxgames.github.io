@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VTRX FlippyBird!</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background:#0a0a0a; display:flex; align-items:center; justify-content:center;
+    height:100vh; font-family:'Arial Black',Arial,sans-serif; overflow:hidden; color:#fff;
+  }
+  #gc { position:relative; width:480px; height:640px; }
+  canvas { display:block; border:2px solid #cc0000; box-shadow:0 0 30px #cc000088,0 0 60px #cc000033; }
+  #ui { position:absolute; inset:0; pointer-events:none; }
+
+  #menuScreen {
+    position:absolute; inset:0; background:rgba(0,0,0,0.88);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    pointer-events:all; z-index:10;
+  }
+  #menuScreen h1 {
+    font-size:36px; color:#cc0000; letter-spacing:4px; margin-bottom:4px;
+    text-shadow:0 0 20px #ff0000,0 0 50px #cc000066;
+  }
+  #menuScreen .tagline { font-size:11px; color:#555; letter-spacing:3px; margin-bottom:10px; }
+  #menuScreen .best { font-size:13px; color:#770000; letter-spacing:2px; margin-bottom:36px; }
+
+  .bigBtn {
+    padding:14px 44px; background:linear-gradient(135deg,#330000,#660000);
+    border:2px solid #cc0000; color:#fff; font-size:16px;
+    font-family:'Arial Black',Arial,sans-serif; letter-spacing:3px;
+    cursor:pointer; border-radius:6px; transition:all .15s; text-transform:uppercase;
+    pointer-events:all;
+  }
+  .bigBtn:hover { background:linear-gradient(135deg,#550000,#990000); box-shadow:0 0 20px #cc000099; transform:scale(1.04); }
+
+  #deathScreen {
+    position:absolute; inset:0; background:rgba(0,0,0,0.86);
+    display:none; flex-direction:column; align-items:center; justify-content:center;
+    pointer-events:all; z-index:10;
+  }
+  #deathScreen.show { display:flex; }
+  #deathScreen h2 { font-size:40px; color:#cc0000; letter-spacing:4px; margin-bottom:6px; text-shadow:0 0 16px #ff0000; }
+  #deathScreen .dscore { font-size:52px; color:#fff; letter-spacing:2px; margin:10px 0; }
+  #deathScreen .dbest { font-size:14px; color:#770000; letter-spacing:2px; margin-bottom:8px; }
+  #deathScreen .dlvl { font-size:12px; color:#555; letter-spacing:2px; margin-bottom:30px; }
+  .btnRow { display:flex; gap:12px; }
+  .btn {
+    padding:11px 26px; background:linear-gradient(135deg,#330000,#550000);
+    border:2px solid #cc0000; color:#fff; font-size:13px;
+    font-family:'Arial Black',Arial,sans-serif; letter-spacing:2px;
+    cursor:pointer; border-radius:4px; transition:all .15s; text-transform:uppercase;
+  }
+  .btn:hover { background:linear-gradient(135deg,#550000,#880000); box-shadow:0 0 12px #cc000066; }
+  .btn-dim { background:linear-gradient(135deg,#111,#1a1a1a)!important; border-color:#333!important; color:#555!important; }
+
+  #scoreDisplay {
+    position:absolute; top:18px; left:0; right:0; text-align:center;
+    font-size:44px; color:#fff; letter-spacing:3px;
+    text-shadow:0 0 10px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.9);
+    pointer-events:none; display:none;
+  }
+  #scoreDisplay.show { display:block; }
+  #lvlDisplay {
+    position:absolute; top:70px; left:0; right:0; text-align:center;
+    font-size:11px; color:#cc0000; letter-spacing:3px; pointer-events:none; display:none;
+  }
+  #lvlDisplay.show { display:block; }
+</style>
+</head>
+<body>
+<div id="gc">
+  <canvas id="c" width="480" height="640"></canvas>
+  <div id="ui">
+    <div id="menuScreen">
+      <h1>VTRX FLIPPYBIRD!</h1>
+      <p class="tagline">TAP / SPACE / CLICK TO FLAP</p>
+      <p class="best" id="menuBest">BEST: 0</p>
+      <button class="bigBtn" id="btnPlay">PLAY</button>
+    </div>
+    <div id="deathScreen">
+      <h2>DEAD.</h2>
+      <div class="dscore" id="dscore">0</div>
+      <div class="dbest" id="dbest">BEST: 0</div>
+      <div class="dlvl" id="dlvl">LEVEL 1 — EASY</div>
+      <div class="btnRow">
+        <button class="btn" id="btnRetry">RETRY</button>
+        <button class="btn btn-dim" id="btnMenu2">MENU</button>
+      </div>
+    </div>
+    <div id="scoreDisplay">0</div>
+    <div id="lvlDisplay">LEVEL 1</div>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const W = 480, H = 640;
+
+// ── BEST SCORE ──
+function getBest(){ return parseInt(localStorage.getItem('vtrx_flippy_best')||'0'); }
+function saveBest(s){ if(s>getBest()) localStorage.setItem('vtrx_flippy_best',s); }
+
+document.getElementById('menuBest').textContent = 'BEST: ' + getBest();
+
+// ── LEVEL DEFS (every N pipes passed) ──
+const LEVEL_DEFS = [
+  { score:0,  name:'EASY',    pipeSpeed:2.4, gap:170, spawnEvery:100, label:'LEVEL 1 — EASY' },
+  { score:5,  name:'NORMAL',  pipeSpeed:2.8, gap:158, spawnEvery:95,  label:'LEVEL 2 — NORMAL' },
+  { score:10, name:'NORMAL',  pipeSpeed:3.2, gap:148, spawnEvery:90,  label:'LEVEL 3 — NORMAL+' },
+  { score:16, name:'HARD',    pipeSpeed:3.6, gap:138, spawnEvery:88,  label:'LEVEL 4 — HARD' },
+  { score:23, name:'HARD',    pipeSpeed:4.0, gap:130, spawnEvery:85,  label:'LEVEL 5 — HARD+' },
+  { score:31, name:'HARDER',  pipeSpeed:4.5, gap:122, spawnEvery:82,  label:'LEVEL 6 — HARDER' },
+  { score:40, name:'HARDER',  pipeSpeed:5.0, gap:115, spawnEvery:80,  label:'LEVEL 7 — HARDER+' },
+  { score:50, name:'INSANE',  pipeSpeed:5.6, gap:108, spawnEvery:78,  label:'LEVEL 8 — INSANE' },
+  { score:62, name:'INSANE',  pipeSpeed:6.2, gap:102, spawnEvery:76,  label:'LEVEL 9 — INSANE+' },
+  { score:76, name:'VTRX',    pipeSpeed:7.0, gap:95,  spawnEvery:74,  label:'LEVEL 10 — VTRX MAX' },
+];
+
+function getLevelDef(score){
+  let def = LEVEL_DEFS[0];
+  for(const d of LEVEL_DEFS){ if(score >= d.score) def = d; else break; }
+  return def;
+}
+
+// ── GAME STATE ──
+let state = 'menu'; // menu | playing | dead
+let score = 0;
+let bird, pipes, frame, bgOffset, groundOffset;
+let levelFlashTimer = 0, lastLevelLabel = '';
+
+const GRAVITY  = 0.42;
+const FLAP_VY  = -8.2;
+const BIRD_X   = 100;
+const GROUND_H = 80;
+const PIPE_W   = 64;
+const PIPE_MIN_H = 60;
+
+function resetGame(){
+  bird = {
+    x: BIRD_X, y: H/2 - 40,
+    vy: 0,
+    w: 34, h: 26,
+    wingAngle: 0, wingDir: 1,
+    deathY: 0, deathVY: 0,
+    alive: true,
+    flapFlash: 0,
+  };
+  pipes = [];
+  frame = 0;
+  score = 0;
+  bgOffset = 0;
+  groundOffset = 0;
+  levelFlashTimer = 0;
+  lastLevelLabel = '';
+  updateScoreDisplay();
+  updateLevelDisplay();
+}
+
+function doFlap(){
+  if(state === 'menu'){ startGame(); return; }
+  if(state !== 'playing') return;
+  if(!bird.alive) return;
+  bird.vy = FLAP_VY;
+  bird.flapFlash = 6;
+}
+
+function startGame(){
+  resetGame();
+  state = 'playing';
+  document.getElementById('menuScreen').style.display = 'none';
+  document.getElementById('deathScreen').classList.remove('show');
+  document.getElementById('scoreDisplay').classList.add('show');
+  document.getElementById('lvlDisplay').classList.add('show');
+}
+
+function killBird(){
+  if(!bird.alive) return;
+  bird.alive = false;
+  bird.deathVY = -6;
+  state = 'dead';
+  saveBest(score);
+  const def = getLevelDef(score);
+  setTimeout(()=>{
+    document.getElementById('dscore').textContent = score;
+    document.getElementById('dbest').textContent = 'BEST: ' + getBest();
+    document.getElementById('dlvl').textContent = def.label;
+    document.getElementById('deathScreen').classList.add('show');
+    document.getElementById('menuBest').textContent = 'BEST: '+getBest();
+  }, 600);
+}
+
+// ── INPUT ──
+document.addEventListener('keydown', e=>{
+  if(e.code==='Space'||e.code==='ArrowUp'||e.code==='KeyW'){ e.preventDefault(); doFlap(); }
+});
+canvas.addEventListener('mousedown', e=>{ e.preventDefault(); doFlap(); });
+canvas.addEventListener('touchstart', e=>{ e.preventDefault(); doFlap(); });
+document.getElementById('btnPlay').onclick = ()=> startGame();
+document.getElementById('btnRetry').onclick = ()=>{ document.getElementById('deathScreen').classList.remove('show'); startGame(); };
+document.getElementById('btnMenu2').onclick = ()=>{
+  state='menu';
+  document.getElementById('deathScreen').classList.remove('show');
+  document.getElementById('scoreDisplay').classList.remove('show');
+  document.getElementById('lvlDisplay').classList.remove('show');
+  document.getElementById('menuScreen').style.display='flex';
+};
+
+// ── HUD ──
+function updateScoreDisplay(){
+  document.getElementById('scoreDisplay').textContent = score;
+}
+function updateLevelDisplay(){
+  const def = getLevelDef(score);
+  const lbl = def.label;
+  const el = document.getElementById('lvlDisplay');
+  el.textContent = lbl;
+  if(lbl !== lastLevelLabel && lastLevelLabel !== ''){
+    levelFlashTimer = 90;
+    el.style.color = '#ffcc00';
+    el.style.fontSize = '14px';
+  }
+  lastLevelLabel = lbl;
+}
+
+// ── PIPE SPAWNING ──
+function spawnPipe(){
+  const def = getLevelDef(score);
+  const gap = def.gap;
+  const minTop = PIPE_MIN_H;
+  const maxTop = H - GROUND_H - gap - PIPE_MIN_H;
+  const topH = minTop + Math.random()*(maxTop - minTop);
+  pipes.push({ x: W + 10, topH, gap, passed: false });
+}
+
+// ── UPDATE ──
+function update(){
+  const def = getLevelDef(score);
+  frame++;
+
+  // spawn pipes
+  if(frame % def.spawnEvery === 0) spawnPipe();
+
+  bgOffset += def.pipeSpeed * 0.3;
+  groundOffset += def.pipeSpeed;
+
+  if(!bird.alive){
+    // death tumble
+    bird.deathVY += 0.6;
+    bird.y += bird.deathVY;
+    bird.wingAngle += 8;
+    return;
+  }
+
+  // bird physics
+  bird.vy += GRAVITY;
+  if(bird.vy > 12) bird.vy = 12;
+  bird.y += bird.vy;
+  bird.flapFlash = Math.max(0, bird.flapFlash-1);
+
+  // wing flap animation
+  bird.wingAngle += bird.wingDir * 12;
+  if(bird.wingAngle > 30 || bird.wingAngle < -20) bird.wingDir *= -1;
+
+  // ceiling
+  if(bird.y < 0){ bird.y = 0; bird.vy = 1; }
+
+  // ground death
+  if(bird.y + bird.h >= H - GROUND_H){ killBird(); return; }
+
+  // move pipes + scoring + collision
+  for(const p of pipes){
+    p.x -= def.pipeSpeed;
+
+    // score
+    if(!p.passed && p.x + PIPE_W < bird.x){
+      p.passed = true;
+      score++;
+      updateScoreDisplay();
+      updateLevelDisplay();
+    }
+
+    // collision (bird hitbox shrunk by 4px each side)
+    const bx = bird.x + 4, by = bird.y + 4, bw = bird.w - 8, bh = bird.h - 8;
+    const px = p.x, pw = PIPE_W;
+    const topBot = p.topH;
+    const botTop = p.topH + p.gap;
+
+    if(bx < px+pw && bx+bw > px){
+      if(by < topBot || by+bh > botTop){ killBird(); return; }
+    }
+  }
+
+  // remove off-screen pipes
+  pipes = pipes.filter(p => p.x > -PIPE_W - 10);
+}
+
+// ── BACKGROUND ELEMENTS ──
+// Pre-generate city silhouettes
+const cityBldgs = [];
+for(let i=0;i<16;i++){
+  cityBldgs.push({
+    xOff: i*34 + Math.random()*14,
+    w: 18+Math.random()*22,
+    h: 40+Math.random()*120,
+  });
+}
+const cityBldgs2 = [];
+for(let i=0;i<12;i++){
+  cityBldgs2.push({
+    xOff: i*44 + Math.random()*18,
+    w: 22+Math.random()*28,
+    h: 60+Math.random()*160,
+  });
+}
+
+function drawBg(){
+  // sky gradient
+  const sg = ctx.createLinearGradient(0,0,0,H);
+  sg.addColorStop(0,'#060006'); sg.addColorStop(0.5,'#0a0000'); sg.addColorStop(1,'#111');
+  ctx.fillStyle=sg; ctx.fillRect(0,0,W,H);
+
+  // moon
+  ctx.save();
+  const mg = ctx.createRadialGradient(360,70,8,360,70,60);
+  mg.addColorStop(0,'rgba(150,0,0,0.25)'); mg.addColorStop(1,'rgba(150,0,0,0)');
+  ctx.fillStyle=mg; ctx.fillRect(300,10,130,130);
+  ctx.beginPath(); ctx.arc(360,70,16,0,Math.PI*2);
+  ctx.fillStyle='#cc0000'; ctx.shadowBlur=24; ctx.shadowColor='#ff0000'; ctx.fill(); ctx.shadowBlur=0;
+  ctx.restore();
+
+  // stars
+  ctx.fillStyle='rgba(180,80,80,0.5)';
+  const starPositions = [[40,30],[80,55],[130,20],[200,45],[270,15],[310,60],[380,30],[420,50],[60,100],[160,80],[240,95]];
+  for(const [sx,sy] of starPositions){ ctx.beginPath(); ctx.arc(sx,sy,1,0,Math.PI*2); ctx.fill(); }
+
+  // far buildings (slow scroll)
+  const fOff = (bgOffset*0.15) % (W*0.7);
+  for(let pass=0;pass<3;pass++){
+    for(const b of cityBldgs2){
+      const bx = ((b.xOff - fOff + pass*W*0.7) % (W*0.7+W)) - 40;
+      ctx.fillStyle='#0d0000';
+      ctx.fillRect(bx, H-GROUND_H-b.h, b.w, b.h);
+      // window dots
+      ctx.fillStyle='rgba(180,40,0,0.2)';
+      for(let wy=H-GROUND_H-b.h+6;wy<H-GROUND_H-10;wy+=16){
+        for(let wx=bx+4;wx<bx+b.w-4;wx+=10){
+          if(Math.abs((wx+wy)%7)<2) ctx.fillRect(wx,wy,4,6);
+        }
+      }
+    }
+  }
+
+  // near buildings (medium scroll)
+  const nOff = (bgOffset*0.35) % (W*0.55);
+  for(let pass=0;pass<4;pass++){
+    for(const b of cityBldgs){
+      const bx = ((b.xOff - nOff + pass*W*0.55) % (W*0.55+W)) - 30;
+      ctx.fillStyle='#0a0000';
+      ctx.fillRect(bx, H-GROUND_H-b.h, b.w, b.h);
+    }
+  }
+}
+
+function drawGround(){
+  // ground
+  const gg = ctx.createLinearGradient(0,H-GROUND_H,0,H);
+  gg.addColorStop(0,'#1a0000'); gg.addColorStop(1,'#0a0000');
+  ctx.fillStyle=gg; ctx.fillRect(0,H-GROUND_H,W,GROUND_H);
+
+  // top glow line
+  ctx.strokeStyle='#cc0000'; ctx.lineWidth=2;
+  ctx.shadowBlur=8; ctx.shadowColor='#ff0000';
+  ctx.beginPath(); ctx.moveTo(0,H-GROUND_H); ctx.lineTo(W,H-GROUND_H); ctx.stroke();
+  ctx.shadowBlur=0;
+
+  // scrolling tile marks
+  ctx.strokeStyle='#220000'; ctx.lineWidth=1;
+  const gOff = groundOffset % 48;
+  for(let x=-gOff; x<W; x+=48){ ctx.beginPath(); ctx.moveTo(x,H-GROUND_H); ctx.lineTo(x,H); ctx.stroke(); }
+
+  // VTRX text on ground
+  ctx.fillStyle='#330000'; ctx.font='bold 11px Arial'; ctx.letterSpacing='3px';
+  ctx.fillText('VTRX · VTRX · VTRX · VTRX · VTRX · VTRX · VTRX · VTRX · VTRX', -groundOffset%320, H-14);
+  ctx.fillText('VTRX · VTRX · VTRX · VTRX · VTRX · VTRX · VTRX · VTRX · VTRX', 320-groundOffset%320, H-14);
+}
+
+function drawPipes(){
+  for(const p of pipes){
+    const px = p.x;
+    const topH = p.topH;
+    const botTop = topH + p.gap;
+    const botH = H - GROUND_H - botTop;
+
+    // TOP PIPE
+    // body
+    const tg = ctx.createLinearGradient(px,0,px+PIPE_W,0);
+    tg.addColorStop(0,'#1a0000'); tg.addColorStop(0.4,'#2e0000'); tg.addColorStop(1,'#0e0000');
+    ctx.fillStyle=tg; ctx.fillRect(px,0,PIPE_W,topH);
+    // cap
+    ctx.fillStyle='#330000'; ctx.fillRect(px-6, topH-18, PIPE_W+12, 18);
+    // glow edge
+    ctx.strokeStyle='#cc0000'; ctx.lineWidth=2;
+    ctx.shadowBlur=8; ctx.shadowColor='#ff0000';
+    ctx.strokeRect(px,0,PIPE_W,topH);
+    ctx.strokeRect(px-6,topH-18,PIPE_W+12,18);
+    ctx.shadowBlur=0;
+    // highlight stripe
+    ctx.fillStyle='rgba(255,60,0,0.07)';
+    ctx.fillRect(px+4,0,10,topH-18);
+
+    // BOTTOM PIPE
+    ctx.fillStyle=tg; ctx.fillRect(px,botTop,PIPE_W,botH);
+    ctx.fillStyle='#330000'; ctx.fillRect(px-6,botTop,PIPE_W+12,18);
+    ctx.strokeStyle='#cc0000'; ctx.lineWidth=2;
+    ctx.shadowBlur=8; ctx.shadowColor='#ff0000';
+    ctx.strokeRect(px,botTop,PIPE_W,botH);
+    ctx.strokeRect(px-6,botTop,PIPE_W+12,18);
+    ctx.shadowBlur=0;
+    ctx.fillStyle='rgba(255,60,0,0.07)';
+    ctx.fillRect(px+4,botTop+18,10,botH-18);
+
+    // gap glow
+    ctx.save();
+    const gg2 = ctx.createLinearGradient(0,topH,0,botTop);
+    gg2.addColorStop(0,'rgba(200,0,0,0.06)');
+    gg2.addColorStop(0.5,'rgba(200,0,0,0.02)');
+    gg2.addColorStop(1,'rgba(200,0,0,0.06)');
+    ctx.fillStyle=gg2;
+    ctx.fillRect(px-6,topH,PIPE_W+12,p.gap);
+    ctx.restore();
+  }
+}
+
+function drawBird(){
+  const bx = bird.x, by = bird.y, bw = bird.w, bh = bird.h;
+  const tilt = Math.max(-30, Math.min(70, bird.vy * 5));
+
+  ctx.save();
+  ctx.translate(bx + bw/2, by + bh/2);
+  ctx.rotate(tilt * Math.PI/180);
+
+  // glow on flap
+  if(bird.flapFlash > 0){
+    ctx.shadowBlur = 20 + bird.flapFlash*2;
+    ctx.shadowColor = '#ff6600';
+  } else {
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = '#cc0000';
+  }
+
+  // BODY
+  const bg = ctx.createRadialGradient(0,0,2,0,0,bw/2+2);
+  bg.addColorStop(0,'#ff4444'); bg.addColorStop(0.6,'#cc0000'); bg.addColorStop(1,'#660000');
+  ctx.fillStyle=bg;
+  ctx.beginPath();
+  ctx.ellipse(0, 0, bw/2, bh/2, 0, 0, Math.PI*2);
+  ctx.fill();
+  ctx.strokeStyle='#ff2222'; ctx.lineWidth=1.5; ctx.stroke();
+  ctx.shadowBlur=0;
+
+  // WING (top)
+  const wAngle = bird.wingAngle * Math.PI/180;
+  ctx.save();
+  ctx.rotate(-wAngle*0.5);
+  ctx.fillStyle='#881100';
+  ctx.beginPath();
+  ctx.ellipse(-2, -bh/2+2, bw/2-4, bh/4, -0.4, 0, Math.PI*2);
+  ctx.fill();
+  ctx.restore();
+
+  // BEAK
+  ctx.fillStyle='#ff8800';
+  ctx.beginPath();
+  ctx.moveTo(bw/2-2, -3);
+  ctx.lineTo(bw/2+10, 0);
+  ctx.lineTo(bw/2-2, 3);
+  ctx.closePath();
+  ctx.fill();
+
+  // EYE
+  ctx.fillStyle='#fff';
+  ctx.beginPath(); ctx.arc(bw/2-6, -4, 5, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle='#000';
+  ctx.beginPath(); ctx.arc(bw/2-5, -4, 3, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle='#fff';
+  ctx.beginPath(); ctx.arc(bw/2-4, -5, 1, 0, Math.PI*2); ctx.fill();
+
+  // TAIL
+  ctx.fillStyle='#880000';
+  ctx.beginPath();
+  ctx.moveTo(-bw/2+2, 0);
+  ctx.lineTo(-bw/2-10, -6);
+  ctx.lineTo(-bw/2-6, 2);
+  ctx.lineTo(-bw/2-10, 8);
+  ctx.lineTo(-bw/2+2, 4);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.restore();
+}
+
+function drawLevelFlash(){
+  if(levelFlashTimer<=0) return;
+  levelFlashTimer--;
+  const el = document.getElementById('lvlDisplay');
+  if(levelFlashTimer>60){
+    el.style.color='#ffcc00';
+    el.style.fontSize='15px';
+    el.style.textShadow='0 0 10px #ffcc00';
+  } else {
+    el.style.color='#cc0000';
+    el.style.fontSize='11px';
+    el.style.textShadow='none';
+  }
+}
+
+// ── IDLE BIRD (menu) ──
+let idleBird = { y: H/2-40, vy:0, wing:0, wDir:1, phase:0 };
+function drawIdleBird(){
+  idleBird.phase += 0.04;
+  idleBird.y = H/2 - 60 + Math.sin(idleBird.phase)*18;
+  idleBird.wing += idleBird.wDir*10;
+  if(idleBird.wing>30||idleBird.wing<-20) idleBird.wDir*=-1;
+  // draw same bird shape at idle pos
+  const saveX=bird.x,saveY=bird.y,saveVY=bird.vy,saveWA=bird.wingAngle;
+  bird.x=BIRD_X; bird.y=idleBird.y; bird.vy=0; bird.wingAngle=idleBird.wing; bird.flapFlash=0;
+  drawBird();
+  bird.x=saveX; bird.y=saveY; bird.vy=saveVY; bird.wingAngle=saveWA;
+}
+
+// ── MAIN LOOP ──
+function loop(){
+  requestAnimationFrame(loop);
+  ctx.clearRect(0,0,W,H);
+
+  if(state==='menu'){
+    bgOffset+=0.5; groundOffset+=1;
+    drawBg(); drawGround(); drawIdleBird();
+  } else {
+    update();
+    drawBg(); drawPipes(); drawGround(); drawBird();
+    drawLevelFlash();
+  }
+}
+
+// init idle bird defaults
+bird = { x:BIRD_X,y:H/2-40,vy:0,w:34,h:26,wingAngle:0,wingDir:1,flapFlash:0,alive:true };
+loop();
+</script>
+</body>
+</html>
