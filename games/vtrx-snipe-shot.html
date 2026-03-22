@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VTRX SnipeShot!</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background:#0a0a0a; display:flex; align-items:center; justify-content:center;
+    height:100vh; font-family:'Arial Black',Arial,sans-serif; overflow:hidden; color:#fff;
+  }
+  #gc { position:relative; width:900px; height:500px; cursor:none; user-select:none; }
+  canvas { display:block; border:2px solid #cc0000; box-shadow:0 0 30px #cc000088,0 0 60px #cc000033; }
+  #ui { position:absolute; top:0; left:0; right:0; bottom:0; pointer-events:none; }
+
+  /* MENU */
+  #menu {
+    position:absolute; inset:0; background:rgba(0,0,0,0.93);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    pointer-events:all; z-index:10;
+  }
+  #menu h1 {
+    font-size:54px; color:#cc0000; letter-spacing:5px; margin-bottom:4px;
+    text-shadow:0 0 20px #ff0000,0 0 50px #cc000066;
+  }
+  #menu .sub { font-size:12px; color:#555; letter-spacing:4px; margin-bottom:48px; }
+  .levelGrid { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-bottom:24px; }
+  .lvlBtn {
+    width:110px; height:76px; background:linear-gradient(135deg,#1a0000,#2a0000);
+    border:2px solid #550000; border-radius:8px; cursor:pointer;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    transition:all .15s; pointer-events:all; position:relative;
+  }
+  .lvlBtn:hover { border-color:#cc0000; box-shadow:0 0 14px #cc000066; transform:translateY(-2px); }
+  .lvlBtn .ln { font-size:22px; font-weight:900; color:#cc0000; text-shadow:0 0 8px #ff0000; }
+  .lvlBtn .lname { font-size:8px; color:#666; letter-spacing:1px; text-transform:uppercase; margin-top:2px; }
+  .lvlBtn .ldiff { font-size:8px; margin-top:3px; padding:1px 5px; border-radius:3px; text-transform:uppercase; letter-spacing:1px; }
+  .lvlBtn .lchk { position:absolute; top:4px; right:6px; font-size:13px; color:#00cc44; text-shadow:0 0 6px #00ff55; }
+  .d-easy   { background:#002200; color:#00cc44; }
+  .d-normal { background:#221100; color:#ffcc00; }
+  .d-hard   { background:#2a0000; color:#ff6600; }
+  .d-harder { background:#2a0000; color:#ff3300; }
+  .d-insane { background:#2a0000; color:#cc0000; }
+
+  /* OVERLAY (death / win) */
+  #overlay {
+    position:absolute; inset:0; background:rgba(0,0,0,0.88);
+    display:none; flex-direction:column; align-items:center; justify-content:center;
+    pointer-events:all; z-index:9;
+  }
+  #overlay.show { display:flex; }
+  #overlay h2 { font-size:46px; letter-spacing:4px; margin-bottom:8px; }
+  #overlay .osub { font-size:13px; color:#666; margin-bottom:24px; letter-spacing:2px; }
+  .btn {
+    padding:10px 28px; margin:5px;
+    background:linear-gradient(135deg,#330000,#550000);
+    border:2px solid #cc0000; color:#fff; font-size:13px;
+    font-family:'Arial Black',Arial,sans-serif; letter-spacing:2px;
+    cursor:pointer; border-radius:4px; transition:all .15s; text-transform:uppercase;
+  }
+  .btn:hover { background:linear-gradient(135deg,#550000,#880000); box-shadow:0 0 14px #cc000066; }
+  .btn-dim { background:linear-gradient(135deg,#111,#1a1a1a)!important; border-color:#333!important; color:#555!important; }
+
+  /* HUD */
+  #hud {
+    position:absolute; top:0; left:0; right:0; bottom:0;
+    pointer-events:none; display:none;
+  }
+  #hud.show { display:block; }
+  #hudBar {
+    position:absolute; top:10px; left:12px; right:12px;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  #hudL { font-size:12px; color:#cc0000; letter-spacing:2px; }
+  #hudR { font-size:12px; color:#666; letter-spacing:2px; }
+  #hudKills { font-size:12px; color:#888; letter-spacing:2px; }
+  #hudAmmo {
+    position:absolute; bottom:12px; left:12px;
+    font-size:13px; color:#cc0000; letter-spacing:2px;
+  }
+  #hudTimer {
+    position:absolute; bottom:12px; right:12px;
+    font-size:13px; color:#666; letter-spacing:2px;
+  }
+  #hitFlash {
+    position:absolute; inset:0;
+    pointer-events:none; opacity:0; background:rgba(255,0,0,0.22);
+    transition:opacity .08s;
+  }
+  #missFlash {
+    position:absolute; inset:0;
+    pointer-events:none; opacity:0; background:rgba(255,255,255,0.06);
+    transition:opacity .08s;
+  }
+</style>
+</head>
+<body>
+<div id="gc">
+  <canvas id="c" width="900" height="500"></canvas>
+  <div id="ui">
+    <div id="menu">
+      <h1>VTRX SNIPESHOT!</h1>
+      <p class="sub">ELIMINATE ALL TARGETS &bull; DON&apos;T MISS TOO MANY</p>
+      <div class="levelGrid" id="lgrid"></div>
+    </div>
+    <div id="overlay">
+      <h2 id="otitle">MISSION FAILED</h2>
+      <div class="osub" id="osub"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
+        <button class="btn" id="btnRetry">RETRY</button>
+        <button class="btn" id="btnNext" style="display:none">NEXT MISSION</button>
+        <button class="btn btn-dim" id="btnMenu">MENU</button>
+      </div>
+    </div>
+    <div id="hud">
+      <div id="hudBar">
+        <span id="hudL">MISSION 1</span>
+        <span id="hudKills">KILLS: 0 / 5</span>
+        <span id="hudR">ACCURACY: 100%</span>
+      </div>
+      <div id="hudAmmo">AMMO: ■■■■■■■■■■</div>
+      <div id="hudTimer">30s</div>
+    </div>
+    <div id="hitFlash"></div>
+    <div id="missFlash"></div>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const W = 900, H = 500;
+
+// ── LEVEL DEFS ──
+// speed: enemy move speed px/frame
+// size: hitbox/visual scale
+// spawnRate: ms between spawns
+// maxEnemies: max alive at once
+// kills: needed to complete
+// time: seconds
+// types: enemy behaviors in pool
+const LEVELS = [
+  { name:'Training',  diff:'Easy',   dc:'d-easy',   stars:1, kills:5,  time:45, maxE:3, spawnRate:2200, speed:0.7, size:1.2,  types:['basic'] },
+  { name:'Suburbs',   diff:'Easy',   dc:'d-easy',   stars:1, kills:6,  time:42, maxE:3, spawnRate:2000, speed:1.0, size:1.1,  types:['basic','runner'] },
+  { name:'Downtown',  diff:'Normal', dc:'d-normal',  stars:2, kills:7,  time:38, maxE:3, spawnRate:1800, speed:1.2, size:1.0,  types:['basic','runner'] },
+  { name:'Rooftops',  diff:'Normal', dc:'d-normal',  stars:2, kills:8,  time:36, maxE:4, spawnRate:1700, speed:1.3, size:0.95, types:['basic','runner','ducker'] },
+  { name:'Harbor',    diff:'Hard',   dc:'d-hard',    stars:3, kills:9,  time:34, maxE:4, spawnRate:1600, speed:1.5, size:0.9,  types:['runner','ducker','zigzag'] },
+  { name:'Warzone',   diff:'Hard',   dc:'d-hard',    stars:3, kills:10, time:32, maxE:4, spawnRate:1500, speed:1.7, size:0.85, types:['runner','ducker','zigzag'] },
+  { name:'Highrise',  diff:'Harder', dc:'d-harder',  stars:4, kills:11, time:28, maxE:5, spawnRate:1400, speed:1.9, size:0.8,  types:['runner','ducker','zigzag','peeker'] },
+  { name:'Blacksite', diff:'Harder', dc:'d-harder',  stars:4, kills:12, time:26, maxE:5, spawnRate:1300, speed:2.1, size:0.75, types:['runner','ducker','zigzag','peeker'] },
+  { name:'Phantom',   diff:'Insane', dc:'d-insane',  stars:5, kills:14, time:22, maxE:5, spawnRate:1200, speed:2.4, size:0.7,  types:['runner','zigzag','peeker','ghost'] },
+  { name:'VTRX HQ',   diff:'Insane', dc:'d-insane',  stars:5, kills:16, time:20, maxE:6, spawnRate:1100, speed:2.8, size:0.65, types:['runner','zigzag','peeker','ghost'] },
+];
+
+// ── COMPLETED ──
+function getCompleted(){ try{ return JSON.parse(localStorage.getItem('vtrx_snipe_done')||'[]'); }catch(e){ return []; } }
+function markDone(i){ const c=getCompleted(); if(!c.includes(i)){c.push(i);localStorage.setItem('vtrx_snipe_done',JSON.stringify(c));} }
+
+// ── BUILD MENU ──
+function buildMenu(){
+  const grid = document.getElementById('lgrid');
+  grid.innerHTML = '';
+  const done = getCompleted();
+  LEVELS.forEach((lv,i)=>{
+    const b = document.createElement('div');
+    b.className = 'lvlBtn';
+    const stars = '★'.repeat(lv.stars)+'☆'.repeat(5-lv.stars);
+    const chk = done.includes(i) ? '<span class="lchk">✓</span>' : '';
+    b.innerHTML = `${chk}<span class="ln">${i+1}</span><span class="lname">${lv.name}</span><span class="ldiff ${lv.dc}">${lv.diff}</span>`;
+    b.onclick = ()=> startLevel(i);
+    grid.appendChild(b);
+  });
+}
+buildMenu();
+
+// ── STATE ──
+let state = 'menu'; // menu | playing | dead | win
+let lvlIdx = 0;
+let enemies = [];
+let mx = 450, my = 250; // mouse
+let shots = 0, hits = 0, kills = 0;
+let ammo = 10, maxAmmo = 10;
+let timeLeft = 30;
+let timerInt = null;
+let spawnTimeout = null;
+let reloading = false;
+let reloadTimer = 0;
+let muzzleFlash = 0;
+let scopeShake = 0;
+let attempts = 0;
+
+// ── MOUSE ──
+const gc = document.getElementById('gc');
+gc.addEventListener('mousemove', e => {
+  const r = canvas.getBoundingClientRect();
+  mx = e.clientX - r.left;
+  my = e.clientY - r.top;
+});
+gc.addEventListener('mousedown', e => {
+  e.preventDefault();
+  if(state !== 'playing') return;
+  if(reloading) return;
+  doShoot();
+});
+gc.addEventListener('contextmenu', e => e.preventDefault());
+
+// ── ENEMY POOL ──
+// Backgrounds have 3 depth rows:
+const ROWS = [
+  { y: 285, scale: 0.55, minX: 60, maxX: 840 },  // far
+  { y: 340, scale: 0.78, minX: 60, maxX: 840 },  // mid
+  { y: 395, scale: 1.00, minX: 60, maxX: 840 },  // near
+];
+
+function spawnEnemy(){
+  const lv = LEVELS[lvlIdx];
+  if(enemies.filter(e=>!e.dead).length >= lv.maxE) return scheduleSpawn();
+  const row = ROWS[Math.floor(Math.random()*ROWS.length)];
+  const type = lv.types[Math.floor(Math.random()*lv.types.length)];
+  const fromLeft = Math.random() < 0.5;
+  const e = {
+    x: fromLeft ? row.minX - 40 : row.maxX + 40,
+    baseY: row.y,
+    y: row.y,
+    scale: row.scale * lv.size,
+    type,
+    speed: lv.speed * (0.8 + Math.random()*0.4) * (fromLeft ? 1 : -1),
+    dead: false,
+    alpha: 1,
+    hp: type === 'ghost' ? 2 : 1,
+    maxHp: type === 'ghost' ? 2 : 1,
+    duckTimer: 0,
+    duckDur: 0,
+    peekTimer: 0,
+    peeking: false,
+    hidden: type === 'peeker',
+    zigPhase: Math.random()*Math.PI*2,
+    flashHit: 0,
+    // hitbox (computed each frame)
+    hx:0, hy:0, hr:0,
+  };
+  // peekers start off-screen edge
+  if(type === 'peeker'){
+    e.x = fromLeft ? row.minX + Math.random()*200 : row.maxX - Math.random()*200;
+    e.peekTimer = 60 + Math.random()*80;
+  }
+  enemies.push(e);
+  scheduleSpawn();
+}
+
+function scheduleSpawn(){
+  clearTimeout(spawnTimeout);
+  if(state !== 'playing') return;
+  const lv = LEVELS[lvlIdx];
+  spawnTimeout = setTimeout(spawnEnemy, lv.spawnRate * (0.7+Math.random()*0.6));
+}
+
+function updateEnemies(){
+  const lv = LEVELS[lvlIdx];
+  for(const e of enemies){
+    if(e.dead){
+      e.alpha = Math.max(0, e.alpha - 0.04);
+      continue;
+    }
+    e.flashHit = Math.max(0, e.flashHit - 1);
+
+    if(e.type === 'basic'){
+      e.x += e.speed;
+      if(e.x < 30 || e.x > 870) e.speed *= -1;
+
+    } else if(e.type === 'runner'){
+      e.x += e.speed * 1.4;
+      if(e.x < -60 || e.x > 960) { e.dead = true; } // ran off screen = no kill
+
+    } else if(e.type === 'ducker'){
+      e.x += e.speed;
+      if(e.x < 30 || e.x > 870) e.speed *= -1;
+      e.duckTimer--;
+      if(e.duckTimer <= 0){
+        if(e.duckDur > 0){
+          e.duckDur = 0;
+          e.duckTimer = 80 + Math.random()*60;
+        } else {
+          e.duckDur = 40 + Math.random()*40;
+          e.duckTimer = e.duckDur;
+        }
+      }
+
+    } else if(e.type === 'zigzag'){
+      e.zigPhase += 0.08;
+      e.x += e.speed * 1.2;
+      e.y = e.baseY + Math.sin(e.zigPhase) * 22 * e.scale;
+      if(e.x < -60 || e.x > 960) { e.dead = true; }
+
+    } else if(e.type === 'peeker'){
+      e.peekTimer--;
+      if(e.peekTimer <= 0){
+        if(e.peeking){
+          e.peeking = false;
+          e.hidden = true;
+          e.peekTimer = 50 + Math.random()*80;
+        } else {
+          e.peeking = true;
+          e.hidden = false;
+          e.peekTimer = 20 + Math.random()*30;
+        }
+      }
+      if(!e.peeking){ continue; } // don't move while hidden
+
+    } else if(e.type === 'ghost'){
+      e.x += e.speed * 1.6;
+      e.alpha = 0.45 + Math.sin(Date.now()*0.005)*0.3;
+      if(e.x < -60 || e.x > 960) { e.dead = true; }
+    }
+  }
+  // remove fully faded dead
+  enemies = enemies.filter(e => !(e.dead && e.alpha <= 0));
+}
+
+// ── SHOOT ──
+function doShoot(){
+  if(ammo <= 0){ doReload(); return; }
+  shots++;
+  ammo--;
+  muzzleFlash = 8;
+  scopeShake = 6;
+  updateAmmoHUD();
+
+  // hit detection — find closest enemy under crosshair
+  let best = null, bestDist = Infinity;
+  for(const e of enemies){
+    if(e.dead || e.hidden) continue;
+    const dx = mx - e.hx, dy = my - e.hy;
+    const d = Math.sqrt(dx*dx+dy*dy);
+    if(d < e.hr && d < bestDist){ best = e; bestDist = d; }
+  }
+  if(best){
+    hits++;
+    best.flashHit = 10;
+    best.hp--;
+    if(best.hp <= 0){
+      best.dead = true;
+      kills++;
+      showHitFlash();
+      document.getElementById('hudKills').textContent = `KILLS: ${kills} / ${LEVELS[lvlIdx].kills}`;
+      if(kills >= LEVELS[lvlIdx].kills){ setTimeout(()=>winLevel(), 400); }
+    }
+  } else {
+    showMissFlash();
+  }
+  updateAccuracy();
+  if(ammo <= 0) doReload();
+}
+
+function doReload(){
+  if(reloading) return;
+  reloading = true;
+  document.getElementById('hudAmmo').textContent = 'RELOADING...';
+  document.getElementById('hudAmmo').style.color = '#888';
+  setTimeout(()=>{
+    ammo = maxAmmo;
+    reloading = false;
+    updateAmmoHUD();
+  }, 1800);
+}
+
+function showHitFlash(){
+  const f = document.getElementById('hitFlash');
+  f.style.opacity = '1';
+  setTimeout(()=>f.style.opacity='0', 80);
+}
+function showMissFlash(){
+  const f = document.getElementById('missFlash');
+  f.style.opacity = '1';
+  setTimeout(()=>f.style.opacity='0', 80);
+}
+function updateAmmoHUD(){
+  const bullets = '■'.repeat(ammo) + '□'.repeat(maxAmmo-ammo);
+  document.getElementById('hudAmmo').textContent = `AMMO: ${bullets}`;
+  document.getElementById('hudAmmo').style.color = ammo <= 2 ? '#ff3300' : '#cc0000';
+}
+function updateAccuracy(){
+  const acc = shots > 0 ? Math.round(hits/shots*100) : 100;
+  document.getElementById('hudR').textContent = `ACCURACY: ${acc}%`;
+}
+
+// ── GAME FLOW ──
+function startLevel(idx){
+  lvlIdx = idx; attempts = 0;
+  document.getElementById('menu').style.display = 'none';
+  beginRun();
+}
+function beginRun(){
+  const lv = LEVELS[lvlIdx];
+  attempts++;
+  state = 'playing';
+  enemies = []; kills = 0; shots = 0; hits = 0;
+  ammo = maxAmmo = 10; reloading = false;
+  muzzleFlash = 0; scopeShake = 0;
+  timeLeft = lv.time;
+  document.getElementById('overlay').classList.remove('show');
+  document.getElementById('hud').classList.add('show');
+  document.getElementById('hudL').textContent = `MISSION ${lvlIdx+1}: ${lv.name.toUpperCase()}`;
+  document.getElementById('hudKills').textContent = `KILLS: 0 / ${lv.kills}`;
+  document.getElementById('hudR').textContent = 'ACCURACY: 100%';
+  updateAmmoHUD();
+  document.getElementById('hudTimer').textContent = lv.time + 's';
+  clearInterval(timerInt);
+  timerInt = setInterval(()=>{
+    if(state !== 'playing') return;
+    timeLeft--;
+    document.getElementById('hudTimer').textContent = timeLeft + 's';
+    document.getElementById('hudTimer').style.color = timeLeft <= 5 ? '#ff3300' : '#666';
+    if(timeLeft <= 0){ clearInterval(timerInt); failLevel(); }
+  },1000);
+  clearTimeout(spawnTimeout);
+  setTimeout(spawnEnemy, 600);
+}
+function failLevel(){
+  if(state !== 'playing') return;
+  state = 'dead';
+  clearInterval(timerInt); clearTimeout(spawnTimeout);
+  document.getElementById('hud').classList.remove('show');
+  document.getElementById('otitle').textContent = 'MISSION FAILED';
+  document.getElementById('otitle').style.color = '#cc0000';
+  document.getElementById('osub').textContent = `${kills} / ${LEVELS[lvlIdx].kills} kills · attempt ${attempts}`;
+  document.getElementById('btnRetry').style.display = '';
+  document.getElementById('btnNext').style.display = 'none';
+  document.getElementById('overlay').classList.add('show');
+}
+function winLevel(){
+  if(state !== 'playing') return;
+  state = 'win';
+  clearInterval(timerInt); clearTimeout(spawnTimeout);
+  markDone(lvlIdx);
+  document.getElementById('hud').classList.remove('show');
+  document.getElementById('otitle').textContent = 'MISSION COMPLETE!';
+  document.getElementById('otitle').style.color = '#ffcc00';
+  const acc = shots > 0 ? Math.round(hits/shots*100) : 100;
+  document.getElementById('osub').textContent = `${kills} kills · ${acc}% accuracy · ${attempts} attempt${attempts===1?'':'s'}`;
+  document.getElementById('btnRetry').style.display = 'none';
+  const nb = document.getElementById('btnNext');
+  nb.style.display = lvlIdx < LEVELS.length-1 ? '' : 'none';
+  document.getElementById('overlay').classList.add('show');
+}
+document.getElementById('btnRetry').onclick = ()=> beginRun();
+document.getElementById('btnNext').onclick = ()=>{ lvlIdx++; attempts=0; beginRun(); };
+document.getElementById('btnMenu').onclick = ()=>{
+  state='menu'; clearInterval(timerInt); clearTimeout(spawnTimeout);
+  document.getElementById('overlay').classList.remove('show');
+  document.getElementById('hud').classList.remove('show');
+  document.getElementById('menu').style.display='flex';
+  buildMenu();
+};
+
+// ── DRAWING ──
+// Background scenes per level group
+const SCENES = [
+  // 0-1: city day
+  { sky:['#0a0a1a','#1a0808'], bldColors:['#0d0d0d','#111','#0a0a0a'], ground:'#111' },
+  // 2-3: dusk
+  { sky:['#150a00','#0d0000'], bldColors:['#0e0000','#0d0000','#0a0000'], ground:'#0d0000' },
+  // 4-5: night city
+  { sky:['#000005','#050010'], bldColors:['#050008','#04000a','#020005'], ground:'#050005' },
+  // 6-7: industrial
+  { sky:['#050000','#0a0000'], bldColors:['#080000','#0a0000','#060000'], ground:'#060000' },
+  // 8-9: VTRX
+  { sky:['#0a0000','#000000'], bldColors:['#0d0000','#0a0000','#070000'], ground:'#070000' },
+];
+
+// Cached building positions
+const bldgs = [];
+(function genBldgs(){
+  for(let i=0;i<18;i++){
+    bldgs.push({
+      x: i*52 + (Math.random()*20-10),
+      w: 30+Math.random()*40,
+      h: 80+Math.random()*180,
+      tier: i%3,
+    });
+  }
+})();
+
+// Window flicker state
+const winFlicker = Array.from({length:80},()=>Math.random()>0.5);
+let flickerTick = 0;
+
+function drawBg(){
+  const sc = SCENES[Math.min(Math.floor(lvlIdx/2), SCENES.length-1)];
+  // sky gradient
+  const sg = ctx.createLinearGradient(0,0,0,H);
+  sg.addColorStop(0, sc.sky[0]); sg.addColorStop(1, sc.sky[1]);
+  ctx.fillStyle = sg; ctx.fillRect(0,0,W,H);
+
+  // moon / red glow
+  ctx.save();
+  const glow = ctx.createRadialGradient(750,80,10,750,80,120);
+  glow.addColorStop(0,'rgba(180,0,0,0.18)'); glow.addColorStop(1,'rgba(180,0,0,0)');
+  ctx.fillStyle = glow; ctx.fillRect(0,0,W,200);
+  ctx.beginPath(); ctx.arc(750,80,18,0,Math.PI*2);
+  ctx.fillStyle='#cc0000'; ctx.shadowBlur=30; ctx.shadowColor='#ff0000'; ctx.fill();
+  ctx.shadowBlur=0; ctx.restore();
+
+  // buildings
+  flickerTick++; if(flickerTick%40===0){ winFlicker[Math.floor(Math.random()*winFlicker.length)]=Math.random()>0.5; }
+  let wi=0;
+  for(const b of bldgs){
+    const col = sc.bldColors[b.tier];
+    ctx.fillStyle = col;
+    const by = H - 160 - b.h;
+    ctx.fillRect(b.x, by, b.w, b.h+10);
+    // windows
+    for(let wy=by+8;wy<H-165;wy+=14){
+      for(let wx=b.x+4;wx<b.x+b.w-6;wx+=10){
+        const on = winFlicker[wi%winFlicker.length];
+        wi++;
+        if(on){ ctx.fillStyle='rgba(200,60,0,0.35)'; ctx.fillRect(wx,wy,6,8); }
+      }
+    }
+  }
+
+  // ground strip
+  const gg = ctx.createLinearGradient(0,H-160,0,H);
+  gg.addColorStop(0,'#111'); gg.addColorStop(1,'#0a0a0a');
+  ctx.fillStyle=gg; ctx.fillRect(0,H-160,W,160);
+
+  // ground line glow
+  ctx.strokeStyle='#440000'; ctx.lineWidth=2;
+  ctx.shadowBlur=8; ctx.shadowColor='#cc0000';
+  ctx.beginPath(); ctx.moveTo(0,H-160); ctx.lineTo(W,H-160); ctx.stroke();
+  ctx.shadowBlur=0;
+
+  // depth rows — subtle platform lines
+  for(const row of ROWS){
+    ctx.strokeStyle='rgba(60,0,0,0.3)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(0,row.y+10); ctx.lineTo(W,row.y+10); ctx.stroke();
+  }
+}
+
+function drawEnemyShape(e){
+  if(e.hidden && !e.peeking) return;
+  const s = e.scale;
+  const ex = e.x, ey = e.y;
+  const isDucking = e.type==='ducker' && e.duckDur > 0;
+  const bodyH = isDucking ? s*28 : s*60;
+  const headR = s*12;
+  const bodyW = s*18;
+  const alpha = e.type==='ghost' ? e.alpha : (e.dead ? e.alpha : 1);
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+
+  // hit flash white
+  if(e.flashHit>0 && !e.dead){
+    ctx.shadowBlur=20; ctx.shadowColor='#ffffff';
+  }
+
+  const color = e.hp < e.maxHp ? '#883300' : '#1a0000';
+  const border = e.hp < e.maxHp ? '#ff4400' : '#cc0000';
+
+  // hitbox circle (computed for shooting)
+  const hcx = ex, hcy = ey - bodyH - headR;
+  e.hx = hcx; e.hy = hcy; e.hr = headR * 1.6;
+
+  if(!isDucking){
+    // head
+    ctx.beginPath(); ctx.arc(ex, ey - bodyH - headR, headR, 0, Math.PI*2);
+    ctx.fillStyle=color; ctx.fill();
+    ctx.strokeStyle=border; ctx.lineWidth=1.5; ctx.stroke();
+    // neck
+    ctx.fillStyle=color;
+    ctx.fillRect(ex-s*4, ey-bodyH-headR*0.5, s*8, s*10);
+  }
+  // body
+  ctx.fillStyle=color;
+  ctx.fillRect(ex-bodyW/2, ey-bodyH, bodyW, bodyH);
+  ctx.strokeStyle=border; ctx.lineWidth=1.5;
+  ctx.strokeRect(ex-bodyW/2, ey-bodyH, bodyW, bodyH);
+
+  if(isDucking){
+    // small head poking above body when ducking
+    e.hx = ex; e.hy = ey - bodyH; e.hr = headR * 0.9;
+  }
+
+  ctx.shadowBlur=0; ctx.globalAlpha=1;
+  ctx.restore();
+}
+
+const SCOPE_R = 130;
+let shakeX=0, shakeY=0;
+
+function drawScope(){
+  // compute shake
+  if(scopeShake>0){ scopeShake--; shakeX=(Math.random()-0.5)*scopeShake; shakeY=(Math.random()-0.5)*scopeShake; }
+  else { shakeX*=0.8; shakeY*=0.8; }
+
+  const cx = mx + shakeX, cy = my + shakeY;
+
+  // muzzle flash on scope edge
+  if(muzzleFlash>0){
+    muzzleFlash--;
+    ctx.beginPath(); ctx.arc(cx,cy,SCOPE_R+4,0,Math.PI*2);
+    ctx.strokeStyle=`rgba(255,120,0,${muzzleFlash/8*0.5})`; ctx.lineWidth=8; ctx.stroke();
+  }
+
+  // dark vignette (evenodd fills outside the circle)
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(0,0,W,H);
+  ctx.arc(cx,cy,SCOPE_R,0,Math.PI*2,true);
+  ctx.fillStyle='rgba(0,0,0,0.82)';
+  ctx.fill('evenodd');
+  ctx.restore();
+
+  // scope lens tint
+  ctx.save();
+  ctx.beginPath(); ctx.arc(cx,cy,SCOPE_R,0,Math.PI*2);
+  ctx.fillStyle='rgba(0,10,0,0.12)'; ctx.fill();
+  ctx.restore();
+
+  // scope ring outer
+  ctx.beginPath(); ctx.arc(cx,cy,SCOPE_R,0,Math.PI*2);
+  ctx.strokeStyle='#111'; ctx.lineWidth=6; ctx.stroke();
+  ctx.strokeStyle='#cc0000'; ctx.lineWidth=2;
+  ctx.shadowBlur=6; ctx.shadowColor='#ff0000'; ctx.stroke(); ctx.shadowBlur=0;
+
+  // inner thin ring
+  ctx.beginPath(); ctx.arc(cx,cy,SCOPE_R*0.15,0,Math.PI*2);
+  ctx.strokeStyle='rgba(204,0,0,0.4)'; ctx.lineWidth=1; ctx.stroke();
+
+  // crosshair lines
+  ctx.strokeStyle='#cc0000'; ctx.lineWidth=1.5;
+  ctx.shadowBlur=4; ctx.shadowColor='#ff0000';
+  const gap = SCOPE_R*0.12;
+  // horizontal
+  ctx.beginPath(); ctx.moveTo(cx-SCOPE_R+4, cy); ctx.lineTo(cx-gap, cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx+gap, cy); ctx.lineTo(cx+SCOPE_R-4, cy); ctx.stroke();
+  // vertical
+  ctx.beginPath(); ctx.moveTo(cx, cy-SCOPE_R+4); ctx.lineTo(cx, cy-gap); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx, cy+gap); ctx.lineTo(cx, cy+SCOPE_R-4); ctx.stroke();
+  ctx.shadowBlur=0;
+
+  // mil-dots on horizontal
+  for(let d of [-0.6,-0.3,0.3,0.6]){
+    ctx.beginPath(); ctx.arc(cx+d*SCOPE_R, cy, 2, 0, Math.PI*2);
+    ctx.fillStyle='#cc0000'; ctx.fill();
+  }
+  // center dot
+  ctx.beginPath(); ctx.arc(cx, cy, 2.5, 0, Math.PI*2);
+  ctx.fillStyle='#ff0000';
+  ctx.shadowBlur=6; ctx.shadowColor='#ff0000'; ctx.fill(); ctx.shadowBlur=0;
+}
+
+// ── MAIN LOOP ──
+function loop(){
+  requestAnimationFrame(loop);
+  if(state==='playing'){
+    updateEnemies();
+    drawBg();
+    for(const e of enemies) drawEnemyShape(e);
+    drawScope();
+  } else if(state==='menu'){
+    // animated menu bg
+    ctx.fillStyle='#0d0000'; ctx.fillRect(0,0,W,H);
+    ctx.strokeStyle='#150000'; ctx.lineWidth=1;
+    for(let x=0;x<W;x+=60){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+    for(let y=0;y<H;y+=60){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+    // draw a static scope hint
+    ctx.beginPath(); ctx.arc(450,250,SCOPE_R,0,Math.PI*2);
+    ctx.strokeStyle='rgba(100,0,0,0.3)'; ctx.lineWidth=2; ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(320,250); ctx.lineTo(430,250);
+    ctx.moveTo(470,250); ctx.lineTo(580,250);
+    ctx.moveTo(450,120); ctx.lineTo(450,230);
+    ctx.moveTo(450,270); ctx.lineTo(450,380);
+    ctx.strokeStyle='rgba(80,0,0,0.3)'; ctx.lineWidth=1.5; ctx.stroke();
+  } else {
+    // dead / win — keep last frame visible
+    drawBg();
+    for(const e of enemies) drawEnemyShape(e);
+    drawScope();
+  }
+}
+loop();
+</script>
+</body>
+</html>
