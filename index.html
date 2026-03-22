@@ -246,7 +246,7 @@
     <div id="hero">
       <p id="hero-founded"><strong>Founded and created by VTRX!</strong></p>
       <h1 id="hero-h1">VTRX Games!</h1>
-      <p id="hero-desc">Discover and play awesome browser games on VTRX Games! I suggest you use a computer. If you are a game dev hoping to put your game here email me: vtrx1.official@gmail.com If there are any bugs, reports, or suggestions you can email me at <strong style="text-decoration:underline">vtrx1.official@gmail.com</strong></p>
+      <p id="hero-desc">Discover and play awesome browser games on VTRX Games! If there are any bugs, reports, or suggestions you can email me at <strong style="text-decoration:underline">vtrx1.official@gmail.com</strong></p>
     </div>
     <div id="cat-row"></div>
     <div id="games-area">
@@ -448,7 +448,7 @@
 const ADMIN_PW   = "VultorexVTRX!";
 const PAYPAL     = "fahadatawi42@gmail.com";
 const CATEGORIES = ["All","Action","Puzzle","Racing","Adventure","Arcade","Strategy","Sports","Other"];
-const BASE_THUMBS = 84, BASE_HEART = 96;
+const BASE_THUMBS = 36, BASE_HEART = 41;
 
 // ─── API (shared reactions + online count) ────────────────────────────────────
 const API_URL = "https://fa458057-f594-40ac-a531-0e8547eb6920-00-2hllnmkn37yf.riker.replit.dev/api";
@@ -477,7 +477,7 @@ function updateOnlineDisplay() {
 
 function fluctuateBots() {
   const change = Math.floor(Math.random() * 7) - 3;
-  botCount = Math.max(56, Math.min(100, botCount + change));
+  botCount = Math.max(22, Math.min(40, botCount + change));
   updateOnlineDisplay();
   setTimeout(fluctuateBots, Math.random() * 180000 + 120000);
 }
@@ -544,6 +544,39 @@ const DEFAULT_GAMES = [
     category: 'Action',
     url: 'games/drone-strike.html',
     coverImage: 'VTRX%20Drone%20Strike!%20Coverpage.PNG',
+    thumbsDelta: 0,
+    heartDelta: 0,
+    isDefault: true
+  },
+  {
+    id: 'default-flippy-bird',
+    name: 'VTRX FlippyBird!',
+    description: 'VTRX FlippyBird! is an intense, arcade-style survival game that puts a high-speed spin on a classic formula. Navigate the VTRX bird through a gauntlet of glowing red pipes across 10 brutal levels, from Easy all the way to VTRX Max.',
+    category: 'Arcade',
+    url: 'games/flippy-bird.html',
+    coverImage: 'games/VTRX_FlippyBird!_Coverpage_1774202686022.PNG',
+    thumbsDelta: 0,
+    heartDelta: 0,
+    isDefault: true
+  },
+  {
+    id: 'default-dash',
+    name: 'VTRX Dash!',
+    description: 'VTRX Dash! is a high-octane, rhythm-based side-scroller where precision and timing are your only allies. Navigate through 10 increasingly intense levels from Ignition to VTRX Core, jumping over spikes, dodging spinning saws, and crossing floating platforms.',
+    category: 'Arcade',
+    url: 'games/dash.html',
+    coverImage: 'games/VTRX_Dash!_Coverpage_1774202698807.PNG',
+    thumbsDelta: 0,
+    heartDelta: 0,
+    isDefault: true
+  },
+  {
+    id: 'default-snipe-shot',
+    name: 'VTRX SnipeShot!',
+    description: 'VTRX SnipeShot! is a high-precision, tactical marksman simulation that tests your reflexes and steady hand. Eliminate shifting targets using a high-tech red-dot scope across 10 escalating missions, from Static Training to VTRX Protocol.',
+    category: 'Action',
+    url: 'games/snipe-shot.html',
+    coverImage: 'games/VTRX_SnipeShot!_Coverpage_1774202711524.PNG',
     thumbsDelta: 0,
     heartDelta: 0,
     isDefault: true
@@ -1018,35 +1051,5 @@ renderGrid();
   };
 </script>
 <script src="https://www.highperformanceformat.com/edcd4887835e10af6e1caa06f467015f/invoke.js"></script>
-  <script>
-  atOptions = {
-    'key' : 'cc18d7cdba0d83299d0f49e10588690e',
-    'format' : 'iframe',
-    'height' : 250,
-    'width' : 300,
-    'params' : {}
-  };
-</script>
-<script src="https://www.highperformanceformat.com/cc18d7cdba0d83299d0f49e10588690e/invoke.js"></script>
-  <script>
-  atOptions = {
-    'key' : '3bfa07a79717988f517f09e11c3217a5',
-    'format' : 'iframe',
-    'height' : 600,
-    'width' : 160,
-    'params' : {}
-  };
-</script>
-<script src="https://www.highperformanceformat.com/3bfa07a79717988f517f09e11c3217a5/invoke.js"></script>
-  <script>
-  atOptions = {
-    'key' : '0a8137429a846de4dd980935fd317bd9',
-    'format' : 'iframe',
-    'height' : 90,
-    'width' : 728,
-    'params' : {}
-  };
-</script>
-<script src="https://www.highperformanceformat.com/0a8137429a846de4dd980935fd317bd9/invoke.js"></script>
 </body>
 </html>
