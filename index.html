@@ -102,6 +102,14 @@
       background: rgba(0,0,0,0.65); backdrop-filter: blur(4px);
       color: #fff; font-size: 11px; padding: 2px 8px; border-radius: 999px;
     }
+    .card-hot-badge {
+      position: absolute; top: 8px; left: 8px;
+      background: #dc2626; color: #fff;
+      font-size: 10px; font-weight: 800; padding: 2px 7px;
+      border-radius: 4px; letter-spacing: 0.8px;
+      box-shadow: 0 0 8px rgba(220,38,38,0.7);
+      text-transform: uppercase;
+    }
     .card-info { padding: 12px; }
     .card-title { font-weight: 700; font-size: 14px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
     .card-desc { font-size: 12px; color: var(--text-dim); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
@@ -477,7 +485,7 @@ function updateOnlineDisplay() {
 
 function fluctuateBots() {
   const change = Math.floor(Math.random() * 7) - 3;
-  botCount = Math.max(50, Math.min(80, botCount + change));
+  botCount = Math.max(22, Math.min(40, botCount + change));
   updateOnlineDisplay();
   setTimeout(fluctuateBots, Math.random() * 180000 + 120000);
 }
@@ -546,7 +554,8 @@ const DEFAULT_GAMES = [
     coverImage: 'VTRX%20Drone%20Strike!%20Coverpage.PNG',
     thumbsDelta: 0,
     heartDelta: 0,
-    isDefault: true
+    isDefault: true,
+    hot: true
   },
   {
     id: 'default-flippy-bird',
@@ -579,7 +588,8 @@ const DEFAULT_GAMES = [
     coverImage: 'VTRX%20SnipeShot!%20Coverpage.PNG',
     thumbsDelta: 0,
     heartDelta: 0,
-    isDefault: true
+    isDefault: true,
+    hot: true
   }
 ];
 
@@ -645,6 +655,7 @@ function renderGrid() {
       <div class="card-thumb">
         ${game.coverImage ? `<img src="${game.coverImage}" alt="${esc(game.name)}" />` : gamepadSVG(36)}
         <div class="card-overlay"><button class="play-btn">▶ Play Now</button></div>
+        ${game.hot ? `<span class="card-hot-badge">🔥 HOT</span>` : ""}
         <span class="card-cat-badge">${esc(game.category)}</span>
       </div>
       <div class="card-info">
