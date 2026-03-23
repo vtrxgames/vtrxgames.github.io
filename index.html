@@ -485,7 +485,7 @@ function updateOnlineDisplay() {
 
 function fluctuateBots() {
   const change = Math.floor(Math.random() * 7) - 3;
-  botCount = Math.max(52, Math.min(100, botCount + change));
+  botCount = Math.max(47, Math.min(100, botCount + change));
   updateOnlineDisplay();
   setTimeout(fluctuateBots, Math.random() * 180000 + 120000);
 }
