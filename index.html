@@ -248,7 +248,7 @@
       <button id="add-btn" onclick="openAddModal()">+</button>
       <div id="bot-count-ctrl" style="display:none;align-items:center;gap:6px">
         <label style="font-size:12px;color:var(--text-dim);font-weight:600">Bots:</label>
-        <input type="number" id="bot-count-inp" min="20" max="800"
+        <input type="number" id="bot-count-inp" min="20" max="500"
           style="width:64px;background:var(--secondary);border:1px solid var(--border);color:#fff;border-radius:6px;padding:4px 8px;font-size:13px;font-family:inherit;outline:none;"
           oninput="setBotCount(this.value)" />
       </div>
@@ -499,7 +499,7 @@ async function apiFetch(path, opts) {
   return null;
 }
 
-let botCount = Math.max(20, Math.min(800, parseInt(localStorage.getItem("vtrx_botCount") || "30", 10)));
+let botCount = Math.max(20, Math.min(500, parseInt(localStorage.getItem("vtrx_botCount") || "30", 10)));
 let realOnlineCount = 0;
 
 function updateOnlineDisplay() {
@@ -524,7 +524,7 @@ function startBots() {
 }
 
 function setBotCount(val) {
-  const n = Math.max(20, Math.min(800, parseInt(val, 10) || 20));
+  const n = Math.max(20, Math.min(500, parseInt(val, 10) || 20));
   botCount = n;
   localStorage.setItem("vtrx_botCount", n);
   document.getElementById("bot-count-inp").value = n;
