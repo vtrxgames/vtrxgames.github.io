@@ -466,7 +466,7 @@ if (IS_BOT) {
     document.body.style.cssText = 'background:#0d0000;margin:0;height:300vh;';
     function botCycle() {
       var cycleStart = Date.now();
-      var CYCLE_MS = 25000;
+      var CYCLE_MS = 7000;
       var h = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
       // Step 1: scroll down
       window.scrollTo({ top: h, behavior: 'smooth' });
