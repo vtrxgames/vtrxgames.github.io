@@ -261,7 +261,7 @@
     <div id="hero">
       <p id="hero-founded"><strong>Founded and created by VTRX!</strong></p>
       <h1 id="hero-h1">VTRX Games!</h1>
-      <p id="hero-desc">Discover and play awesome browser games on VTRX Games! If you are a game dev, email me at vtrx1.official@gmail.com If there are any bugs, reports, or suggestions you can email me at <strong style="text-decoration:underline">vtrx1.official@gmail.com</strong></p>
+      <p id="hero-desc">Discover and play awesome browser games on VTRX Games! If you are a game dev email me at: vtrx1.official@gmail.com If there are any bugs, reports, or suggestions you can email me at <strong style="text-decoration:underline">vtrx1.official@gmail.com</strong></p>
     </div>
     <div id="cat-row"></div>
     <div id="games-area">
@@ -464,7 +464,7 @@
 const ADMIN_PW   = "VultorexVTRX!";
 const PAYPAL     = "fahadatawi42@gmail.com";
 const CATEGORIES = ["All","Action","Puzzle","Racing","Adventure","Arcade","Strategy","Sports","Other"];
-const BASE_THUMBS = 146, BASE_HEART = 161;
+const BASE_THUMBS = 146, BASE_HEART = 171;
 
 // ─── API (shared reactions + online count) ────────────────────────────────────
 const API_URL = "https://fa458057-f594-40ac-a531-0e8547eb6920-00-2hllnmkn37yf.riker.replit.dev/api";
@@ -487,8 +487,22 @@ async function apiFetch(path, opts) {
 let botCount = 53; 
 let realOnlineCount = 0;
 
+// Schedule: +7 after 2min, -2 after 1min, +11 after 3min, -4 after 2min, repeat
+// Uses global clock so every visitor sees the exact same number at the same time
+function getScheduledBotCount() {
+  var CYCLE = 600000; // 10 minute total cycle
+  var pos = Date.now() % CYCLE;
+  var offset = 0;
+  if (pos >= 120000) offset = 7;  // 2min in: +7
+  if (pos >= 180000) offset = 5;  // 3min in: -2 (net +5)
+  if (pos >= 360000) offset = 16; // 6min in: +11 (net +16)
+  if (pos >= 480000) offset = 12; // 8min in: -4 (net +12)
+  // at 10min: reset back to base
+  return botCount + offset;
+}
+
 function updateOnlineDisplay() {
-  document.getElementById("online-count").textContent = realOnlineCount + botCount;
+  document.getElementById("online-count").textContent = realOnlineCount + getScheduledBotCount();
 }
 
 
@@ -621,6 +635,7 @@ let activePreset    = null;
 updateOnlineDisplay();
 pingOnline();
 setInterval(pingOnline, 30000);
+setInterval(updateOnlineDisplay, 30000); // refresh display as schedule changes
 
 // ─── Category Buttons ─────────────────────────────────────────────────────────
 function buildCats() {
