@@ -493,10 +493,10 @@ function getScheduledBotCount() {
   var CYCLE = 600000; // 10 minute total cycle
   var pos = Date.now() % CYCLE;
   var offset = 0;
-  if (pos >= 120000) offset = 9;  // 2min in: +9
-  if (pos >= 180000) offset = 6;  // 3min in: -3 (net +6)
-  if (pos >= 360000) offset = 21; // 6min in: +11 (net +16)
-  if (pos >= 480000) offset = 11; // 8min in: -4 (net +12)
+  if (pos >= 220000) offset = 9;  // 2min in: +9
+  if (pos >= 300000) offset = 6;  // 3min in: -3 (net +6)
+  if (pos >= 380000) offset = 21; // 6min in: +11 (net +16)
+  if (pos >= 500000) offset = 11; // 8min in: -4 (net +12)
   // at 10min: reset back to base
   return botCount + offset;
 }
