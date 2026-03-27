@@ -261,7 +261,7 @@
     <div id="hero">
       <p id="hero-founded"><strong>Founded and created by VTRX!</strong></p>
       <h1 id="hero-h1">VTRX Games!</h1>
-      <p id="hero-desc">Discover and play awesome browser games on VTRX Games! If you are a game dev email me at: vtrx1.official@gmail.com If there are any bugs, reports, or suggestions you can email me at <strong style="text-decoration:underline">vtrx1.official@gmail.com</strong></p>
+      <p id="hero-desc">Discover and play awesome browser games on VTRX Games! If you are a game dev, email me: vtrx1.official@gmail.com If there are any bugs, reports, or suggestions you can email me at <strong style="text-decoration:underline">vtrx1.official@gmail.com</strong></p>
     </div>
     <div id="cat-row"></div>
     <div id="games-area">
@@ -339,7 +339,7 @@
         <button class="credit-save" onclick="saveCredit()">Save</button>
       </div>
     </div>
-    <p id="credits-empty" style="color:#6b4040;font-size:14px">VTRX/Vultorex/StoneKiller/Me</p>
+    <p id="credits-empty" style="color:#6b4040;font-size:14px">No credits added yet.</p>
     <ul id="credits-list"></ul>
   </div>
 </div>
@@ -464,7 +464,7 @@
 const ADMIN_PW   = "VultorexVTRX!";
 const PAYPAL     = "fahadatawi42@gmail.com";
 const CATEGORIES = ["All","Action","Puzzle","Racing","Adventure","Arcade","Strategy","Sports","Other"];
-const BASE_THUMBS = 146, BASE_HEART = 171;
+const BASE_THUMBS = 36, BASE_HEART = 41;
 
 // ─── API (shared reactions + online count) ────────────────────────────────────
 const API_URL = "https://fa458057-f594-40ac-a531-0e8547eb6920-00-2hllnmkn37yf.riker.replit.dev/api";
@@ -484,7 +484,7 @@ async function apiFetch(path, opts) {
   return null;
 }
 
-let botCount = 53; 
+let botCount = 53; // ← Change this number to set the base bot count
 let realOnlineCount = 0;
 
 // Schedule: +7 after 2min, -2 after 1min, +11 after 3min, -4 after 2min, repeat
@@ -538,6 +538,8 @@ const DEFAULT_GAMES = [
     coverImage: 'VTRX%20Stickman%20War!%20Cover%20page.PNG',
     thumbsDelta: 0,
     heartDelta: 0,
+    baseThumbs: 102,
+    baseHeart: 118,
     isDefault: true
   },
   {
@@ -549,6 +551,8 @@ const DEFAULT_GAMES = [
     coverImage: 'VTRX%20Boss%20Mech%20FPS!%20Coverpage.PNG',
     thumbsDelta: 0,
     heartDelta: 0,
+    baseThumbs: 149,
+    baseHeart: 141,
     isDefault: true
   },
   {
@@ -560,6 +564,8 @@ const DEFAULT_GAMES = [
     coverImage: 'VTRX%20Nuke%20Tycoon!%20Coverpage.PNG',
     thumbsDelta: 0,
     heartDelta: 0,
+    baseThumbs: 154,
+    baseHeart: 147,
     isDefault: true
   },
   {
@@ -571,6 +577,8 @@ const DEFAULT_GAMES = [
     coverImage: 'VTRX%20Drone%20Strike!%20Coverpage.PNG',
     thumbsDelta: 0,
     heartDelta: 0,
+    baseThumbs: 129,
+    baseHeart: 113,
     isDefault: true,
     hot: true
   },
@@ -583,6 +591,8 @@ const DEFAULT_GAMES = [
     coverImage: 'VTRX%20FlippyBird!%20Coverpage.PNG',
     thumbsDelta: 0,
     heartDelta: 0,
+    baseThumbs: 86,
+    baseHeart: 92,
     isDefault: true
   },
   {
@@ -594,6 +604,8 @@ const DEFAULT_GAMES = [
     coverImage: 'VTRX%20Dash!%20Coverpage.PNG',
     thumbsDelta: 0,
     heartDelta: 0,
+    baseThumbs: 72,
+    baseHeart: 68,
     isDefault: true
   },
   {
@@ -605,6 +617,8 @@ const DEFAULT_GAMES = [
     coverImage: 'VTRX%20SnipeShot!%20Coverpage.PNG',
     thumbsDelta: 0,
     heartDelta: 0,
+    baseThumbs: 178,
+    baseHeart: 165,
     isDefault: true,
     hot: true
   }
@@ -758,8 +772,10 @@ function updateReactionsUI(counts) {
   const v = voted[game.id] || { thumbs: false, heart: false };
   document.getElementById("thumbs-btn").className = "react-btn" + (v.thumbs ? " active" : "");
   document.getElementById("heart-btn").className  = "react-btn" + (v.heart  ? " active" : "");
-  document.getElementById("thumbs-count").textContent = BASE_THUMBS + currentReactions.thumbs;
-  document.getElementById("heart-count").textContent  = BASE_HEART  + currentReactions.heart;
+  var bt = (game && game.baseThumbs != null) ? game.baseThumbs : BASE_THUMBS;
+  var bh = (game && game.baseHeart  != null) ? game.baseHeart  : BASE_HEART;
+  document.getElementById("thumbs-count").textContent = bt + currentReactions.thumbs;
+  document.getElementById("heart-count").textContent  = bh + currentReactions.heart;
 }
 
 function updateReactions(game) { updateReactionsUI(null); }
