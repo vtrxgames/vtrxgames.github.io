@@ -70,12 +70,31 @@
       width: 200px; flex-shrink: 0;
       position: sticky; top: 64px;
       height: calc(100vh - 64px);
-      overflow-y: auto;
+      overflow-y: auto; overflow-x: hidden;
       background: var(--card);
       border-right: 1px solid var(--border);
       padding: 16px 10px;
       display: flex; flex-direction: column; gap: 4px;
+      transition: width .25s ease, padding .25s ease;
     }
+    #cat-sidebar.collapsed {
+      width: 44px; padding: 16px 6px;
+    }
+    #cat-sidebar.collapsed .cat-btn,
+    #cat-sidebar.collapsed .cat-btn-big,
+    #cat-sidebar.collapsed .sidebar-section-label,
+    #cat-sidebar.collapsed .cat-sidebar-divider {
+      opacity: 0; pointer-events: none;
+    }
+    #sidebar-toggle {
+      display: flex; align-items: center; justify-content: center;
+      width: 100%; padding: 7px 0; border-radius: 8px; border: 1px solid var(--border);
+      background: var(--secondary); color: var(--text-dim); cursor: pointer;
+      flex-shrink: 0; transition: background .2s, color .2s;
+      margin-bottom: 6px;
+    }
+    #sidebar-toggle:hover { background: rgba(220,38,38,0.15); color: var(--primary); border-color: rgba(220,38,38,0.3); }
+    #cat-sidebar.collapsed #sidebar-toggle { margin-bottom: 0; }
     #cat-sidebar-label {
       font-size: 10px; font-weight: 700; color: var(--muted);
       text-transform: uppercase; letter-spacing: 1px;
@@ -827,7 +846,26 @@ setInterval(updateOnlineDisplay, 30000); // refresh display as schedule changes
 // ─── Category Buttons ─────────────────────────────────────────────────────────
 function buildCats() {
   const sidebar = document.getElementById('cat-sidebar');
+  const wasCollapsed = sidebar.classList.contains('collapsed');
   sidebar.innerHTML = '';
+  if (wasCollapsed) sidebar.classList.add('collapsed');
+  // Toggle button
+  const toggle = document.createElement('button');
+  toggle.id = 'sidebar-toggle';
+  toggle.title = wasCollapsed ? 'Expand sidebar' : 'Collapse sidebar';
+  toggle.innerHTML = wasCollapsed
+    ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>'
+    : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>';
+  toggle.addEventListener('click', function() {
+    sidebar.classList.toggle('collapsed');
+    const isNowCollapsed = sidebar.classList.contains('collapsed');
+    toggle.title = isNowCollapsed ? 'Expand sidebar' : 'Collapse sidebar';
+    toggle.innerHTML = isNowCollapsed
+      ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>'
+      : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>';
+    localStorage.setItem('vtrx_sidebar_collapsed', isNowCollapsed ? '1' : '0');
+  });
+  sidebar.appendChild(toggle);
   // Continue Playing (only if games have been played)
   if (recentlyPlayed.length > 0) {
     const cp = document.createElement('button');
@@ -1262,6 +1300,11 @@ document.addEventListener("click", function once() {
 tryPlay();
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
+// Restore sidebar collapsed state
+if (localStorage.getItem('vtrx_sidebar_collapsed') === '1') {
+  const sb = document.getElementById('cat-sidebar');
+  if (sb) sb.classList.add('collapsed');
+}
 buildCats();
 buildPresets();
 renderGrid();
