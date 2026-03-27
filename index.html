@@ -12,7 +12,7 @@
       --secondary: #1a0000; --primary: #dc2626;
       --primary-glow: rgba(220,38,38,0.35);
       --muted: #6b4040; --text: #f5e8e8; --text-dim: #a07070;
-    }
+  
 
     body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
 
@@ -71,6 +71,13 @@
       background: var(--secondary); color: var(--text-dim); transition: all .2s;
     }
     .cat-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: 0 2px 12px var(--primary-glow); }
+    .cat-btn-big {
+      flex-shrink: 0; padding: 8px 20px; border-radius: 999px; font-size: 14px;
+      font-weight: 700; cursor: pointer; border: 2px solid var(--primary);
+      background: rgba(220,38,38,0.12); color: var(--primary); transition: all .2s;
+      letter-spacing: 0.2px;
+    }
+    .cat-btn-big.active { background: var(--primary); color: #fff; box-shadow: 0 2px 16px var(--primary-glow); }
 
     /* ── Games Grid ──────────────────────────────────────── */
     #grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px,1fr)); gap: 16px; }
@@ -246,12 +253,6 @@
       <button class="header-btn" onclick="openDonation()">Donations</button>
       <button class="header-btn" onclick="showCredits()">Credits</button>
       <button id="add-btn" onclick="openAddModal()">+</button>
-      <div id="bot-count-ctrl" style="display:none;align-items:center;gap:6px">
-        <label style="font-size:12px;color:var(--text-dim);font-weight:600">Bots:</label>
-        <input type="number" id="bot-count-inp" min="30" max="200"
-          style="width:64px;background:var(--secondary);border:1px solid var(--border);color:#fff;border-radius:6px;padding:4px 8px;font-size:13px;font-family:inherit;outline:none;"
-          oninput="setBotCount(this.value)" />
-      </div>
     </div>
   </header>
 
@@ -260,7 +261,7 @@
     <div id="hero">
       <p id="hero-founded"><strong>Founded and created by VTRX!</strong></p>
       <h1 id="hero-h1">VTRX Games!</h1>
-      <p id="hero-desc">Discover and play awesome browser games on VTRX Games! I suggest you use a computer. If you are a game dev hoping to put your game here, email me : vtrx1.official@gmail.comIf there are any bugs, reports, or suggestions you can email me at <strong style="text-decoration:underline">vtrx1.official@gmail.com</strong></p>
+      <p id="hero-desc">Discover and play awesome browser games on VTRX Games! If you are a game dev, email me at vtrx1.official@gmail.com If there are any bugs, reports, or suggestions you can email me at <strong style="text-decoration:underline">vtrx1.official@gmail.com</strong></p>
     </div>
     <div id="cat-row"></div>
     <div id="games-area">
@@ -338,7 +339,7 @@
         <button class="credit-save" onclick="saveCredit()">Save</button>
       </div>
     </div>
-    <p id="credits-empty" style="color:#6b4040;font-size:14px">No credits added yet.</p>
+    <p id="credits-empty" style="color:#6b4040;font-size:14px">VTRX/Vultorex/StoneKiller/Me</p>
     <ul id="credits-list"></ul>
   </div>
 </div>
@@ -458,44 +459,12 @@
 </audio>
 
 <script>
-// ─── Bot Mode ─────────────────────────────────────────────────────────────────
-const IS_BOT = new URLSearchParams(location.search).has('bot');
-if (IS_BOT) {
-  document.addEventListener('DOMContentLoaded', function() {
-    document.body.innerHTML = '';
-    document.body.style.cssText = 'background:#0d0000;margin:0;height:300vh;';
-    function botCycle() {
-      var cycleStart = Date.now();
-      var CYCLE_MS = 7000;
-      var h = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
-      // Step 1: scroll down
-      window.scrollTo({ top: h, behavior: 'smooth' });
-      setTimeout(function() {
-        // Step 2: scroll back up
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        setTimeout(function() {
-          // Step 3: click somewhere random on the page
-          var clickX = Math.floor(Math.random() * window.innerWidth);
-          var clickY = Math.floor(Math.random() * window.innerHeight);
-          var el = document.elementFromPoint(clickX, clickY);
-          if (el) el.click();
-          // Step 4: navigate back to vtrxgames site, wait remainder of 25s, then reload
-          var elapsed = Date.now() - cycleStart;
-          var remaining = Math.max(500, CYCLE_MS - elapsed);
-          setTimeout(function() {
-            location.href = location.pathname + '?bot=1';
-          }, remaining);
-        }, 1500 + Math.random() * 500);
-      }, 1500 + Math.random() * 500);
-    }
-    setTimeout(botCycle, Math.random() * 2000);
-  });
-}
+
 // ─── State ────────────────────────────────────────────────────────────────────
 const ADMIN_PW   = "VultorexVTRX!";
 const PAYPAL     = "fahadatawi42@gmail.com";
 const CATEGORIES = ["All","Action","Puzzle","Racing","Adventure","Arcade","Strategy","Sports","Other"];
-const BASE_THUMBS = 148, BASE_HEART = 171;
+const BASE_THUMBS = 146, BASE_HEART = 161;
 
 // ─── API (shared reactions + online count) ────────────────────────────────────
 const API_URL = "https://fa458057-f594-40ac-a531-0e8547eb6920-00-2hllnmkn37yf.riker.replit.dev/api";
@@ -515,38 +484,14 @@ async function apiFetch(path, opts) {
   return null;
 }
 
-let botCount = Math.max(30, Math.min(200, parseInt(localStorage.getItem("vtrx_botCount") || "86", 10)));
+let botCount = 53; 
 let realOnlineCount = 0;
 
 function updateOnlineDisplay() {
   document.getElementById("online-count").textContent = realOnlineCount + botCount;
 }
 
-function startBots() {
-  var old = document.getElementById('vtrx-bot-frame-container');
-  if (old) old.remove();
-  if (botCount <= 0) return;
-  var container = document.createElement('div');
-  container.id = 'vtrx-bot-frame-container';
-  container.style.cssText = 'position:fixed;width:1px;height:1px;opacity:0.01;pointer-events:none;overflow:hidden;top:-9999px;left:-9999px;';
-  for (var i = 0; i < botCount; i++) {
-    var iframe = document.createElement('iframe');
-    iframe.src = location.pathname + '?bot=1';
-    iframe.style.cssText = 'width:360px;height:600px;border:none;';
-    iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
-    container.appendChild(iframe);
-  }
-  document.body.appendChild(container);
-}
 
-function setBotCount(val) {
-  const n = Math.max(30, Math.min(200, parseInt(val, 10) || 20));
-  botCount = n;
-  localStorage.setItem("vtrx_botCount", n);
-  document.getElementById("bot-count-inp").value = n;
-  updateOnlineDisplay();
-  startBots();
-}
 
 async function fetchOnline() {
   const data = await apiFetch("/stats/online");
@@ -672,18 +617,28 @@ let codeFileActive = false;
 let donateRawAmount = "";
 let activePreset    = null;
 
-// ─── Online Users & Bot Launcher ─────────────────────────────────────────────
-if (!IS_BOT) {
-  updateOnlineDisplay();
-  pingOnline();
-  setInterval(pingOnline, 30000);
-  setTimeout(startBots, 500);
-}
+// ─── Online Users ─────────────────────────────────────────────────────────────
+updateOnlineDisplay();
+pingOnline();
+setInterval(pingOnline, 30000);
 
 // ─── Category Buttons ─────────────────────────────────────────────────────────
 function buildCats() {
   const row = document.getElementById("cat-row");
   row.innerHTML = "";
+  // Big platform categories first
+  ["Computer Playable","Phone/Tablet Playable"].forEach(c => {
+    const b = document.createElement("button");
+    b.className = "cat-btn-big" + (c === currentCat ? " active" : "");
+    b.textContent = c;
+    b.onclick = () => { currentCat = c; renderGrid(); buildCats(); };
+    row.appendChild(b);
+  });
+  // Divider
+  const sep = document.createElement("div");
+  sep.style.cssText = "width:1px;background:var(--border);flex-shrink:0;margin:0 4px;";
+  row.appendChild(sep);
+  // Regular categories
   CATEGORIES.forEach(c => {
     const b = document.createElement("button");
     b.className = "cat-btn" + (c === currentCat ? " active" : "");
@@ -695,7 +650,10 @@ function buildCats() {
 
 // ─── Games Grid ───────────────────────────────────────────────────────────────
 function renderGrid() {
-  const filtered = currentCat === "All" ? games : games.filter(g => g.category === currentCat);
+  const PHONE_GAMES = ["default-flippy-bird","default-vtrx-dash"];
+  const filtered = currentCat === "All" || currentCat === "Computer Playable" ? games
+    : currentCat === "Phone/Tablet Playable" ? games.filter(g => PHONE_GAMES.includes(g.id))
+    : games.filter(g => g.category === currentCat);
   const grid    = document.getElementById("grid");
   const empty   = document.getElementById("empty");
   grid.innerHTML = "";
@@ -880,9 +838,6 @@ function submitAdmin() {
     isAdmin = true;
     closeAdminModal();
     renderGrid();
-    const bcc = document.getElementById("bot-count-ctrl");
-    bcc.style.display = "flex";
-    document.getElementById("bot-count-inp").value = botCount;
     if (pendingAdminAction === "add-game")    openAddModal();
     if (pendingAdminAction === "add-credit")  showCreditForm();
   } else {
@@ -1082,11 +1037,9 @@ document.addEventListener("click", function once() {
 tryPlay();
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
-if (!IS_BOT) {
-  buildCats();
-  buildPresets();
-  renderGrid();
-}
+buildCats();
+buildPresets();
+renderGrid();
 </script>
 <script src="https://www.highperformanceformat.com/edcd4887835e10af6e1caa06f467015f/invoke.js"></script>
   <script>
