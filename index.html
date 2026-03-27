@@ -64,20 +64,73 @@
     #hero-desc { color: var(--text-dim); font-size: 16px; }
 
     /* ── Category Filter ─────────────────────────────────── */
-    #cat-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 32px; }
+    /* Category Sidebar */
+    #home-body { display: flex; align-items: flex-start; }
+    #cat-sidebar {
+      width: 200px; flex-shrink: 0;
+      position: sticky; top: 64px;
+      height: calc(100vh - 64px);
+      overflow-y: auto;
+      background: var(--card);
+      border-right: 1px solid var(--border);
+      padding: 16px 10px;
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    #cat-sidebar-label {
+      font-size: 10px; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 1px;
+      padding: 4px 10px 8px;
+    }
+    #cat-sidebar-sep { height: 1px; background: var(--border); margin: 6px 0 8px; }
+    #main { flex: 1; min-width: 0; max-width: none; margin: 0; padding: 40px 24px; }
+    #cat-row { display: none; }
     .cat-btn {
-      flex-shrink: 0; padding: 6px 16px; border-radius: 999px; font-size: 13px;
-      font-weight: 500; cursor: pointer; border: 1px solid var(--border);
-      background: var(--secondary); color: var(--text-dim); transition: all .2s;
+      display: flex; align-items: center; gap: 8px;
+      width: 100%; padding: 9px 12px; border-radius: 8px; font-size: 13px;
+      font-weight: 500; cursor: pointer; border: 1px solid transparent;
+      background: none; color: var(--text-dim); transition: background .15s, color .15s;
+      text-align: left; touch-action: manipulation; -webkit-tap-highlight-color: transparent;
     }
-    .cat-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: 0 2px 12px var(--primary-glow); }
+    .cat-btn:hover { background: var(--secondary); color: var(--text); }
+    .cat-btn.active { background: rgba(220,38,38,0.15); color: var(--primary); border-color: rgba(220,38,38,0.3); font-weight: 700; }
     .cat-btn-big {
-      flex-shrink: 0; padding: 8px 20px; border-radius: 999px; font-size: 14px;
-      font-weight: 700; cursor: pointer; border: 2px solid var(--primary);
-      background: rgba(220,38,38,0.12); color: var(--primary); transition: all .2s;
-      letter-spacing: 0.2px;
+      display: flex; align-items: center; gap: 8px;
+      width: 100%; padding: 9px 12px; border-radius: 8px; font-size: 13px;
+      font-weight: 700; cursor: pointer; border: 1px solid transparent;
+      background: none; color: var(--primary); transition: background .15s;
+      text-align: left; touch-action: manipulation; -webkit-tap-highlight-color: transparent;
     }
-    .cat-btn-big.active { background: var(--primary); color: #fff; box-shadow: 0 2px 16px var(--primary-glow); }
+    .cat-btn-big:hover { background: rgba(220,38,38,0.1); }
+    .cat-btn-big.active { background: rgba(220,38,38,0.2); border-color: rgba(220,38,38,0.4); }
+
+
+    /* ── User Account ────────────────────────────────────── */
+    #user-btn {
+      width: 46px; height: 46px; border-radius: 50%; border: 2px solid rgba(220,38,38,0.45);
+      background: rgba(220,38,38,0.1); cursor: pointer; display: flex;
+      align-items: center; justify-content: center; flex-shrink: 0;
+      transition: border-color .2s, background .2s; overflow: hidden;
+    }
+    #user-btn:hover { border-color: #dc2626; }
+    #user-btn img { width: 100%; height: 100%; object-fit: cover; }
+    #user-btn svg { opacity: .7; }
+    #user-name-label { font-size: 13px; font-weight: 600; color: var(--text); max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* Login modal extras */
+    #login-avatar-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 20px; }
+    #login-avatar-circle {
+      width: 80px; height: 80px; border-radius: 50%; border: 2px dashed var(--border);
+      background: var(--secondary); display: flex; align-items: center; justify-content: center;
+      cursor: pointer; overflow: hidden; position: relative;
+    }
+    #login-avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
+    #login-avatar-circle:hover::after { content: '✏️'; position: absolute; font-size: 20px; }
+    #login-avatar-hint { font-size: 12px; color: var(--text-dim); }
+    #login-logout-btn { width: 100%; padding: 9px; border-radius: 8px; background: none; border: 1px solid rgba(239,68,68,0.4); color: #f87171; font-size: 13px; cursor: pointer; margin-top: 4px; }
+
+    /* Continue Playing label in sidebar */
+    .sidebar-section-label { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; padding: 4px 10px 2px; }
+    .cat-sidebar-divider { height: 1px; background: var(--border); margin: 6px 2px; }
 
     /* ── Games Grid ──────────────────────────────────────── */
     #grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px,1fr)); gap: 16px; }
@@ -253,17 +306,21 @@
       <button class="header-btn" onclick="openDonation()">Donations</button>
       <button class="header-btn" onclick="showCredits()">Credits</button>
       <button id="add-btn" onclick="openAddModal()">+</button>
+      <button id="user-btn" onclick="openLoginModal()" title="Login / Sign Up"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a07070" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></button>
     </div>
   </header>
 
   <!-- Main -->
-  <main id="main">
+  <div id="home-body">
+    <nav id="cat-sidebar">
+      <div id="cat-sidebar-label">Categories</div>
+    </nav>
+    <main id="main">
     <div id="hero">
       <p id="hero-founded"><strong>Founded and created by VTRX!</strong></p>
       <h1 id="hero-h1">VTRX Games!</h1>
       <p id="hero-desc">Discover and play awesome browser games on VTRX Games! If you are a game dev, email me: vtrx1.official@gmail.com If there are any bugs, reports, or suggestions you can email me at <strong style="text-decoration:underline">vtrx1.official@gmail.com</strong></p>
     </div>
-    <div id="cat-row"></div>
     <div id="games-area">
       <div id="empty">
         <div id="empty-icon">
@@ -274,7 +331,8 @@
       </div>
       <div id="grid"></div>
     </div>
-  </main>
+    </main>
+  </div>
 </div>
 
 <!-- ══════════════════ GAME PLAYER ══════════════════ -->
@@ -454,6 +512,39 @@
   </div>
 </div>
 
+<!-- ══════════════════ LOGIN / PROFILE MODAL ══════════════════ -->
+<div id="login-modal" class="backdrop" style="display:none">
+  <div class="modal modal-sm">
+    <div class="modal-head">
+      <h2 class="modal-title" id="login-modal-title">Create Account</h2>
+      <button class="modal-close" onclick="closeLoginModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div id="login-avatar-wrap">
+        <div id="login-avatar-circle" onclick="document.getElementById('login-avatar-file').click()">
+          <img id="login-avatar-img" src="" alt="" style="display:none" />
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#6b4040" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <span id="login-avatar-hint">Tap to upload photo</span>
+        <input type="file" id="login-avatar-file" accept="image/*" style="display:none" onchange="onAvatarFile(event)" />
+      </div>
+      <div class="field">
+        <label class="lbl">Username</label>
+        <input class="inp" id="login-username" placeholder="Choose a username" maxlength="24" />
+      </div>
+      <div class="field">
+        <label class="lbl">Email <span style="opacity:.5;font-size:11px">(optional)</span></label>
+        <input class="inp" id="login-email" type="email" placeholder="you@example.com" />
+      </div>
+      <p id="login-err" class="err-msg" style="display:none">Username is required</p>
+    </div>
+    <div class="modal-foot" style="flex-direction:column;gap:8px">
+      <button class="btn-confirm" onclick="saveAccount()">Save</button>
+      <button id="login-logout-btn" onclick="logoutAccount()" style="display:none">Log Out</button>
+    </div>
+  </div>
+</div>
+
 <audio id="bg-audio" loop>
   <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3" type="audio/mpeg">
 </audio>
@@ -493,10 +584,10 @@ function getScheduledBotCount() {
   var CYCLE = 600000; // 10 minute total cycle
   var pos = Date.now() % CYCLE;
   var offset = 0;
-  if (pos >= 220000) offset = 9;  // 2min in: +9
-  if (pos >= 300000) offset = 6;  // 3min in: -3 (net +6)
-  if (pos >= 380000) offset = 21; // 6min in: +11 (net +16)
-  if (pos >= 500000) offset = 11; // 8min in: -4 (net +12)
+  if (pos >= 120000) offset = 7;  // 2min in: +7
+  if (pos >= 180000) offset = 5;  // 3min in: -2 (net +5)
+  if (pos >= 360000) offset = 16; // 6min in: +11 (net +16)
+  if (pos >= 480000) offset = 12; // 8min in: -4 (net +12)
   // at 10min: reset back to base
   return botCount + offset;
 }
@@ -645,6 +736,88 @@ let codeFileActive = false;
 let donateRawAmount = "";
 let activePreset    = null;
 
+// ─── User Account & Recently Played ──────────────────────────────────────────
+let currentUser     = JSON.parse(localStorage.getItem("vtrx_user")   || "null");
+let recentlyPlayed  = JSON.parse(localStorage.getItem("vtrx_recent") || "[]");
+
+function saveUser()   { localStorage.setItem("vtrx_user",   JSON.stringify(currentUser)); }
+function saveRecent() { localStorage.setItem("vtrx_recent", JSON.stringify(recentlyPlayed)); }
+
+function trackPlayed(gameId) {
+  recentlyPlayed = [gameId, ...recentlyPlayed.filter(function(id){ return id !== gameId; })].slice(0, 30);
+  saveRecent();
+  buildCats();
+}
+
+function updateUserBtn() {
+  const btn = document.getElementById("user-btn");
+  if (!btn) return;
+  if (currentUser) {
+    if (currentUser.avatar) {
+      btn.innerHTML = '<img src="' + currentUser.avatar + '" alt="profile">';
+    } else {
+      btn.innerHTML = '<span style="font-size:14px;font-weight:900;color:#dc2626">' + currentUser.username.charAt(0).toUpperCase() + '</span>';
+    }
+    btn.title = currentUser.username;
+  } else {
+    btn.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a07070" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+    btn.title = "Login / Sign Up";
+  }
+}
+
+function openLoginModal() {
+  const isEdit = !!currentUser;
+  document.getElementById("login-modal-title").textContent = isEdit ? "Edit Profile" : "Create Account";
+  document.getElementById("login-username").value = isEdit ? (currentUser.username || "") : "";
+  document.getElementById("login-email").value    = isEdit ? (currentUser.email    || "") : "";
+  document.getElementById("login-err").style.display = "none";
+  document.getElementById("login-logout-btn").style.display = isEdit ? "block" : "none";
+  const img = document.getElementById("login-avatar-img");
+  const svg = document.getElementById("login-avatar-circle").querySelector("svg");
+  if (isEdit && currentUser.avatar) {
+    img.src = currentUser.avatar; img.style.display = "block";
+    if (svg) svg.style.display = "none";
+  } else {
+    img.style.display = "none";
+    if (svg) svg.style.display = "";
+  }
+  document.getElementById("login-modal").style.display = "flex";
+  setTimeout(function(){ document.getElementById("login-username").focus(); }, 50);
+}
+
+function closeLoginModal() {
+  document.getElementById("login-modal").style.display = "none";
+}
+
+function saveAccount() {
+  const username = document.getElementById("login-username").value.trim();
+  if (!username) { document.getElementById("login-err").style.display = "block"; return; }
+  const email  = document.getElementById("login-email").value.trim();
+  const avatar = (currentUser && currentUser.avatar) ? currentUser.avatar : null;
+  currentUser  = { username: username, email: email, avatar: avatar };
+  saveUser(); updateUserBtn(); closeLoginModal();
+}
+
+function logoutAccount() {
+  if (!confirm("Log out of your account?")) return;
+  currentUser = null; saveUser(); updateUserBtn(); closeLoginModal();
+}
+
+function onAvatarFile(e) {
+  const f = e.target.files[0]; if (!f) return;
+  if (f.size > 3 * 1024 * 1024) { alert("Image must be under 3MB"); return; }
+  const r = new FileReader();
+  r.onload = function(ev) {
+    if (!currentUser) currentUser = { username: "", email: "", avatar: null };
+    currentUser.avatar = ev.target.result;
+    const img = document.getElementById("login-avatar-img");
+    img.src = ev.target.result; img.style.display = "block";
+    const svg = document.getElementById("login-avatar-circle").querySelector("svg");
+    if (svg) svg.style.display = "none";
+  };
+  r.readAsDataURL(f);
+}
+
 // ─── Online Users ─────────────────────────────────────────────────────────────
 updateOnlineDisplay();
 pingOnline();
@@ -653,34 +826,56 @@ setInterval(updateOnlineDisplay, 30000); // refresh display as schedule changes
 
 // ─── Category Buttons ─────────────────────────────────────────────────────────
 function buildCats() {
-  const row = document.getElementById("cat-row");
-  row.innerHTML = "";
+  const sidebar = document.getElementById('cat-sidebar');
+  sidebar.innerHTML = '';
+  // Continue Playing (only if games have been played)
+  if (recentlyPlayed.length > 0) {
+    const cp = document.createElement('button');
+    cp.className = 'cat-btn' + (currentCat === 'Continue Playing' ? ' active' : '');
+    cp.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg> Continue Playing';
+    cp.style.cssText = 'color:' + (currentCat === 'Continue Playing' ? '' : '#dc2626') + ';font-weight:700';
+    cp.addEventListener('click', function() { selectCat('Continue Playing'); });
+    sidebar.appendChild(cp);
+    const d1 = document.createElement('div'); d1.className = 'cat-sidebar-divider'; sidebar.appendChild(d1);
+  }
+  const lbl = document.createElement('div'); lbl.className = 'sidebar-section-label'; lbl.textContent = 'Categories'; sidebar.appendChild(lbl);
   // Big platform categories first
-  ["Computer Playable","Phone/Tablet Playable"].forEach(c => {
-    const b = document.createElement("button");
-    b.className = "cat-btn-big" + (c === currentCat ? " active" : "");
+  ['Computer Playable','Phone/Tablet Playable'].forEach(c => {
+    const b = document.createElement('button');
+    b.className = 'cat-btn-big' + (c === currentCat ? ' active' : '');
     b.textContent = c;
-    b.onclick = () => { currentCat = c; renderGrid(); buildCats(); };
-    row.appendChild(b);
+    b.addEventListener('click', function() { selectCat(c); });
+    sidebar.appendChild(b);
   });
   // Divider
-  const sep = document.createElement("div");
-  sep.style.cssText = "width:1px;background:var(--border);flex-shrink:0;margin:0 4px;";
-  row.appendChild(sep);
+  const sep = document.createElement('div');
+  sep.className = 'cat-sidebar-divider';
+  sidebar.appendChild(sep);
   // Regular categories
   CATEGORIES.forEach(c => {
-    const b = document.createElement("button");
-    b.className = "cat-btn" + (c === currentCat ? " active" : "");
+    const b = document.createElement('button');
+    b.className = 'cat-btn' + (c === currentCat ? ' active' : '');
     b.textContent = c;
-    b.onclick = () => { currentCat = c; renderGrid(); buildCats(); };
-    row.appendChild(b);
+    b.addEventListener('click', function() { selectCat(c); });
+    sidebar.appendChild(b);
+  });
+}
+
+function selectCat(c) {
+  currentCat = c;
+  renderGrid();
+  // Update active classes without rebuilding the sidebar
+  document.querySelectorAll('#cat-sidebar .cat-btn, #cat-sidebar .cat-btn-big').forEach(function(btn) {
+    btn.classList.toggle('active', btn.textContent.trim() === c);
   });
 }
 
 // ─── Games Grid ───────────────────────────────────────────────────────────────
 function renderGrid() {
   const PHONE_GAMES = ["default-flippy-bird","default-vtrx-dash"];
-  const filtered = currentCat === "All" || currentCat === "Computer Playable" ? games
+  const filtered = currentCat === "Continue Playing"
+    ? recentlyPlayed.map(id => games.find(g => g.id === id)).filter(Boolean)
+    : currentCat === "All" || currentCat === "Computer Playable" ? games
     : currentCat === "Phone/Tablet Playable" ? games.filter(g => PHONE_GAMES.includes(g.id))
     : games.filter(g => g.category === currentCat);
   const grid    = document.getElementById("grid");
@@ -689,8 +884,8 @@ function renderGrid() {
 
   if (filtered.length === 0) {
     empty.style.display = "flex";
-    empty.querySelector("h2").textContent = currentCat !== "All" ? "No games found" : "No games yet";
-    empty.querySelector("p").textContent  = currentCat !== "All" ? "Try a different category" : "Games will appear here once they're added";
+    empty.querySelector("h2").textContent = currentCat === "Continue Playing" ? "No history yet" : currentCat !== "All" ? "No games found" : "No games yet";
+    empty.querySelector("p").textContent  = currentCat === "Continue Playing" ? "Play some games and they'll appear here" : currentCat !== "All" ? "Try a different category" : "Games will appear here once they're added";
     return;
   }
   empty.style.display = "none";
@@ -710,9 +905,7 @@ function renderGrid() {
         <div class="card-desc">${esc(game.description)}</div>
         ${isAdmin && !game.isDefault ? `<button class="card-delete" data-id="${game.id}">Delete</button>` : ""}
       </div>`;
-    card.querySelector(".card-overlay").onclick = () => openGame(game);
-    card.querySelector(".card-thumb").onclick   = () => openGame(game);
-    card.querySelector(".card-info").onclick    = () => openGame(game);
+    card.onclick = function(e) { if (!e.target.classList.contains("card-delete")) openGame(game); };
     if (isAdmin && !game.isDefault) {
       card.querySelector(".card-delete").onclick = e => {
         e.stopPropagation();
@@ -737,6 +930,7 @@ function saveVoted()   { localStorage.setItem("vtrx_voted",   JSON.stringify(vot
 // ─── Game Player ──────────────────────────────────────────────────────────────
 function openGame(game) {
   currentGame = game;
+  trackPlayed(game.id);
   document.getElementById("home-page").style.display = "none";
   document.getElementById("player").classList.add("visible");
   document.getElementById("player-title").textContent = game.name;
@@ -1071,6 +1265,7 @@ tryPlay();
 buildCats();
 buildPresets();
 renderGrid();
+updateUserBtn();
 </script>
 <script src="https://www.highperformanceformat.com/edcd4887835e10af6e1caa06f467015f/invoke.js"></script>
   <script>
