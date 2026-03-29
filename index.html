@@ -600,13 +600,13 @@ let realOnlineCount = 0;
 // Schedule: +7 after 2min, -2 after 1min, +11 after 3min, -4 after 2min, repeat
 // Uses global clock so every visitor sees the exact same number at the same time
 function getScheduledBotCount() {
-  var CYCLE = 600000; // 10 minute total cycle
+  var CYCLE = 1510000; // 10 minute total cycle
   var pos = Date.now() % CYCLE;
   var offset = 0;
-  if (pos >= 120000) offset = 7;  // 2min in: +7
-  if (pos >= 180000) offset = 5;  // 3min in: -2 (net +5)
-  if (pos >= 360000) offset = 16; // 6min in: +11 (net +16)
-  if (pos >= 480000) offset = 12; // 8min in: -4 (net +12)
+  if (pos >= 180000) offset = 18;  // 2min in: +7
+  if (pos >= 290000) offset = 7;  // 3min in: -2 (net +5)
+  if (pos >= 450000) offset = 28; // 6min in: +11 (net +16)
+  if (pos >= 590000) offset = 10; // 8min in: -4 (net +12)
   // at 10min: reset back to base
   return botCount + offset;
 }
