@@ -301,7 +301,50 @@
     #paypal-btn:disabled { opacity: 0.4; cursor: default; }
   </style>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+/* --- REVIEW OVERLAY STYLES --- */
+    .vtr-nav-btn {
+        padding: 8px 20px; background: var(--primary); color: #fff;
+        border: 1px solid var(--primary); border-radius: 6px;
+        font-size: 14px; font-weight: 600; cursor: pointer;
+    }
+    .vtr-nav-btn:hover { filter: brightness(1.2); transform: scale(1.05); }
 
+    .reviews-overlay {
+        display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background-color: var(--bg); z-index: 9999; overflow-y: auto; padding: 40px;
+    }
+
+    .vtr-back-btn {
+        color: var(--primary); text-decoration: none; font-size: 18px;
+        display: flex; align-items: center; gap: 10px; margin-bottom: 20px;
+    }
+
+    .vtr-review-container {
+        max-width: 600px; margin: 0 auto; background: var(--card);
+        padding: 30px; border-radius: 12px; border: 1px solid var(--border);
+    }
+
+    .vtr-review-container h1 { text-align: center; color: var(--primary); margin-bottom: 25px; }
+
+    .vtr-input-group { margin-bottom: 15px; }
+    .vtr-input-group input, .vtr-input-group textarea {
+        width: 100%; padding: 12px; background: var(--secondary);
+        border: 1px solid var(--border); color: white; border-radius: 8px; outline: none;
+    }
+
+    .vtr-star-rating { font-size: 25px; color: var(--muted); cursor: pointer; margin-bottom: 15px; text-align: center; }
+    .vtr-star-rating .fa-star.active { color: var(--primary); }
+
+    .vtr-submit-btn {
+        background: var(--primary); color: white; border: none; padding: 12px;
+        width: 100%; cursor: pointer; font-weight: bold; border-radius: 8px;
+    }
+
+    .review-item {
+        background: var(--secondary); padding: 15px; border-radius: 8px;
+        margin-top: 15px; border-left: 4px solid var(--primary);
+    }
+  
 <style>
     .social-sidebar {
         position: fixed;
@@ -382,6 +425,7 @@
       </div>
       <button class="header-btn" onclick="openDonation()">Donations</button>
       <button class="header-btn" onclick="showCredits()">Credits</button>
+      <button class="vtr-nav-btn" onclick="toggleReviews()">Reviews</button>
       <button id="add-btn" onclick="openAddModal()">+</button>
       <button id="user-btn" onclick="openLoginModal()" title="Login / Sign Up"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a07070" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></button>
     </div>
@@ -630,7 +674,7 @@
 
 // ─── State ────────────────────────────────────────────────────────────────────
 const ADMIN_PW   = "VultorexVTRX!";
-const PAYPAL     = "fahadatawi42@gmail.com";
+const PAYPAL     = "vtrx1.official@gmail.com";
 const CATEGORIES = ["All","Action","Puzzle","Racing","Adventure","Arcade","Strategy","Sports","Other"];
 const BASE_THUMBS = 36, BASE_HEART = 41;
 
@@ -1368,6 +1412,68 @@ buildPresets();
 renderGrid();
 updateUserBtn();
 </script>
+  // Toggle the pop-up
+function toggleReviews() {
+    const overlay = document.getElementById('reviews-overlay');
+    overlay.style.display = (overlay.style.display === "block") ? "none" : "block";
+}
+
+// Star Rating Logic
+let selectedStars = 0;
+document.querySelectorAll('#star-input i').forEach(star => {
+    star.addEventListener('click', () => {
+        selectedStars = star.getAttribute('data-value');
+        document.querySelectorAll('#star-input i').forEach(s => s.classList.remove('active'));
+        for(let i=0; i<selectedStars; i++) {
+            document.querySelectorAll('#star-input i')[i].classList.add('active');
+        }
+    });
+});
+
+// Submit Review Logic
+function addReview() {
+    const name = document.getElementById('reviewerName').value;
+    const text = document.getElementById('reviewText').value;
+    if(!name || !text || selectedStars === 0) {
+        alert("Fill everything out and pick a star rating!");
+        return;
+    }
+    const reviewHtml = `
+        <div class="review-item">
+            <h4>${name}</h4>
+            <div style="color:var(--primary)">${'★'.repeat(selectedStars)}${'☆'.repeat(5-selectedStars)}</div>
+            <p>${text}</p>
+        </div>`;
+    document.getElementById('review-list').innerHTML = reviewHtml + document.getElementById('review-list').innerHTML;
+    
+    // Clear inputs
+    document.getElementById('reviewerName').value = "";
+    document.getElementById('reviewText').value = "";
+}
+
+          <div id="reviews-overlay" class="reviews-overlay">
+    <a href="javascript:void(0)" class="vtr-back-btn" onclick="toggleReviews()">
+        ← Back to Games
+    </a>
+    <div class="vtr-review-container">
+        <h1>VULTOREX Reviews</h1>
+        <div class="vtr-input-group">
+            <input type="text" id="reviewerName" placeholder="Your Name">
+        </div>
+        <div class="vtr-star-rating" id="star-input">
+            <i class="fas fa-star" data-value="1"></i>
+            <i class="fas fa-star" data-value="2"></i>
+            <i class="fas fa-star" data-value="3"></i>
+            <i class="fas fa-star" data-value="4"></i>
+            <i class="fas fa-star" data-value="5"></i>
+        </div>
+        <div class="vtr-input-group">
+            <textarea id="reviewText" rows="3" placeholder="Write your review..."></textarea>
+        </div>
+        <button class="vtr-submit-btn" onclick="addReview()">Submit Review</button>
+        <div id="review-list"></div>
+    </div>
+</div>
 <script src="https://pl28952013.profitablecpmratenetwork.com/cd/3e/b2/cd3eb2c4852b165cee5b0c2cfa3b7fab.js"></script>
 <script src="https://pl28951958.profitablecpmratenetwork.com/16/6e/4e/166e4e3833f5e6d355576be0d757eaef.js"></script>
 <script async="async" data-cfasync="false" src="https://pl28952306.profitablecpmratenetwork.com/8c16c26ae41d830807bd1257d15993a9/invoke.js"></script>
