@@ -306,12 +306,13 @@
     /* Sidebar Container */
     .social-sidebar {
         position: fixed;
-        right: 0;
-        top: 50%;
+        right: 15px;      /* Moves it more to the left (away from the edge) */
+        top: 40%;         /* Moves it higher up (lower % = higher up) */
         transform: translateY(-50%);
         display: flex;
         flex-direction: column;
         z-index: 1000;
+        gap: 5px;         /* Adds a tiny space between icons */
     }
 
     /* Individual Icon Styling */
@@ -321,22 +322,23 @@
         justify-content: center;
         text-decoration: none;
         color: white;
-        width: 50px;
-        height: 50px;
+        width: 35px;      /* Smaller width */
+        height: 35px;     /* Smaller height */
+        border-radius: 8px; /* Optional: adds rounded corners for a cleaner look */
         transition: all 0.3s ease;
-        font-size: 20px;
-        margin-bottom: 2px;
+        font-size: 16px;  /* Smaller icon size */
     }
 
-    /* Brand Colors & Hover Effects */
+    /* Brand Colors */
     .youtube { background-color: #FF0000; }
     .paypal  { background-color: #003087; }
     .gmail   { background-color: #D44638; }
     .discord { background-color: #5865F2; }
 
+    /* Hover Effect */
     .social-sidebar a:hover {
-        width: 60px; /* Slight expansion on hover */
-        padding-right: 10px;
+        transform: scale(1.1); /* Gently grows when hovered instead of sliding out */
+        filter: brightness(1.2);
     }
 </style>
 
