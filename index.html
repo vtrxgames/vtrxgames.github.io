@@ -883,6 +883,11 @@ let reviews = JSON.parse(localStorage.getItem("vtrx_reviews") || "[]");
 // ===== PRE-LOADED REVIEWS (visible to everyone) =====
 // Add your own reviews here by adding more objects to this array:
 const PRESET_REVIEWS = [
+  const PRESET_REVIEWS = [
+  { id: "preset-1", name: "hdzj12", text: "ngl this might be better than websim", stars: 4, date: "2026-04-01" },
+  { id: "preset-2", name: "TheOne&Only", text: "i like this so much but would be better with more gamess", stars: 3, date: "2026-03-28" },
+  { id: "preset-3", name: "redust", text: "my fav game of them is the drone strike thingy, but if u can make it more 3d it would be even better", stars: 5, date: "2026-03-15" }
+];
   // { id: "preset-1", name: "VTRX", text: "Welcome to VTRX Games! We hope you enjoy the experience.", stars: 5, date: "2026-04-01" }
 ];
 // Merge preset reviews with user reviews (presets first)
