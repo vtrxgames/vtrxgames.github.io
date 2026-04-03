@@ -51,48 +51,6 @@
     }
     #add-btn {
       width: 36px; height: 36px; border-radius: 8px; background: var(--primary);
-/* Premium Button Style */
-#premium-btn {
-  padding: 8px 16px;
-  background: var(--primary); /* Uses your red theme color */
-  color: #fff;
-  border: 1px solid var(--primary);
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 800;
-  cursor: pointer;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  box-shadow: 0 0 10px var(--primary-glow);
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-#premium-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 0 15px var(--primary);
-}
-
-/* Premium Modal specific style */
-.premium-price {
-  font-size: 28px;
-  font-weight: 900;
-  color: #fff;
-  text-align: center;
-  margin: 15px 0;
-}
-
-.premium-perks {
-  list-style: none;
-  margin-bottom: 20px;
-  color: var(--text-dim);
-}
-
-.premium-perks li {
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
       color: #fff; border: none; font-size: 22px; font-weight: 700; cursor: pointer;
       display: none; align-items: center; justify-content: center;
       box-shadow: 0 4px 16px var(--primary-glow);
@@ -467,7 +425,6 @@
         <span id="online-count" style="color:#fff;font-weight:700">--</span>
         <span>online</span>
       </div>
-      <button id="premium-btn" onclick="openPremiumModal()">VTRX PREMIUM</button>
       <button class="header-btn" onclick="openDonation()">Donations</button>
       <button class="header-btn" onclick="showReviews()">Reviews</button>
       <button class="header-btn" onclick="showCredits()">Credits</button>
@@ -783,17 +740,17 @@ async function apiFetch(path, opts) {
   return null;
 }
 
-let botCount = 103;
+let botCount = 93;
 let realOnlineCount = 0;
 
 function getScheduledBotCount() {
-  var CYCLE = 1900000;
+  var CYCLE = 1600000;
   var pos = Date.now() % CYCLE;
   var offset = 0;
-  if (pos >= 380000) offset = 38;
-  if (pos >= 380000) offset = 21;
+  if (pos >= 280000) offset = 28;
+  if (pos >= 280000) offset = 11;
   if (pos >= 460000) offset = 36;
-  if (pos >= 680000) offset = 18;
+  if (pos >= 580000) offset = 14;
   return botCount + offset;
 }
 
@@ -830,7 +787,7 @@ const DEFAULT_GAMES = [
     category: 'Action',
     url: 'games/stickman-war.html',
     coverImage: 'VTRX%20Stickman%20War!%20Cover%20page.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 482, baseHeart: 478, isDefault: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 282, baseHeart: 278, isDefault: true
   },
   {
     id: 'default-mech-fps',
@@ -839,7 +796,7 @@ const DEFAULT_GAMES = [
     category: 'Action',
     url: 'games/mech-fps.html',
     coverImage: 'VTRX%20Boss%20Mech%20FPS!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 449, baseHeart: 451, isDefault: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 249, baseHeart: 241, isDefault: true
   },
   {
     id: 'default-nuke-tycoon',
@@ -848,7 +805,7 @@ const DEFAULT_GAMES = [
     category: 'Action',
     url: 'games/nuke-tycoon.html',
     coverImage: 'VTRX%20Nuke%20Tycoon!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 454, baseHeart: 447, isDefault: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 254, baseHeart: 247, isDefault: true
   },
   {
     id: 'default-drone-strike',
@@ -857,7 +814,7 @@ const DEFAULT_GAMES = [
     category: 'Action',
     url: 'games/drone-strike.html',
     coverImage: 'VTRX%20Drone%20Strike!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 429, baseHeart: 483, isDefault: true, hot: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 229, baseHeart: 283, isDefault: true, hot: true
   },
   {
     id: 'default-flippy-bird',
@@ -866,7 +823,7 @@ const DEFAULT_GAMES = [
     category: 'Arcade',
     url: 'games/vtrx-flippy-bird.html',
     coverImage: 'VTRX%20FlippyBird!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 216, baseHeart: 202, isDefault: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 116, baseHeart: 102, isDefault: true
   },
   {
     id: 'default-vtrx-dash',
@@ -875,7 +832,7 @@ const DEFAULT_GAMES = [
     category: 'Arcade',
     url: 'games/vtrx-dash.html',
     coverImage: 'VTRX%20Dash!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 232, baseHeart: 208, isDefault: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 122, baseHeart: 108, isDefault: true
   },
   {
     id: 'default-snipe-shot',
@@ -884,7 +841,7 @@ const DEFAULT_GAMES = [
     category: 'Action',
     url: 'games/vtrx-snipe-shot.html',
     coverImage: 'VTRX%20SnipeShot!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 478, baseHeart: 495, isDefault: true, hot: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 278, baseHeart: 295, isDefault: true, hot: true
   },
   {
     id: 'default-paper-clash',
@@ -892,7 +849,7 @@ const DEFAULT_GAMES = [
     description: 'VTRX Paper Clash! is a fast-paced territory capture game inspired by Paper.io. Expand your red zone by looping back to your territory, eliminate enemy bots by cutting their trails, and dominate the entire board!',
     category: 'Arcade',
     url: 'games/vtrx-paper-clash.html',
-    coverImage: 'VTRX%20Paper%20Clash!%20Coverpage.PNG',
+    coverImage: '',
     thumbsDelta: 0, heartDelta: 0, baseThumbs: 194, baseHeart: 188, isDefault: true, hot: true
   }
 ];
@@ -1357,40 +1314,6 @@ function deleteGame(id) {
   renderGrid();
 }
 
-  <div id="premium-modal" class="backdrop" style="display: none;">
-  <div class="modal modal-sm">
-    <div class="modal-head">
-      <div class="modal-title">VTRX PREMIUM</div>
-      <button class="modal-close" onclick="closePremiumModal()">&times;</button>
-    </div>
-    <div class="modal-body">
-      <div style="text-align: center; margin-bottom: 20px;">
-        <i class="fas fa-crown" style="font-size: 40px; color: #facc15; margin-bottom: 10px;"></i>
-        <p style="color: var(--text-dim);">Upgrade your experience on VTRX Games!</p>
-      </div>
-      
-      <div class="premium-price">$0.99</div>
-      
-      <ul class="premium-perks">
-        <li><i class="fas fa-check" style="color: #22c55e;"></i> No Ads (Ad-Free Experience)</li>
-        <li><i class="fas fa-check" style="color: #22c55e;"></i> Support the Developer</li>
-        <li><i class="fas fa-check" style="color: #22c55e;"></i> Special Premium Badge</li>
-      </ul>
-
-      <p style="font-size: 12px; color: var(--muted); text-align: center; margin-bottom: 15px;">
-        To purchase, please pay via PayPal. Once paid, email me your username to activate your perks!
-      </p>
-
-      <button id="paypal-btn" onclick="window.open('https://www.paypal.me/vultorex/0.99', '_blank')">
-        Pay with PayPal
-      </button>
-    </div>
-    <div class="modal-foot">
-      <button class="btn-cancel" style="width: 100%;" onclick="closePremiumModal()">Maybe Later</button>
-    </div>
-  </div>
-</div>
-  
 // ─── Credits ──────────────────────────────────────────────────────────────────
 function showCredits() {
   document.getElementById("home-page").style.display = "none";
@@ -1637,25 +1560,15 @@ if (localStorage.getItem('vtrx_sidebar_collapsed') === '1') {
   const sb = document.getElementById('cat-sidebar');
   if (sb) sb.classList.add('collapsed');
 }
-
-// These 4 lines MUST run for the games to show up
 buildCats();
 buildPresets();
 renderGrid();
 updateUserBtn();
-
-// ─── Premium Functions ────────────────────────────────────────────────────────
-function openPremiumModal() {
-  document.getElementById('premium-modal').style.display = 'flex';
-}
-
-function closePremiumModal() {
-  document.getElementById('premium-modal').style.display = 'none';
-}
-
-// Close modal if clicking outside of it
-window.addEventListener('click', (e) => {
-  const modal = document.getElementById('premium-modal');
-  if (e.target === modal) closePremiumModal();
-});
 </script>
+<script src="https://pl28952013.profitablecpmratenetwork.com/cd/3e/b2/cd3eb2c4852b165cee5b0c2cfa3b7fab.js"></script>
+<script src="https://pl28951958.profitablecpmratenetwork.com/16/6e/4e/166e4e3833f5e6d355576be0d757eaef.js"></script>
+<script async="async" data-cfasync="false" src="https://pl28952306.profitablecpmratenetwork.com/8c16c26ae41d830807bd1257d15993a9/invoke.js"></script>
+<div id="container-8c16c26ae41d830807bd1257d15993a9"></div>
+  <a href="https://beta.publishers.adsterra.com/referral/LspgUrHWhe" rel="nofollow">VTRX Cooperation! Referral link</a>
+<a href="https://beta.publishers.adsterra.com/referral/LspgUrHWhe" rel="nofollow"><img alt="banner" src="https://landings-cdn.adsterratech.com/referralBanners/png/300%20x%20425.png" /></a>
+</html>
