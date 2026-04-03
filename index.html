@@ -520,7 +520,7 @@
         <button class="credit-save" onclick="saveCredit()">Save</button>
       </div>
     </div>
-    <p id="credits-empty" style="color:#6b4040;font-size:14px">No credits added yet.</p>
+    <p id="credits-empty" style="color:#6b4040;font-size:14px">VTRX Cooperation/VTRX/Vultorex/StoneKiller/(Me)</p>
     <ul id="credits-list"></ul>
   </div>
 </div>
@@ -740,15 +740,15 @@ async function apiFetch(path, opts) {
   return null;
 }
 
-let botCount = 93;
+let botCount = 103;
 let realOnlineCount = 0;
 
 function getScheduledBotCount() {
   var CYCLE = 1600000;
   var pos = Date.now() % CYCLE;
   var offset = 0;
-  if (pos >= 280000) offset = 28;
-  if (pos >= 280000) offset = 11;
+  if (pos >= 280000) offset = 38;
+  if (pos >= 280000) offset = 14;
   if (pos >= 460000) offset = 36;
   if (pos >= 580000) offset = 14;
   return botCount + offset;
@@ -787,7 +787,7 @@ const DEFAULT_GAMES = [
     category: 'Action',
     url: 'games/stickman-war.html',
     coverImage: 'VTRX%20Stickman%20War!%20Cover%20page.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 282, baseHeart: 278, isDefault: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 482, baseHeart: 478, isDefault: true
   },
   {
     id: 'default-mech-fps',
@@ -796,7 +796,7 @@ const DEFAULT_GAMES = [
     category: 'Action',
     url: 'games/mech-fps.html',
     coverImage: 'VTRX%20Boss%20Mech%20FPS!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 249, baseHeart: 241, isDefault: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 449, baseHeart: 441, isDefault: true
   },
   {
     id: 'default-nuke-tycoon',
@@ -805,7 +805,7 @@ const DEFAULT_GAMES = [
     category: 'Action',
     url: 'games/nuke-tycoon.html',
     coverImage: 'VTRX%20Nuke%20Tycoon!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 254, baseHeart: 247, isDefault: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 474, baseHeart: 447, isDefault: true
   },
   {
     id: 'default-drone-strike',
@@ -814,7 +814,7 @@ const DEFAULT_GAMES = [
     category: 'Action',
     url: 'games/drone-strike.html',
     coverImage: 'VTRX%20Drone%20Strike!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 229, baseHeart: 283, isDefault: true, hot: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 429, baseHeart: 383, isDefault: true, hot: true
   },
   {
     id: 'default-flippy-bird',
@@ -823,7 +823,7 @@ const DEFAULT_GAMES = [
     category: 'Arcade',
     url: 'games/vtrx-flippy-bird.html',
     coverImage: 'VTRX%20FlippyBird!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 116, baseHeart: 102, isDefault: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 166, baseHeart: 142, isDefault: true
   },
   {
     id: 'default-vtrx-dash',
@@ -841,7 +841,7 @@ const DEFAULT_GAMES = [
     category: 'Action',
     url: 'games/vtrx-snipe-shot.html',
     coverImage: 'VTRX%20SnipeShot!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 278, baseHeart: 295, isDefault: true, hot: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 478, baseHeart: 495, isDefault: true, hot: true
   },
   {
     id: 'default-paper-clash',
@@ -884,6 +884,7 @@ let reviews = JSON.parse(localStorage.getItem("vtrx_reviews") || "[]");
 // Add your own reviews here by adding more objects to this array:
 const PRESET_REVIEWS = [
   // { id: "preset-1", name: "VTRX", text: "Welcome to VTRX Games! We hope you enjoy the experience.", stars: 5, date: "2026-04-01" }
+  { id: "preset-1", name: "VTRX", text: "Welcome to VTRX Games! We hope you enjoy the experience.", stars: 5, date: "2026-04-01" }
 ];
 // Merge preset reviews with user reviews (presets first)
 let allReviews = [...PRESET_REVIEWS, ...reviews];
