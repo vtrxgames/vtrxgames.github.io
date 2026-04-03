@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>VTRX Games!</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -12,7 +13,7 @@
       --secondary: #1a0000; --primary: #dc2626;
       --primary-glow: rgba(220,38,38,0.35);
       --muted: #6b4040; --text: #f5e8e8; --text-dim: #a07070;
-  
+    }
 
     body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
 
@@ -63,8 +64,7 @@
     #hero-h1 { font-size: clamp(28px,5vw,52px); font-weight: 900; text-shadow: 0 0 40px rgba(220,38,38,0.55); margin-bottom: 10px; }
     #hero-desc { color: var(--text-dim); font-size: 16px; }
 
-    /* ── Category Filter ─────────────────────────────────── */
-    /* Category Sidebar */
+    /* ── Category Sidebar ────────────────────────────────── */
     #home-body { display: flex; align-items: flex-start; }
     #cat-sidebar {
       width: 200px; flex-shrink: 0;
@@ -77,9 +77,7 @@
       display: flex; flex-direction: column; gap: 4px;
       transition: width .25s ease, padding .25s ease;
     }
-    #cat-sidebar.collapsed {
-      width: 44px; padding: 16px 6px;
-    }
+    #cat-sidebar.collapsed { width: 44px; padding: 16px 6px; }
     #cat-sidebar.collapsed .cat-btn,
     #cat-sidebar.collapsed .cat-btn-big,
     #cat-sidebar.collapsed .sidebar-section-label,
@@ -122,7 +120,6 @@
     .cat-btn-big:hover { background: rgba(220,38,38,0.1); }
     .cat-btn-big.active { background: rgba(220,38,38,0.2); border-color: rgba(220,38,38,0.4); }
 
-
     /* ── User Account ────────────────────────────────────── */
     #user-btn {
       width: 46px; height: 46px; border-radius: 50%; border: 2px solid rgba(220,38,38,0.45);
@@ -147,7 +144,7 @@
     #login-avatar-hint { font-size: 12px; color: var(--text-dim); }
     #login-logout-btn { width: 100%; padding: 9px; border-radius: 8px; background: none; border: 1px solid rgba(239,68,68,0.4); color: #f87171; font-size: 13px; cursor: pointer; margin-top: 4px; }
 
-    /* Continue Playing label in sidebar */
+    /* Sidebar section label */
     .sidebar-section-label { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; padding: 4px 10px 2px; }
     .cat-sidebar-divider { height: 1px; background: var(--border); margin: 6px 2px; }
 
@@ -263,6 +260,68 @@
     .credit-item { display: flex; align-items: center; justify-content: space-between; background: #130000; border: 1px solid #2a0000; border-radius: 8px; padding: 12px 16px; font-size: 15px; }
     .credit-del { background: none; border: none; color: #6b4040; cursor: pointer; font-size: 18px; line-height: 1; }
 
+    /* ── Reviews Page ─────────────────────────────────────── */
+    #reviews-page { display: none; min-height: 100vh; position: relative; }
+    #reviews-page.visible { display: block; }
+    #reviews-bar { display: flex; align-items: center; gap: 16px; padding: 0 24px; height: 52px; border-bottom: 1px solid #2a0000; }
+    #reviews-back { display: flex; align-items: center; gap: 8px; background: none; border: none; color: #a07070; font-size: 13px; cursor: pointer; }
+    #reviews-bar-title { font-weight: 700; font-size: 15px; color: #fff; border-left: 1px solid #2a0000; padding-left: 16px; }
+    #reviews-logo { position: absolute; top: 8px; right: 16px; width: 56px; height: 56px; border-radius: 50%; object-fit: cover; pointer-events: none; }
+    #reviews-content { max-width: 680px; margin: 60px auto; padding: 0 24px; }
+    #reviews-content h1 { font-size: 32px; font-weight: 900; margin-bottom: 8px; }
+    #reviews-subtitle { color: var(--text-dim); font-size: 14px; margin-bottom: 36px; }
+
+    /* Write a review form */
+    #review-form-box {
+      background: #130000; border: 1px solid #2a0000; border-radius: 12px;
+      padding: 24px; margin-bottom: 40px;
+    }
+    #review-form-box h2 { font-size: 16px; font-weight: 700; margin-bottom: 20px; color: var(--primary); }
+    #review-name-input {
+      width: 100%; background: #1a0000; border: 1px solid #3a0000; color: #fff;
+      border-radius: 6px; padding: 10px 14px; font-size: 14px; outline: none;
+      margin-bottom: 14px; font-family: inherit;
+    }
+    #review-name-input:focus { border-color: #dc2626; }
+    #review-text-input {
+      width: 100%; background: #1a0000; border: 1px solid #3a0000; color: #fff;
+      border-radius: 6px; padding: 10px 14px; font-size: 14px; outline: none;
+      margin-bottom: 14px; font-family: inherit; resize: none; min-height: 90px;
+    }
+    #review-text-input:focus { border-color: #dc2626; }
+    #review-star-row { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+    #review-star-row label { font-size: 13px; color: var(--text-dim); }
+    .star-picker { display: flex; gap: 4px; }
+    .star-picker .star {
+      font-size: 26px; cursor: pointer; color: #3a0000;
+      transition: color .15s, transform .1s;
+      user-select: none;
+    }
+    .star-picker .star.lit { color: #facc15; }
+    .star-picker .star:hover { transform: scale(1.2); }
+    #review-submit-btn {
+      width: 100%; padding: 10px; border-radius: 8px; background: var(--primary);
+      color: #fff; border: none; font-size: 14px; font-weight: 700; cursor: pointer;
+    }
+    #review-submit-btn:hover { background: #b91c1c; }
+    #review-err { color: #f75e5e; font-size: 13px; margin-bottom: 10px; display: none; }
+
+    /* Reviews list */
+    #reviews-list-section h2 { font-size: 18px; font-weight: 700; margin-bottom: 20px; }
+    #reviews-list { display: flex; flex-direction: column; gap: 14px; }
+    .review-card {
+      background: #130000; border: 1px solid #2a0000; border-radius: 10px;
+      padding: 16px 20px; position: relative;
+    }
+    .review-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+    .review-author { font-weight: 700; font-size: 15px; color: #fff; }
+    .review-stars { color: #facc15; font-size: 18px; letter-spacing: 2px; }
+    .review-text { color: var(--text-dim); font-size: 14px; line-height: 1.6; }
+    .review-date { font-size: 11px; color: #6b4040; margin-top: 8px; }
+    .review-del-btn { background: none; border: none; color: #6b4040; cursor: pointer; font-size: 18px; line-height: 1; margin-left: 8px; }
+    .review-del-btn:hover { color: #f87171; }
+    #reviews-empty { color: #6b4040; font-size: 14px; padding: 30px 0; text-align: center; }
+
     /* ── Modals ───────────────────────────────────────────── */
     .backdrop { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.75); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; padding: 16px; }
     .modal { background: var(--card); border: 1px solid var(--border); border-radius: 16px; width: 100%; max-width: 600px; box-shadow: 0 25px 60px rgba(0,0,0,0.5); display: flex; flex-direction: column; max-height: 92vh; }
@@ -299,66 +358,53 @@
     .preset-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
     #paypal-btn { width: 100%; padding: 13px; border-radius: 8px; background: #003087; color: #fff; border: none; font-size: 16px; font-weight: 700; cursor: pointer; }
     #paypal-btn:disabled { opacity: 0.4; cursor: default; }
-  </style>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<style>
+
+    /* ── Social Sidebar ──────────────────────────────────── */
     .social-sidebar {
-        position: fixed;
-        right: 15px;      
-        /* Change from 40% to a fixed pixel value to go right under the circle */
-        top: 70px;       
-        display: flex;
-        flex-direction: column;
-        z-index: 1000;
-        gap: 8px;         /* Slightly more gap for a cleaner look */
+      position: fixed;
+      right: 15px;
+      top: 70px;
+      display: flex;
+      flex-direction: column;
+      z-index: 1000;
+      gap: 8px;
     }
-
     .social-sidebar a {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-decoration: none;
-        color: white;
-        width: 32px;      /* Slightly smaller to stay sleek */
-        height: 32px;     
-        border-radius: 20%; /* Making them circles matches your top-right icon better */
-        transition: all 0.3s ease;
-        font-size: 14px;  
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      color: white;
+      width: 32px;
+      height: 32px;
+      border-radius: 20%;
+      transition: all 0.3s ease;
+      font-size: 14px;
     }
-
-    /* Brand Colors */
-    .youtube { background-color: #FF0000; }
-    .paypal  { background-color: #003087; }
-    .gmail   { background-color: #D44638; }
-    .discord { background-color: #5865F2; }
-
-    .social-sidebar a:hover {
-        transform: scale(1.15);
-        filter: brightness(1.2);
-    }
-</style>
-
-<div class="social-sidebar">
-    <a href="https://www.youtube.com/@vultorex" target="_blank" class="youtube" title="YouTube">
-        <i class="fab fa-youtube"></i>
-    </a>
-  
-       <a href="https://www.paypal.me/vultorex" target="_blank" class="paypal" title="Donate via PayPal">
-    <i class="fab fa-paypal"></i>
-</a>
-    </a>
-
-      <a href="https://mail.google.com/mail/?view=cm&fs=1&to=vtrx1.official@gmail.com" target="_blank" class="gmail" title="Email Me">
-    <i class="fas fa-envelope"></i>
-</a>
-    </a>
-
-    <a href="https://discord.gg/Gq4ggeWraB" target="_blank" class="discord" title="Discord Server">
-        <i class="fab fa-discord"></i>
-    </a>
-</div>
+    .social-sidebar .youtube { background-color: #FF0000; }
+    .social-sidebar .paypal  { background-color: #003087; }
+    .social-sidebar .gmail   { background-color: #D44638; }
+    .social-sidebar .discord { background-color: #5865F2; }
+    .social-sidebar a:hover { transform: scale(1.15); filter: brightness(1.2); }
+  </style>
 </head>
 <body>
+
+<!-- ══════════════════ SOCIAL SIDEBAR ══════════════════ -->
+<div class="social-sidebar">
+  <a href="https://www.youtube.com/@vultorex" target="_blank" class="youtube" title="YouTube">
+    <i class="fab fa-youtube"></i>
+  </a>
+  <a href="https://www.paypal.me/vultorex" target="_blank" class="paypal" title="Donate via PayPal">
+    <i class="fab fa-paypal"></i>
+  </a>
+  <a href="https://mail.google.com/mail/?view=cm&fs=1&to=vtrx1.official@gmail.com" target="_blank" class="gmail" title="Email Me">
+    <i class="fas fa-envelope"></i>
+  </a>
+  <a href="https://discord.gg/Gq4ggeWraB" target="_blank" class="discord" title="Discord Server">
+    <i class="fab fa-discord"></i>
+  </a>
+</div>
 
 <!-- ══════════════════ HOME PAGE ══════════════════ -->
 <div id="home-page">
@@ -380,6 +426,7 @@
         <span>online</span>
       </div>
       <button class="header-btn" onclick="openDonation()">Donations</button>
+      <button class="header-btn" onclick="showReviews()">Reviews</button>
       <button class="header-btn" onclick="showCredits()">Credits</button>
       <button id="add-btn" onclick="openAddModal()">+</button>
       <button id="user-btn" onclick="openLoginModal()" title="Login / Sign Up"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a07070" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></button>
@@ -393,7 +440,7 @@
     </nav>
     <main id="main">
     <div id="hero">
-      <p id="hero-founded"><strong>Founded and created by VTRX Cooperation!</strong></p>
+      <p id="hero-founded"><strong>Founded and created by VTRX!</strong></p>
       <h1 id="hero-h1">VTRX Games!</h1>
       <p id="hero-desc">Discover and play awesome browser games on VTRX Games! If you are a game dev, email me: vtrx1.official@gmail.com If there are any bugs, reports, or suggestions you can email me at <strong style="text-decoration:underline">vtrx1.official@gmail.com</strong></p>
     </div>
@@ -459,7 +506,7 @@
   <div id="credits-bar">
     <button id="credits-back" onclick="hideCredits()">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-      Back to Games
+      Back to Home
     </button>
     <span id="credits-title">Credits</span>
     <button id="credits-add" onclick="handleCreditsAdd()">+</button>
@@ -475,6 +522,48 @@
     </div>
     <p id="credits-empty" style="color:#6b4040;font-size:14px">No credits added yet.</p>
     <ul id="credits-list"></ul>
+  </div>
+</div>
+
+<!-- ══════════════════ REVIEWS PAGE ══════════════════ -->
+<div id="reviews-page">
+  <img id="reviews-logo" src="vtrx-logo.png" alt="VTRX" onerror="this.style.display='none'" />
+  <div id="reviews-bar">
+    <button id="reviews-back" onclick="hideReviews()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Back to Home
+    </button>
+    <span id="reviews-bar-title">Reviews</span>
+  </div>
+  <div id="reviews-content">
+    <h1>Reviews</h1>
+    <p id="reviews-subtitle">Share your thoughts about VTRX Games!</p>
+
+    <!-- Write a Review Form -->
+    <div id="review-form-box">
+      <h2>Write a Review</h2>
+      <input id="review-name-input" placeholder="Your name..." maxlength="40" />
+      <textarea id="review-text-input" placeholder="Write your review here..."></textarea>
+      <div id="review-star-row">
+        <label>Rating:</label>
+        <div class="star-picker" id="star-picker">
+          <span class="star" data-val="1">★</span>
+          <span class="star" data-val="2">★</span>
+          <span class="star" data-val="3">★</span>
+          <span class="star" data-val="4">★</span>
+          <span class="star" data-val="5">★</span>
+        </div>
+      </div>
+      <p id="review-err"></p>
+      <button id="review-submit-btn" onclick="submitReview()">Post Review</button>
+    </div>
+
+    <!-- Reviews List -->
+    <div id="reviews-list-section">
+      <h2 id="reviews-count-title">All Reviews</h2>
+      <div id="reviews-empty" style="display:none">No reviews yet. Be the first to leave one!</div>
+      <div id="reviews-list"></div>
+    </div>
   </div>
 </div>
 
@@ -629,14 +718,14 @@
 
 // ─── State ────────────────────────────────────────────────────────────────────
 const ADMIN_PW   = "VultorexVTRX!";
-const PAYPAL     = "vtrx1.official@gmail.com";
+const PAYPAL     = "fahadatawi42@gmail.com";
 const CATEGORIES = ["All","Action","Puzzle","Racing","Adventure","Arcade","Strategy","Sports","Other"];
 const BASE_THUMBS = 36, BASE_HEART = 41;
 
 // ─── API (shared reactions + online count) ────────────────────────────────────
 const API_URL = "https://fa458057-f594-40ac-a531-0e8547eb6920-00-2hllnmkn37yf.riker.replit.dev/api";
 
-// Unique session ID per browser tab (persists across refreshes)
+// Unique session ID per browser tab
 const SESSION_ID = (() => {
   let id = localStorage.getItem("vtrx_session");
   if (!id) { id = Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem("vtrx_session", id); }
@@ -651,28 +740,23 @@ async function apiFetch(path, opts) {
   return null;
 }
 
-let botCount = 98; // ← Change this number to set the base bot count
+let botCount = 53;
 let realOnlineCount = 0;
 
-// Schedule: +7 after 2min, -2 after 1min, +11 after 3min, -4 after 2min, repeat
-// Uses global clock so every visitor sees the exact same number at the same time
 function getScheduledBotCount() {
-  var CYCLE = 1910000; // 10 minute total cycle
+  var CYCLE = 600000;
   var pos = Date.now() % CYCLE;
   var offset = 0;
-  if (pos >= 280000) offset = 38;  // 2min in: +7
-  if (pos >= 390000) offset = 13;  // 3min in: -2 (net +5)
-  if (pos >= 550000) offset = 36; // 6min in: +11 (net +16)
-  if (pos >= 690000) offset = 16; // 8min in: -4 (net +12)
-  // at 10min: reset back to base
+  if (pos >= 120000) offset = 7;
+  if (pos >= 180000) offset = 5;
+  if (pos >= 360000) offset = 16;
+  if (pos >= 480000) offset = 12;
   return botCount + offset;
 }
 
 function updateOnlineDisplay() {
   document.getElementById("online-count").textContent = realOnlineCount + getScheduledBotCount();
 }
-
-
 
 async function fetchOnline() {
   const data = await apiFetch("/stats/online");
@@ -694,7 +778,7 @@ async function postReaction(gameId, type, delta) {
   return data || null;
 }
 
-// ─── Default Games (always visible to everyone) ───────────────────────────────
+// ─── Default Games ────────────────────────────────────────────────────────────
 const DEFAULT_GAMES = [
   {
     id: 'default-stickman-war',
@@ -703,11 +787,7 @@ const DEFAULT_GAMES = [
     category: 'Action',
     url: 'games/stickman-war.html',
     coverImage: 'VTRX%20Stickman%20War!%20Cover%20page.PNG',
-    thumbsDelta: 0,
-    heartDelta: 0,
-    baseThumbs: 342,
-    baseHeart: 368,
-    isDefault: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 102, baseHeart: 118, isDefault: true
   },
   {
     id: 'default-mech-fps',
@@ -716,11 +796,7 @@ const DEFAULT_GAMES = [
     category: 'Action',
     url: 'games/mech-fps.html',
     coverImage: 'VTRX%20Boss%20Mech%20FPS!%20Coverpage.PNG',
-    thumbsDelta: 0,
-    heartDelta: 0,
-    baseThumbs: 369,
-    baseHeart: 387,
-    isDefault: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 149, baseHeart: 141, isDefault: true
   },
   {
     id: 'default-nuke-tycoon',
@@ -729,70 +805,55 @@ const DEFAULT_GAMES = [
     category: 'Action',
     url: 'games/nuke-tycoon.html',
     coverImage: 'VTRX%20Nuke%20Tycoon!%20Coverpage.PNG',
-    thumbsDelta: 0,
-    heartDelta: 0,
-    baseThumbs: 364,
-    baseHeart: 357,
-    isDefault: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 154, baseHeart: 147, isDefault: true
   },
   {
     id: 'default-drone-strike',
     name: 'VTRX Drone Strike!',
-    description: 'VTRX Drone Strike! is a fast-paced, overhead aerial combat game where you pilot a tactical drone to eliminate ground forces across 10 escalating levels. Using a high-tech targeting reticle, you must hunt down enemy tanks that increase in speed and maneuverability as the mission progresses.',
+    description: 'VTRX Drone Strike! is a fast-paced, overhead aerial combat game where you pilot a tactical drone to eliminate ground forces across 10 escalating levels.',
     category: 'Action',
     url: 'games/drone-strike.html',
     coverImage: 'VTRX%20Drone%20Strike!%20Coverpage.PNG',
-    thumbsDelta: 0,
-    heartDelta: 0,
-    baseThumbs: 269,
-    baseHeart: 293,
-    isDefault: true,
-    hot: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 129, baseHeart: 113, isDefault: true, hot: true
   },
   {
     id: 'default-flippy-bird',
     name: 'VTRX FlippyBird!',
-    description: 'VTRX FlippyBird! is an intense, arcade-style survival game that puts a high-speed spin on a classic formula. Navigate the VTRX bird through a gauntlet of glowing red pipes across 10 brutal levels, from Easy all the way to VTRX Max.',
+    description: 'VTRX FlippyBird! is an intense, arcade-style survival game. Navigate the VTRX bird through a gauntlet of glowing red pipes across 10 brutal levels.',
     category: 'Arcade',
     url: 'games/vtrx-flippy-bird.html',
     coverImage: 'VTRX%20FlippyBird!%20Coverpage.PNG',
-    thumbsDelta: 0,
-    heartDelta: 0,
-    baseThumbs: 86,
-    baseHeart: 92,
-    isDefault: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 86, baseHeart: 92, isDefault: true
   },
   {
     id: 'default-vtrx-dash',
     name: 'VTRX Dash!',
-    description: 'VTRX Dash! is a high-octane, rhythm-based side-scroller with 10 levels of increasing danger. Jump over spikes, dodge spinning saws, and survive increasingly brutal geometry-style obstacles from Easy all the way to Insane difficulty.',
+    description: 'VTRX Dash! is a high-octane, rhythm-based side-scroller with 10 levels of increasing danger. Jump over spikes, dodge spinning saws, and survive increasingly brutal geometry-style obstacles.',
     category: 'Arcade',
     url: 'games/vtrx-dash.html',
     coverImage: 'VTRX%20Dash!%20Coverpage.PNG',
-    thumbsDelta: 0,
-    heartDelta: 0,
-    baseThumbs: 142,
-    baseHeart: 108,
-    isDefault: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 72, baseHeart: 68, isDefault: true
   },
   {
     id: 'default-snipe-shot',
     name: 'VTRX SnipeShot!',
-    description: 'VTRX SnipeShot! is a high-precision, tactical marksmanship game across 10 missions of increasing difficulty. Track and eliminate moving targets with limited ammo, from Training grounds all the way to VTRX HQ.',
+    description: 'VTRX SnipeShot! is a high-precision, tactical marksmanship game across 10 missions of increasing difficulty. Track and eliminate moving targets with limited ammo.',
     category: 'Action',
     url: 'games/vtrx-snipe-shot.html',
     coverImage: 'VTRX%20SnipeShot!%20Coverpage.PNG',
-    thumbsDelta: 0,
-    heartDelta: 0,
-    baseThumbs: 338,
-    baseHeart: 395,
-    isDefault: true,
-    hot: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 178, baseHeart: 165, isDefault: true, hot: true
+  },
+  {
+    id: 'default-paper-clash',
+    name: 'VTRX Paper Clash!',
+    description: 'VTRX Paper Clash! is a fast-paced territory capture game inspired by Paper.io. Expand your red zone by looping back to your territory, eliminate enemy bots by cutting their trails, and dominate the entire board!',
+    category: 'Arcade',
+    url: 'games/vtrx-paper-clash.html',
+    coverImage: '',
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 94, baseHeart: 88, isDefault: true, hot: true
   }
 ];
 
-// Merge default games with any admin-added games from localStorage
-// Filter out localStorage games whose URL or name already matches a default (prevents duplicates)
 const defaultUrls  = new Set(DEFAULT_GAMES.map(g => g.url));
 const defaultNames = new Set(DEFAULT_GAMES.map(g => g.name.toLowerCase().trim()));
 const savedGames = JSON.parse(localStorage.getItem("vtrx_games") || "[]").filter(g =>
@@ -806,13 +867,32 @@ let showAdminBtn = false;
 let logoClicks = 0, logoTimer = null;
 let currentGame = null;
 let currentCat  = "All";
-let pendingAdminAction = null; // 'add-game' | 'add-credit'
+let pendingAdminAction = null;
 let coverData  = null;
 let codeFileActive = false;
 let donateRawAmount = "";
 let activePreset    = null;
 
-// ─── User Account & Recently Played ──────────────────────────────────────────
+// ─── Reviews State ────────────────────────────────────────────────────────────
+// ===== TO ADD YOUR OWN REVIEWS, EDIT THE ARRAY BELOW =====
+// Each review must have: name (string), text (string), stars (number 1-5), date (string)
+// Example: { name: "PlayerOne", text: "Amazing game site!", stars: 5, date: "2026-04-01" }
+// You can add as many as you want. They will show up for everyone.
+let reviews = JSON.parse(localStorage.getItem("vtrx_reviews") || "[]");
+
+// ===== PRE-LOADED REVIEWS (visible to everyone) =====
+// Add your own reviews here by adding more objects to this array:
+const PRESET_REVIEWS = [
+  // { id: "preset-1", name: "VTRX", text: "Welcome to VTRX Games! We hope you enjoy the experience.", stars: 5, date: "2026-04-01" }
+];
+// Merge preset reviews with user reviews (presets first)
+let allReviews = [...PRESET_REVIEWS, ...reviews];
+
+let selectedStars = 0;
+
+function saveReviews() { localStorage.setItem("vtrx_reviews", JSON.stringify(reviews)); }
+
+// ─── User Account ─────────────────────────────────────────────────────────────
 let currentUser     = JSON.parse(localStorage.getItem("vtrx_user")   || "null");
 let recentlyPlayed  = JSON.parse(localStorage.getItem("vtrx_recent") || "[]");
 
@@ -861,9 +941,7 @@ function openLoginModal() {
   setTimeout(function(){ document.getElementById("login-username").focus(); }, 50);
 }
 
-function closeLoginModal() {
-  document.getElementById("login-modal").style.display = "none";
-}
+function closeLoginModal() { document.getElementById("login-modal").style.display = "none"; }
 
 function saveAccount() {
   const username = document.getElementById("login-username").value.trim();
@@ -898,7 +976,7 @@ function onAvatarFile(e) {
 updateOnlineDisplay();
 pingOnline();
 setInterval(pingOnline, 30000);
-setInterval(updateOnlineDisplay, 30000); // refresh display as schedule changes
+setInterval(updateOnlineDisplay, 30000);
 
 // ─── Category Buttons ─────────────────────────────────────────────────────────
 function buildCats() {
@@ -906,7 +984,6 @@ function buildCats() {
   const wasCollapsed = sidebar.classList.contains('collapsed');
   sidebar.innerHTML = '';
   if (wasCollapsed) sidebar.classList.add('collapsed');
-  // Toggle button
   const toggle = document.createElement('button');
   toggle.id = 'sidebar-toggle';
   toggle.title = wasCollapsed ? 'Expand sidebar' : 'Collapse sidebar';
@@ -923,7 +1000,6 @@ function buildCats() {
     localStorage.setItem('vtrx_sidebar_collapsed', isNowCollapsed ? '1' : '0');
   });
   sidebar.appendChild(toggle);
-  // Continue Playing (only if games have been played)
   if (recentlyPlayed.length > 0) {
     const cp = document.createElement('button');
     cp.className = 'cat-btn' + (currentCat === 'Continue Playing' ? ' active' : '');
@@ -934,7 +1010,6 @@ function buildCats() {
     const d1 = document.createElement('div'); d1.className = 'cat-sidebar-divider'; sidebar.appendChild(d1);
   }
   const lbl = document.createElement('div'); lbl.className = 'sidebar-section-label'; lbl.textContent = 'Categories'; sidebar.appendChild(lbl);
-  // Big platform categories first
   ['Computer Playable','Phone/Tablet Playable'].forEach(c => {
     const b = document.createElement('button');
     b.className = 'cat-btn-big' + (c === currentCat ? ' active' : '');
@@ -942,11 +1017,9 @@ function buildCats() {
     b.addEventListener('click', function() { selectCat(c); });
     sidebar.appendChild(b);
   });
-  // Divider
   const sep = document.createElement('div');
   sep.className = 'cat-sidebar-divider';
   sidebar.appendChild(sep);
-  // Regular categories
   CATEGORIES.forEach(c => {
     const b = document.createElement('button');
     b.className = 'cat-btn' + (c === currentCat ? ' active' : '');
@@ -959,7 +1032,6 @@ function buildCats() {
 function selectCat(c) {
   currentCat = c;
   renderGrid();
-  // Update active classes without rebuilding the sidebar
   document.querySelectorAll('#cat-sidebar .cat-btn, #cat-sidebar .cat-btn-big').forEach(function(btn) {
     btn.classList.toggle('active', btn.textContent.trim() === c);
   });
@@ -967,7 +1039,7 @@ function selectCat(c) {
 
 // ─── Games Grid ───────────────────────────────────────────────────────────────
 function renderGrid() {
-  const PHONE_GAMES = ["default-flippy-bird","default-vtrx-dash"];
+  const PHONE_GAMES = ["default-flippy-bird","default-vtrx-dash","vtrx-basketball-shots","vtrx-soccer-kick","vtrx-bowling-strike","vtrx-baseball-pitcher","vtrx-golf-rush","vtrx-volleyball-spike"];
   const filtered = currentCat === "Continue Playing"
     ? recentlyPlayed.map(id => games.find(g => g.id === id)).filter(Boolean)
     : currentCat === "All" || currentCat === "Computer Playable" ? games
@@ -1017,7 +1089,6 @@ function gamepadSVG(size) {
 
 function esc(s) { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
 
-// Only save admin-added games (not the hardcoded defaults) to localStorage
 function saveGames()   { localStorage.setItem("vtrx_games",   JSON.stringify(games.filter(g => !g.isDefault))); }
 function saveCredits() { localStorage.setItem("vtrx_credits", JSON.stringify(credits)); }
 function saveVoted()   { localStorage.setItem("vtrx_voted",   JSON.stringify(voted));   }
@@ -1040,10 +1111,8 @@ function openGame(game) {
 
   const iframe = document.getElementById("game-frame");
   if (game.url) {
-    // Default games load from their own file
     iframe.src = game.url;
   } else {
-    // Admin-added games run their inline code
     iframe.removeAttribute("src");
     const doc = iframe.contentDocument || iframe.contentWindow.document;
     doc.open(); doc.write(game.code); doc.close();
@@ -1072,14 +1141,12 @@ function updateReactions(game) { updateReactionsUI(null); }
 async function react(type) {
   if (!currentGame) return;
   if (isAdmin) {
-    // Admin always adds +1, no toggle, unlimited
     currentReactions = { ...currentReactions, [type]: currentReactions[type] + 1 };
     updateReactionsUI(currentReactions);
     const updated = await postReaction(currentGame.id, type, 1);
     if (updated) updateReactionsUI(updated);
     return;
   }
-  // Regular users toggle (can only like once, unlike to remove)
   const v = voted[currentGame.id] || { thumbs: false, heart: false };
   const already = v[type];
   const delta = already ? -1 : 1;
@@ -1241,7 +1308,7 @@ function submitGame() {
 
 function deleteGame(id) {
   const game = games.find(g => g.id === id);
-  if (!game || game.isDefault) return; // can't delete default games
+  if (!game || game.isDefault) return;
   games = games.filter(g => g.id !== id);
   saveGames();
   renderGrid();
@@ -1290,6 +1357,138 @@ function saveCredit() {
   saveCredits(); renderCredits(); hideCreditForm();
 }
 function creditKeydown(e) { if (e.key === "Enter") saveCredit(); if (e.key === "Escape") hideCreditForm(); }
+
+// ─── Reviews ──────────────────────────────────────────────────────────────────
+function showReviews() {
+  document.getElementById("home-page").style.display = "none";
+  document.getElementById("reviews-page").classList.add("visible");
+  selectedStars = 0;
+  updateStarPicker();
+  renderReviews();
+}
+
+function hideReviews() {
+  document.getElementById("reviews-page").classList.remove("visible");
+  document.getElementById("home-page").style.display = "";
+}
+
+// Star picker interaction
+document.addEventListener("DOMContentLoaded", function() {
+  const picker = document.getElementById("star-picker");
+  if (!picker) return;
+  picker.querySelectorAll(".star").forEach(function(star) {
+    star.addEventListener("click", function() {
+      selectedStars = parseInt(this.getAttribute("data-val"));
+      updateStarPicker();
+    });
+    star.addEventListener("mouseover", function() {
+      const hovered = parseInt(this.getAttribute("data-val"));
+      picker.querySelectorAll(".star").forEach(function(s) {
+        s.classList.toggle("lit", parseInt(s.getAttribute("data-val")) <= hovered);
+      });
+    });
+    star.addEventListener("mouseout", function() {
+      updateStarPicker();
+    });
+  });
+});
+
+function updateStarPicker() {
+  const picker = document.getElementById("star-picker");
+  if (!picker) return;
+  picker.querySelectorAll(".star").forEach(function(s) {
+    s.classList.toggle("lit", parseInt(s.getAttribute("data-val")) <= selectedStars);
+  });
+}
+
+function starsToEmoji(n) {
+  return "★".repeat(n) + "☆".repeat(5 - n);
+}
+
+function submitReview() {
+  const nameVal = document.getElementById("review-name-input").value.trim();
+  const textVal = document.getElementById("review-text-input").value.trim();
+  const errEl   = document.getElementById("review-err");
+
+  if (!nameVal) { errEl.textContent = "Please enter your name."; errEl.style.display = "block"; return; }
+  if (!textVal) { errEl.textContent = "Please write your review."; errEl.style.display = "block"; return; }
+  if (selectedStars === 0) { errEl.textContent = "Please select a star rating."; errEl.style.display = "block"; return; }
+  errEl.style.display = "none";
+
+  const today = new Date();
+  const dateStr = today.getFullYear() + "-" + String(today.getMonth()+1).padStart(2,"0") + "-" + String(today.getDate()).padStart(2,"0");
+
+  const review = {
+    id: Date.now(),
+    name: nameVal,
+    text: textVal,
+    stars: selectedStars,
+    date: dateStr
+  };
+
+  reviews.push(review);
+  saveReviews();
+  allReviews = [...PRESET_REVIEWS, ...reviews];
+
+  document.getElementById("review-name-input").value = "";
+  document.getElementById("review-text-input").value = "";
+  selectedStars = 0;
+  updateStarPicker();
+
+  renderReviews();
+}
+
+function renderReviews() {
+  const list     = document.getElementById("reviews-list");
+  const emptyEl  = document.getElementById("reviews-empty");
+  const countEl  = document.getElementById("reviews-count-title");
+
+  list.innerHTML = "";
+  allReviews = [...PRESET_REVIEWS, ...reviews];
+
+  const total = allReviews.length;
+  countEl.textContent = total > 0 ? "All Reviews (" + total + ")" : "All Reviews";
+
+  if (total === 0) {
+    emptyEl.style.display = "block";
+    return;
+  }
+  emptyEl.style.display = "none";
+
+  // Show newest first
+  const reversed = [...allReviews].reverse();
+  reversed.forEach(function(r) {
+    const card = document.createElement("div");
+    card.className = "review-card";
+
+    const isPreset = typeof r.id === "string" && r.id.startsWith("preset-");
+    const canDelete = isAdmin && !isPreset;
+
+    card.innerHTML =
+      '<div class="review-card-top">' +
+        '<span class="review-author">' + esc(r.name) + '</span>' +
+        '<div style="display:flex;align-items:center;gap:6px">' +
+          '<span class="review-stars">' + starsToEmoji(r.stars) + '</span>' +
+          (canDelete ? '<button class="review-del-btn" title="Delete review">×</button>' : '') +
+        '</div>' +
+      '</div>' +
+      '<p class="review-text">' + esc(r.text) + '</p>' +
+      '<div class="review-date">' + esc(r.date) + '</div>';
+
+    if (canDelete) {
+      card.querySelector(".review-del-btn").onclick = function() {
+        if (confirm("Delete this review?")) {
+          reviews = reviews.filter(function(x) { return x.id !== r.id; });
+          saveReviews();
+          allReviews = [...PRESET_REVIEWS, ...reviews];
+          renderReviews();
+        }
+      };
+    }
+
+    list.appendChild(card);
+  });
+}
 
 // ─── Donation ─────────────────────────────────────────────────────────────────
 function buildPresets() {
@@ -1357,7 +1556,6 @@ document.addEventListener("click", function once() {
 tryPlay();
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
-// Restore sidebar collapsed state
 if (localStorage.getItem('vtrx_sidebar_collapsed') === '1') {
   const sb = document.getElementById('cat-sidebar');
   if (sb) sb.classList.add('collapsed');
