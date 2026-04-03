@@ -740,17 +740,17 @@ async function apiFetch(path, opts) {
   return null;
 }
 
-let botCount = 53;
+let botCount = 93;
 let realOnlineCount = 0;
 
 function getScheduledBotCount() {
-  var CYCLE = 600000;
+  var CYCLE = 150000;
   var pos = Date.now() % CYCLE;
   var offset = 0;
-  if (pos >= 120000) offset = 7;
-  if (pos >= 180000) offset = 5;
-  if (pos >= 360000) offset = 16;
-  if (pos >= 480000) offset = 12;
+  if (pos >= 250000) offset = 28;
+  if (pos >= 280000) offset = 12;
+  if (pos >= 390000) offset = 36;
+  if (pos >= 580000) offset = 10;
   return botCount + offset;
 }
 
@@ -787,7 +787,7 @@ const DEFAULT_GAMES = [
     category: 'Action',
     url: 'games/stickman-war.html',
     coverImage: 'VTRX%20Stickman%20War!%20Cover%20page.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 102, baseHeart: 118, isDefault: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 282, baseHeart: 258, isDefault: true
   },
   {
     id: 'default-mech-fps',
@@ -796,7 +796,7 @@ const DEFAULT_GAMES = [
     category: 'Action',
     url: 'games/mech-fps.html',
     coverImage: 'VTRX%20Boss%20Mech%20FPS!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 149, baseHeart: 141, isDefault: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 349, baseHeart: 291, isDefault: true
   },
   {
     id: 'default-nuke-tycoon',
@@ -805,7 +805,7 @@ const DEFAULT_GAMES = [
     category: 'Action',
     url: 'games/nuke-tycoon.html',
     coverImage: 'VTRX%20Nuke%20Tycoon!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 154, baseHeart: 147, isDefault: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 254, baseHeart: 247, isDefault: true
   },
   {
     id: 'default-drone-strike',
@@ -814,7 +814,7 @@ const DEFAULT_GAMES = [
     category: 'Action',
     url: 'games/drone-strike.html',
     coverImage: 'VTRX%20Drone%20Strike!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 129, baseHeart: 113, isDefault: true, hot: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 229, baseHeart: 213, isDefault: true, hot: true
   },
   {
     id: 'default-flippy-bird',
@@ -823,7 +823,7 @@ const DEFAULT_GAMES = [
     category: 'Arcade',
     url: 'games/vtrx-flippy-bird.html',
     coverImage: 'VTRX%20FlippyBird!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 86, baseHeart: 92, isDefault: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 106, baseHeart: 132, isDefault: true
   },
   {
     id: 'default-vtrx-dash',
@@ -832,7 +832,7 @@ const DEFAULT_GAMES = [
     category: 'Arcade',
     url: 'games/vtrx-dash.html',
     coverImage: 'VTRX%20Dash!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 72, baseHeart: 68, isDefault: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 122, baseHeart: 168, isDefault: true
   },
   {
     id: 'default-snipe-shot',
@@ -841,7 +841,7 @@ const DEFAULT_GAMES = [
     category: 'Action',
     url: 'games/vtrx-snipe-shot.html',
     coverImage: 'VTRX%20SnipeShot!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 178, baseHeart: 165, isDefault: true, hot: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 278, baseHeart: 265, isDefault: true, hot: true
   },
   {
     id: 'default-paper-clash',
@@ -850,7 +850,7 @@ const DEFAULT_GAMES = [
     category: 'Arcade',
     url: 'games/vtrx-paper-clash.html',
     coverImage: '',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 94, baseHeart: 88, isDefault: true, hot: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 194, baseHeart: 188, isDefault: true, hot: true
   }
 ];
 
