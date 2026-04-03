@@ -22,6 +22,49 @@
       position: sticky; top: 0; z-index: 100;
       background: rgba(13,0,0,0.95); backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
+        /* Premium Button Style */
+#premium-btn {
+  padding: 8px 16px;
+  background: var(--primary); /* Uses your red theme color */
+  color: #fff;
+  border: 1px solid var(--primary);
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 0 10px var(--primary-glow);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+#premium-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 15px var(--primary);
+}
+
+/* Premium Modal specific style */
+.premium-price {
+  font-size: 28px;
+  font-weight: 900;
+  color: #fff;
+  text-align: center;
+  margin: 15px 0;
+}
+
+.premium-perks {
+  list-style: none;
+  margin-bottom: 20px;
+  color: var(--text-dim);
+}
+
+.premium-perks li {
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+  
       padding: 0 24px; height: 64px;
       display: flex; align-items: center; gap: 16px;
     }
@@ -425,6 +468,7 @@
         <span id="online-count" style="color:#fff;font-weight:700">--</span>
         <span>online</span>
       </div>
+      <button id="premium-btn" onclick="openPremiumModal()">VTRX PREMIUM</button>
       <button class="header-btn" onclick="openDonation()">Donations</button>
       <button class="header-btn" onclick="showReviews()">Reviews</button>
       <button class="header-btn" onclick="showCredits()">Credits</button>
@@ -1314,6 +1358,40 @@ function deleteGame(id) {
   renderGrid();
 }
 
+  <div id="premium-modal" class="backdrop" style="display: none;">
+  <div class="modal modal-sm">
+    <div class="modal-head">
+      <div class="modal-title">VTRX PREMIUM</div>
+      <button class="modal-close" onclick="closePremiumModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div style="text-align: center; margin-bottom: 20px;">
+        <i class="fas fa-crown" style="font-size: 40px; color: #facc15; margin-bottom: 10px;"></i>
+        <p style="color: var(--text-dim);">Upgrade your experience on VTRX Games!</p>
+      </div>
+      
+      <div class="premium-price">$0.99</div>
+      
+      <ul class="premium-perks">
+        <li><i class="fas fa-check" style="color: #22c55e;"></i> No Ads (Ad-Free Experience)</li>
+        <li><i class="fas fa-check" style="color: #22c55e;"></i> Support the Developer</li>
+        <li><i class="fas fa-check" style="color: #22c55e;"></i> Special Premium Badge</li>
+      </ul>
+
+      <p style="font-size: 12px; color: var(--muted); text-align: center; margin-bottom: 15px;">
+        To purchase, please pay via PayPal. Once paid, email me your username to activate your perks!
+      </p>
+
+      <button id="paypal-btn" onclick="window.open('https://www.paypal.me/vultorex/0.99', '_blank')">
+        Pay with PayPal
+      </button>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-cancel" style="width: 100%;" onclick="closePremiumModal()">Maybe Later</button>
+    </div>
+  </div>
+</div>
+  
 // ─── Credits ──────────────────────────────────────────────────────────────────
 function showCredits() {
   document.getElementById("home-page").style.display = "none";
@@ -1564,6 +1642,19 @@ buildCats();
 buildPresets();
 renderGrid();
 updateUserBtn();
+  function openPremiumModal() {
+  document.getElementById('premium-modal').style.display = 'flex';
+}
+
+function closePremiumModal() {
+  document.getElementById('premium-modal').style.display = 'none';
+}
+
+// Optional: Close modal if clicking outside of it
+window.addEventListener('click', (e) => {
+  const modal = document.getElementById('premium-modal');
+  if (e.target === modal) closePremiumModal();
+});
 </script>
 <script src="https://pl28952013.profitablecpmratenetwork.com/cd/3e/b2/cd3eb2c4852b165cee5b0c2cfa3b7fab.js"></script>
 <script src="https://pl28951958.profitablecpmratenetwork.com/16/6e/4e/166e4e3833f5e6d355576be0d757eaef.js"></script>
