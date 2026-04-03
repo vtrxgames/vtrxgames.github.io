@@ -884,7 +884,6 @@ let reviews = JSON.parse(localStorage.getItem("vtrx_reviews") || "[]");
 // Add your own reviews here by adding more objects to this array:
 const PRESET_REVIEWS = [
   // { id: "preset-1", name: "VTRX", text: "Welcome to VTRX Games! We hope you enjoy the experience.", stars: 5, date: "2026-04-01" }
-  { id: "preset-1", name: "VTRX Cooperation!", text: "Welcome to VTRX Games! We hope you enjoy the experience.", stars: 5, date: "2026-04-01" }
 ];
 // Merge preset reviews with user reviews (presets first)
 let allReviews = [...PRESET_REVIEWS, ...reviews];
