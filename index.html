@@ -8,6 +8,7 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    /* ── Dark Mode (default) ── */
     :root {
       --bg: #0d0000; --card: #130000; --border: #2a0000;
       --secondary: #1a0000; --primary: #dc2626;
@@ -15,7 +16,52 @@
       --muted: #6b4040; --text: #f5e8e8; --text-dim: #a07070;
     }
 
-    body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
+    /* ── Light Mode ── */
+    body.light-mode {
+      --bg: #f8f4f4; --card: #ffffff; --border: #e0c8c8;
+      --secondary: #f0e4e4; --primary: #dc2626;
+      --primary-glow: rgba(220,38,38,0.25);
+      --muted: #9a6060; --text: #1a0000; --text-dim: #7a4040;
+    }
+    body.light-mode #header {
+      background: rgba(248,244,244,0.97);
+    }
+    body.light-mode .card-title { color: #1a0000; }
+    body.light-mode #review-name-input,
+    body.light-mode #review-text-input { background:#f0e4e4; border-color:#d0b0b0; color:#1a0000; }
+    body.light-mode .review-card { background:#f5eded; border-color:#e0c0c0; }
+    body.light-mode #credits-content h1,
+    body.light-mode #reviews-content h1 { color:#1a0000; }
+    body.light-mode .credit-item { background:#f5eded; border-color:#e0c0c0; }
+    body.light-mode #credit-input { background:#f0e4e4; border-color:#d0b0b0; color:#1a0000; }
+    body.light-mode #credit-add-form { background:#f5eded; border-color:#e0c0c0; }
+    body.light-mode .modal { background:#fff; }
+    body.light-mode .inp { background:#f0e4e4; border-color:#d0b0b0; color:#1a0000; }
+    body.light-mode .announce-card { background:rgba(220,38,38,0.05); }
+    body.light-mode #gotw-card { background:linear-gradient(135deg,rgba(220,38,38,0.08),rgba(240,200,200,0.5)); }
+    body.light-mode #search-input { background:rgba(0,0,0,0.04); border-color:#d0b0b0; color:#1a0000; }
+    body.light-mode #search-input::placeholder { color:#b09090; }
+    body.light-mode .comment-card { background:rgba(0,0,0,0.02); }
+    body.light-mode #comment-input { background:rgba(0,0,0,0.04); border-color:#d0b0b0; color:#1a0000; }
+    body.light-mode .game-card { background:#fff; border-color:#e0c8c8; }
+    body.light-mode .card-thumb { background:linear-gradient(135deg,#f0d0d0,#f8f4f4); }
+    body.light-mode #empty-icon { background:#f0e4e4; }
+    body.light-mode #player-bar, body.light-mode #player-below { background:#fff; }
+    body.light-mode #sidebar { background:#fff; }
+    body.light-mode .suggestion:hover { background:#f0e4e4; }
+    body.light-mode #cat-sidebar { background:#fff; }
+    body.light-mode .cat-btn:hover { background:#f0e4e4; }
+    body.light-mode #news-box { background:#fff; border-color:#e0c8c8; }
+    body.light-mode #news-box-header { background:linear-gradient(135deg,rgba(220,38,38,0.08),rgba(240,200,200,0.3)); border-color:#e0c8c8; }
+    body.light-mode .lb-row { border-bottom-color:rgba(0,0,0,0.05); }
+    body.light-mode #lb-name-input, body.light-mode #lb-score-input { background:rgba(0,0,0,0.04); color:#1a0000; }
+    body.light-mode #premium-page { background:#f8f4f4; }
+    body.light-mode .premium-perks { background:#f5eded; border-color:#e0c0c0; }
+    body.light-mode .premium-price-box { background:linear-gradient(135deg,#f5eded,#fff); }
+    body.light-mode .premium-unlock-box { background:#f5eded; border-color:#e0c0c0; }
+    body.light-mode #premium-code-input { background:#f0e4e4; border-color:#d0b0b0; color:#1a0000; }
+
+    body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; min-height: 100vh; transition: background .25s, color .25s; }
 
     /* ── Header ─────────────────────────────────────────── */
     #header {
@@ -24,6 +70,7 @@
       border-bottom: 1px solid var(--border);
       padding: 0 24px; height: 64px;
       display: flex; align-items: center; gap: 16px;
+      transition: background .25s;
     }
     #logo { display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; flex-shrink: 0; }
     #logo-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: #2a0000; }
@@ -37,6 +84,15 @@
       display: flex; align-items: center; justify-content: center;
     }
     #music-btn.playing { background: rgba(220,38,38,0.25); border-color: #dc2626; color: #dc2626; }
+    /* ── Dark/Light mode toggle button ── */
+    #theme-btn {
+      width: 36px; height: 36px; border-radius: 8px;
+      background: rgba(220,38,38,0.08); border: 1px solid rgba(220,38,38,0.3);
+      color: var(--text-dim); font-size: 16px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .2s, border-color .2s, color .2s;
+    }
+    #theme-btn:hover { background: rgba(220,38,38,0.2); border-color: #dc2626; color: var(--primary); }
     #online-badge {
       display: flex; align-items: center; gap: 6px; font-size: 13px;
       font-weight: 600; color: var(--text-dim);
@@ -59,7 +115,26 @@
 
     /* ── Main / Hero ─────────────────────────────────────── */
     #main { max-width: 1280px; margin: 0 auto; padding: 40px 24px; }
-    #hero { text-align: center; margin-bottom: 40px; }
+    /* Hero flex layout — text on left, news on right */
+    #hero {
+      display: flex; align-items: flex-start; gap: 28px;
+      margin-bottom: 40px;
+    }
+    #hero-left {
+      flex: 1; min-width: 0; text-align: center;
+    }
+
+    /* ── Played Count Badge ── */
+    #played-count-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(220,38,38,0.10); border: 1px solid rgba(220,38,38,0.3);
+      border-radius: 999px; padding: 5px 16px; font-size: 13px;
+      font-weight: 700; color: var(--primary); margin-bottom: 10px;
+      box-shadow: 0 0 12px rgba(220,38,38,0.15);
+    }
+    #played-count-badge .pc-icon { font-size: 15px; }
+    #played-count-badge .pc-num { font-size: 15px; font-weight: 900; color: #fff; }
+
     #hero-founded { font-size: 15px; font-weight: 900; margin-bottom: 14px; text-shadow: 0 0 20px rgba(220,38,38,0.4); }
     #hero-h1 { font-size: clamp(28px,5vw,52px); font-weight: 900; text-shadow: 0 0 40px rgba(220,38,38,0.55); margin-bottom: 10px; }
     #hero-desc { color: var(--text-dim); font-size: 16px; }
@@ -361,25 +436,14 @@
 
     /* ── Social Sidebar ──────────────────────────────────── */
     .social-sidebar {
-      position: fixed;
-      right: 15px;
-      top: 70px;
-      display: flex;
-      flex-direction: column;
-      z-index: 1000;
-      gap: 8px;
+      position: fixed; right: 15px; top: 70px;
+      display: flex; flex-direction: column; z-index: 1000; gap: 8px;
     }
     .social-sidebar a {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-decoration: none;
-      color: white;
-      width: 32px;
-      height: 32px;
-      border-radius: 20%;
-      transition: all 0.3s ease;
-      font-size: 14px;
+      display: flex; align-items: center; justify-content: center;
+      text-decoration: none; color: white;
+      width: 32px; height: 32px; border-radius: 20%;
+      transition: all 0.3s ease; font-size: 14px;
     }
     .social-sidebar .youtube { background-color: #FF0000; }
     .social-sidebar .gmail   { background-color: #D44638; }
@@ -411,10 +475,7 @@
     #premium-back { display: flex; align-items: center; gap: 8px; background: none; border: none; color: #a07070; font-size: 13px; cursor: pointer; }
     #premium-bar-title { font-weight: 900; font-size: 15px; color: #fff; border-left: 1px solid #2a0000; padding-left: 16px; letter-spacing: 0.5px; }
     #premium-content { max-width: 560px; margin: 60px auto; padding: 0 24px 60px; }
-
-    .premium-hero {
-      text-align: center; margin-bottom: 40px;
-    }
+    .premium-hero { text-align: center; margin-bottom: 40px; }
     .premium-crown { font-size: 52px; margin-bottom: 12px; }
     .premium-hero h1 {
       font-size: 34px; font-weight: 900; letter-spacing: -0.5px;
@@ -423,18 +484,13 @@
       margin-bottom: 8px;
     }
     .premium-hero p { color: var(--text-dim); font-size: 15px; }
-
-    .premium-perks {
-      background: #130000; border: 1px solid #2a0000;
-      border-radius: 14px; padding: 24px; margin-bottom: 28px;
-    }
+    .premium-perks { background: #130000; border: 1px solid #2a0000; border-radius: 14px; padding: 24px; margin-bottom: 28px; }
     .premium-perks h2 { font-size: 13px; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 18px; }
     .perk-row { display: flex; align-items: center; gap: 14px; padding: 10px 0; border-bottom: 1px solid #1a0000; }
     .perk-row:last-child { border-bottom: none; }
     .perk-icon { width: 36px; height: 36px; border-radius: 8px; background: rgba(220,38,38,0.15); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
     .perk-text strong { display: block; font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 2px; }
     .perk-text span { font-size: 12px; color: var(--text-dim); }
-
     .premium-price-box {
       background: linear-gradient(135deg, #200000, #130000);
       border: 1px solid #dc2626; border-radius: 14px;
@@ -455,11 +511,7 @@
     .paypal-logo { font-style: italic; }
     .paypal-logo .pp-pay { color: #fff; }
     .paypal-logo .pp-pal { color: #009cde; }
-
-    .premium-unlock-box {
-      background: #130000; border: 1px solid #2a0000;
-      border-radius: 14px; padding: 24px; margin-bottom: 16px;
-    }
+    .premium-unlock-box { background: #130000; border: 1px solid #2a0000; border-radius: 14px; padding: 24px; margin-bottom: 16px; }
     .premium-unlock-box h3 { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 6px; }
     .premium-unlock-box p { font-size: 12px; color: var(--text-dim); margin-bottom: 16px; line-height: 1.6; }
     #premium-code-input {
@@ -469,27 +521,180 @@
       margin-bottom: 12px; letter-spacing: 1px;
     }
     #premium-code-input:focus { border-color: #dc2626; }
-    #premium-unlock-btn {
-      width: 100%; padding: 11px; border-radius: 8px;
-      background: var(--primary); color: #fff; border: none;
-      font-size: 14px; font-weight: 700; cursor: pointer;
-    }
+    #premium-unlock-btn { width: 100%; padding: 11px; border-radius: 8px; background: var(--primary); color: #fff; border: none; font-size: 14px; font-weight: 700; cursor: pointer; }
     #premium-unlock-btn:hover { background: #b91c1c; }
     #premium-err { color: #f75e5e; font-size: 13px; margin-bottom: 10px; display: none; }
-    #premium-success {
-      display: none; background: rgba(34,197,94,0.1);
-      border: 1px solid rgba(34,197,94,0.3); border-radius: 10px;
-      padding: 16px; text-align: center; color: #86efac;
-      font-size: 14px; font-weight: 600; margin-bottom: 16px;
-    }
-    .premium-active-badge {
-      display: flex; align-items: center; gap: 10px;
-      background: rgba(220,38,38,0.12); border: 1px solid rgba(220,38,38,0.35);
-      border-radius: 10px; padding: 14px 18px; margin-bottom: 16px;
-    }
+    #premium-success { display: none; background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); border-radius: 10px; padding: 16px; text-align: center; color: #86efac; font-size: 14px; font-weight: 600; margin-bottom: 16px; }
+    .premium-active-badge { display: flex; align-items: center; gap: 10px; background: rgba(220,38,38,0.12); border: 1px solid rgba(220,38,38,0.35); border-radius: 10px; padding: 14px 18px; margin-bottom: 16px; }
     .premium-active-badge span { font-size: 14px; font-weight: 700; color: #ef4444; }
     .premium-active-badge p { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
     #premium-revoke-btn { margin-top: 10px; width: 100%; padding: 9px; border-radius: 8px; background: none; border: 1px solid rgba(239,68,68,0.3); color: #f87171; font-size: 13px; cursor: pointer; }
+
+    /* ─── Search Bar ─────────────────────────────────── */
+    #search-wrap { display:flex; align-items:center; gap:10px; margin:0 0 18px; }
+    #search-input {
+      flex:1; padding:10px 16px; border-radius:9px;
+      background:rgba(255,255,255,0.04); border:1px solid var(--border);
+      color:var(--text); font-size:14px; outline:none; transition:border .2s;
+    }
+    #search-input:focus { border-color:var(--primary); }
+    #search-input::placeholder { color:#6b4040; }
+    #search-clear { display:none; background:none; border:none; color:#6b4040; font-size:18px; cursor:pointer; padding:4px 8px; }
+    #search-shortcut { font-size:11px; color:#6b4040; white-space:nowrap; }
+
+    /* ─── Announcements Section (sidebar inline) ─────── */
+    #announcements-section { margin-bottom:24px; }
+    #announcements-section h3 { font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:#6b4040; margin-bottom:10px; }
+    .announce-card {
+      display:flex; gap:14px; align-items:flex-start;
+      background:rgba(220,38,38,0.06); border:1px solid rgba(220,38,38,0.15);
+      border-radius:10px; padding:14px 16px; margin-bottom:10px;
+    }
+    .announce-icon { font-size:20px; flex-shrink:0; margin-top:1px; }
+    .announce-body {}
+    .announce-title { font-size:14px; font-weight:700; color:var(--text); margin-bottom:3px; }
+    .announce-text { font-size:13px; color:var(--text-dim); line-height:1.5; margin-bottom:4px; }
+    .announce-date { font-size:11px; color:#6b4040; }
+
+    /* ─── News/Announcements Box (right of hero) ─── */
+    #news-box {
+      width: 300px; flex-shrink: 0;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; overflow: hidden;
+      max-height: 340px; display: flex; flex-direction: column;
+      box-shadow: 0 4px 24px rgba(220,38,38,0.10);
+    }
+    #news-box-header {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 16px; flex-shrink: 0;
+      background: linear-gradient(135deg, rgba(220,38,38,0.18), rgba(40,0,0,0.7));
+      border-bottom: 1px solid var(--border);
+    }
+    #news-box-header .news-icon { font-size: 16px; }
+    #news-box-title {
+      font-size: 13px; font-weight: 900; color: #fff;
+      text-transform: uppercase; letter-spacing: 0.7px;
+    }
+    #news-box-title span { color: var(--primary); }
+    #news-box-body {
+      padding: 14px 16px; display: flex; flex-direction: column;
+      gap: 10px; overflow-y: auto; flex: 1;
+    }
+    .news-item {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding-bottom: 12px; border-bottom: 1px solid var(--border);
+    }
+    .news-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .news-item-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+    .news-item-content {}
+    .news-item-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+    .news-item-text { font-size: 12px; color: var(--text-dim); line-height: 1.5; }
+    .news-item-date { font-size: 11px; color: #6b4040; margin-top: 3px; }
+
+    /* ─── Game of the Week ────────────────────────────── */
+    #gotw-section { margin-bottom:24px; }
+    #gotw-section h3 { font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:#6b4040; margin-bottom:10px; }
+    #gotw-card {
+      display:flex; gap:16px; align-items:center;
+      background:linear-gradient(135deg,rgba(220,38,38,0.12),rgba(40,10,10,0.5));
+      border:1px solid rgba(220,38,38,0.3); border-radius:14px; padding:16px 18px;
+      cursor:pointer; transition:border-color .2s, transform .15s;
+      position:relative; overflow:hidden;
+    }
+    #gotw-card:hover { border-color:rgba(220,38,38,0.6); transform:translateY(-2px); }
+    #gotw-cover { width:90px; height:64px; border-radius:8px; object-fit:cover; flex-shrink:0; background:#1a0505; }
+    #gotw-cover-fallback { width:90px; height:64px; border-radius:8px; background:rgba(220,38,38,0.15); display:flex; align-items:center; justify-content:center; font-size:26px; flex-shrink:0; }
+    #gotw-info { flex:1; min-width:0; }
+    #gotw-badge { font-size:10px; background:rgba(220,38,38,0.3); color:#f87171; border-radius:5px; padding:2px 7px; letter-spacing:.06em; font-weight:700; text-transform:uppercase; display:inline-block; margin-bottom:5px; }
+    #gotw-name { font-size:17px; font-weight:800; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    #gotw-desc { font-size:12px; color:var(--text-dim); margin-top:4px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+    #gotw-arrow { color:#dc2626; font-size:22px; flex-shrink:0; }
+
+    /* ─── Discord Badge ───────────────────────────────── */
+    #discord-badge {
+      display:inline-flex; align-items:center; gap:8px;
+      background:rgba(88,101,242,0.12); border:1px solid rgba(88,101,242,0.3);
+      border-radius:8px; padding:7px 14px; margin-top:12px; text-decoration:none;
+      color:#a5b4fc; font-size:13px; font-weight:600; transition:background .2s;
+    }
+    #discord-badge:hover { background:rgba(88,101,242,0.22); }
+    #discord-badge svg { flex-shrink:0; }
+
+    /* ─── View Count ──────────────────────────────────── */
+    .view-count-badge {
+      position:absolute; bottom:8px; left:8px;
+      background:rgba(0,0,0,0.65); color:#ccc; font-size:10px;
+      border-radius:5px; padding:2px 6px; display:flex; align-items:center; gap:3px;
+    }
+
+    /* ─── Coming Soon Cards ───────────────────────────── */
+    .card.coming-soon { opacity:.75; cursor:default; }
+    .card.coming-soon:hover { transform:none; box-shadow:none; }
+    .coming-soon-overlay {
+      position:absolute; inset:0; display:flex; flex-direction:column;
+      align-items:center; justify-content:center; gap:6px;
+      background:rgba(0,0,0,0.6); border-radius:12px;
+    }
+    .coming-soon-label { font-size:12px; font-weight:800; color:#f87171; text-transform:uppercase; letter-spacing:.06em; }
+    .coming-soon-date-label { font-size:11px; color:#888; }
+
+    /* ─── Player extras ──────────────────────────────── */
+    #player-extras { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:14px; }
+    .player-extra-btn {
+      display:inline-flex; align-items:center; gap:6px;
+      padding:7px 14px; border-radius:8px; font-size:13px; font-weight:600;
+      border:1px solid rgba(220,38,38,0.35); color:#f87171; background:rgba(220,38,38,0.07);
+      cursor:pointer; transition:background .2s;
+    }
+    .player-extra-btn:hover { background:rgba(220,38,38,0.15); }
+    #player-views { display:flex; align-items:center; gap:5px; font-size:13px; color:#6b4040; margin-left:auto; }
+
+    /* ─── Comments Section ────────────────────────────── */
+    #comments-section { margin-top:24px; border-top:1px solid var(--border); padding-top:20px; }
+    #comments-section h3 { font-size:15px; font-weight:700; margin-bottom:14px; color:var(--text); }
+    #comments-list { display:flex; flex-direction:column; gap:10px; margin-bottom:16px; }
+    .comment-card {
+      background:rgba(255,255,255,0.03); border:1px solid var(--border);
+      border-radius:10px; padding:12px 14px;
+    }
+    .comment-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:5px; }
+    .comment-author { font-size:13px; font-weight:700; color:var(--text); }
+    .comment-time { font-size:11px; color:#6b4040; }
+    .comment-body { font-size:13px; color:var(--text-dim); line-height:1.5; }
+    .comment-del { background:none; border:none; color:#6b4040; cursor:pointer; font-size:13px; padding:0 4px; }
+    .comment-del:hover { color:#f87171; }
+    #no-comments { font-size:13px; color:#6b4040; margin-bottom:12px; }
+    #comment-form { display:flex; gap:8px; align-items:stretch; }
+    #comment-input { flex:1; padding:9px 12px; border-radius:8px; background:rgba(255,255,255,0.04); border:1px solid var(--border); color:var(--text); font-size:13px; outline:none; }
+    #comment-input:focus { border-color:var(--primary); }
+    #comment-submit { padding:9px 16px; background:var(--primary); color:#fff; border:none; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; white-space:nowrap; }
+    #comment-submit:hover { background:#b91c1c; }
+
+    /* ─── Leaderboard Modal ───────────────────────────── */
+    #leaderboard-modal .modal-body { max-height:360px; overflow-y:auto; }
+    .lb-row { display:flex; align-items:center; gap:10px; padding:8px 4px; border-bottom:1px solid rgba(255,255,255,0.05); }
+    .lb-row:last-child { border-bottom:none; }
+    .lb-rank { font-size:12px; font-weight:800; color:#6b4040; width:22px; text-align:center; flex-shrink:0; }
+    .lb-rank.gold { color:#f59e0b; }
+    .lb-rank.silver { color:#9ca3af; }
+    .lb-rank.bronze { color:#cd7f32; }
+    .lb-name { flex:1; font-size:13px; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .lb-score { font-size:14px; font-weight:800; color:#dc2626; }
+    #lb-empty { font-size:13px; color:#6b4040; padding:12px 0; }
+    #lb-submit-wrap { display:flex; gap:8px; margin-top:14px; flex-wrap:wrap; }
+    #lb-name-input, #lb-score-input { flex:1; min-width:90px; padding:8px 10px; border-radius:7px; background:rgba(255,255,255,0.04); border:1px solid var(--border); color:var(--text); font-size:13px; outline:none; }
+    #lb-name-input:focus, #lb-score-input:focus { border-color:var(--primary); }
+    #lb-submit-btn { padding:8px 16px; background:var(--primary); color:#fff; border:none; border-radius:7px; font-size:13px; font-weight:700; cursor:pointer; }
+    #lb-err { font-size:12px; color:#f75e5e; margin-top:6px; display:none; }
+
+    /* ─── Trailer Modal ───────────────────────────────── */
+    #trailer-modal .modal-body { padding:0; border-radius:0 0 14px 14px; overflow:hidden; }
+    #trailer-iframe { width:100%; height:320px; border:none; display:block; }
+
+    /* ─── Keyboard hint ───────────────────────────────── */
+    #kb-hint { font-size:11px; color:#6b4040; margin-top:14px; }
+    #kb-hint kbd { background:rgba(255,255,255,0.08); border:1px solid var(--border); border-radius:3px; padding:1px 5px; font-family:monospace; font-size:10px; }
+
   </style>
 </head>
 <body>
@@ -521,6 +726,8 @@
     </div>
     <div id="header-right">
       <button id="music-btn" onclick="toggleMusic()" title="Toggle music">🔇</button>
+      <!-- Dark/Light mode toggle — click to switch between dark (default) and light mode -->
+      <button id="theme-btn" onclick="toggleTheme()" title="Toggle dark/light mode">☀️</button>
       <div id="online-badge">
         <div id="online-dot"></div>
         <span id="online-count" style="color:#fff;font-weight:700">--</span>
@@ -541,11 +748,62 @@
       <div id="cat-sidebar-label">Categories</div>
     </nav>
     <main id="main">
+    <!-- Hero: left = title/desc, right = news box -->
     <div id="hero">
-      <p id="hero-founded"><strong>Founded and created by VTRX Cooperation!</strong></p>
-      <h1 id="hero-h1">VTRX Games!</h1>
-      <p id="hero-desc">Discover and play awesome browser games on VTRX Games! If you are a game dev, email me: vtrx1.official@gmail.com If there are any bugs, reports, or suggestions you can email me at <strong style="text-decoration:underline">vtrx1.official@gmail.com</strong></p>
+      <div id="hero-left">
+        <!-- ── Played Count Badge ── CHANGE: edit PLAYED_COUNT on line 1140 in the script section -->
+        <div id="played-count-badge">
+          <span class="pc-icon">🎮</span>
+          <span id="played-count-display" class="pc-num">0</span>
+          <span style="color:var(--text-dim);font-size:12px;font-weight:600">people played</span>
+        </div>
+        <p id="hero-founded"><strong>Founded and created by VTRX Cooperation!</strong></p>
+        <h1 id="hero-h1">VTRX Games!</h1>
+        <p id="hero-desc">Discover and play awesome browser games on VTRX Games! If you are a game dev, email me: vtrx1.official@gmail.com If there are any bugs, reports, or suggestions you can email me at <strong style="text-decoration:underline">vtrx1.official@gmail.com</strong></p>
+        <a id="discord-badge" href="https://discord.gg/Gq4ggeWraB" target="_blank" rel="noopener">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#7289da"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+          Join our Discord
+        </a>
+        <p id="kb-hint">Press <kbd>/</kbd> to search &nbsp;·&nbsp; <kbd>Esc</kbd> to close a game</p>
+      </div>
+
+      <!-- ── News/Announcements Box (right side of hero) ──
+           CHANGE ANNOUNCEMENTS: edit VTRX_NEWS array on line 1148 in the script section -->
+      <div id="news-box">
+        <div id="news-box-header">
+          <span class="news-icon">📢</span>
+          <div id="news-box-title">News/Announcements:</div>
+        </div>
+        <div id="news-box-body">
+          <!-- Filled by JS from VTRX_NEWS array -->
+        </div>
+      </div>
     </div>
+
+    <!-- ── Announcements (legacy inline) ── -->
+    <div id="announcements-section" style="display:none"></div>
+
+    <!-- ── Game of the Week ── -->
+    <div id="gotw-section" style="display:none">
+      <h3>🏆 Game of the Week</h3>
+      <div id="gotw-card" onclick="gotwPlay()">
+        <img id="gotw-cover" src="" alt="" onerror="this.style.display='none';document.getElementById('gotw-cover-fallback').style.display='flex'" />
+        <div id="gotw-cover-fallback" style="display:none">🎮</div>
+        <div id="gotw-info">
+          <span id="gotw-badge">⭐ Featured</span>
+          <div id="gotw-name"></div>
+          <div id="gotw-desc"></div>
+        </div>
+        <div id="gotw-arrow">›</div>
+      </div>
+    </div>
+
+    <!-- ── Search ── -->
+    <div id="search-wrap">
+      <input id="search-input" placeholder="Search games..." oninput="onSearch(this.value)" onkeydown="if(event.key==='Escape')clearSearch()" />
+      <button id="search-clear" onclick="clearSearch()">×</button>
+    </div>
+
     <div id="games-area">
       <div id="empty">
         <div id="empty-icon">
@@ -675,48 +933,31 @@
     <button id="premium-back" onclick="hidePremium()">&#8592; Back to Home</button>
     <span id="premium-bar-title">&#9733; VTRX PREMIUM</span>
   </div>
-
   <div id="premium-content">
-
     <div class="premium-hero">
       <div class="premium-crown">&#9733;</div>
       <h1>VTRX PREMIUM</h1>
       <p>Upgrade your experience. Play ad-free, forever.</p>
     </div>
-
     <div class="premium-perks">
       <h2>What you get</h2>
       <div class="perk-row">
         <div class="perk-icon">&#128683;</div>
-        <div class="perk-text">
-          <strong>100% Ad-Free</strong>
-          <span>No banners, no pop-ups — ever again.</span>
-        </div>
+        <div class="perk-text"><strong>100% Ad-Free</strong><span>No banners, no pop-ups — ever again.</span></div>
       </div>
       <div class="perk-row">
         <div class="perk-icon">&#9889;</div>
-        <div class="perk-text">
-          <strong>Faster Load Times</strong>
-          <span>Without ads slowing things down.</span>
-        </div>
+        <div class="perk-text"><strong>Faster Load Times</strong><span>Without ads slowing things down.</span></div>
       </div>
       <div class="perk-row">
         <div class="perk-icon">&#127381;</div>
-        <div class="perk-text">
-          <strong>Support VTRX Games</strong>
-          <span>Help keep new games coming. One-time payment.</span>
-        </div>
+        <div class="perk-text"><strong>Support VTRX Games</strong><span>Help keep new games coming. One-time payment.</span></div>
       </div>
       <div class="perk-row">
         <div class="perk-icon">&#9654;</div>
-        <div class="perk-text">
-          <strong>All Games, Always</strong>
-          <span>Full access to every game — now and future.</span>
-        </div>
+        <div class="perk-text"><strong>All Games, Always</strong><span>Full access to every game — now and future.</span></div>
       </div>
     </div>
-
-    <!-- Active badge (shown when unlocked) -->
     <div id="premium-active-section" style="display:none">
       <div class="premium-active-badge">
         <div style="font-size:28px">&#9733;</div>
@@ -727,8 +968,6 @@
       </div>
       <button id="premium-revoke-btn" onclick="revokePremium()">Remove Premium</button>
     </div>
-
-    <!-- Purchase section (shown when not unlocked) -->
     <div id="premium-buy-section">
       <div class="premium-price-box">
         <div class="premium-price"><span>$</span>0.99</div>
@@ -738,7 +977,6 @@
           &mdash; Pay $0.99 Now
         </button>
       </div>
-
       <div class="premium-unlock-box">
         <h3>Already paid? Enter your code</h3>
         <p>After payment, message us on Discord or email <strong style="color:#ef4444">vtrx1.official@gmail.com</strong> with your PayPal receipt and we'll send you your unlock code.</p>
@@ -747,7 +985,6 @@
         <button id="premium-unlock-btn" onclick="unlockPremium()">Unlock Premium</button>
       </div>
     </div>
-
   </div>
 </div>
 
@@ -906,6 +1143,44 @@ const PAYPAL     = "fahadatawi42@gmail.com";
 const CATEGORIES = ["All","Action","Puzzle","Racing","Adventure","Arcade","Strategy","Sports","Other"];
 const BASE_THUMBS = 36, BASE_HEART = 41;
 
+// ══════════════════════════════════════════════════════════════
+// PLAYED COUNT — Change this number to set how many people played
+// Line reference: look for "PLAYED_COUNT" below
+const PLAYED_COUNT = 3.6k; // <-- CHANGE THIS NUMBER (line ~625)
+// ══════════════════════════════════════════════════════════════
+
+// ══════════════════════════════════════════════════════════════
+// VTRX NEWS / ANNOUNCEMENTS — Add, remove, or edit entries below
+// Each item needs: icon (emoji), title, text, date
+// Line reference: look for "VTRX_NEWS" below
+const VTRX_NEWS = [
+  // Add more items by copying the format below:
+  {
+    icon: "🏴⚔♠",
+    title: "test!",
+    text: "Lots of new updates! (this is a test)",
+    date: "2026-04-04"
+  },
+
+  // Add more announcements here ↑ (don't forget a comma after each item except the last)
+]; // <-- End of VTRX_NEWS array (line ~650)
+// ══════════════════════════════════════════════════════════════
+
+// ══════════════════════════════════════════════════════════════
+// PRESET REVIEWS — Add your own reviews here. Users can also submit reviews.
+// Each review needs: id (unique string), name, text, stars (1-5), date
+// Line reference: look for "PRESET_REVIEWS" below
+const PRESET_REVIEWS = [
+  { id: "preset-1", name: "VTRX Cooperation!", text: "Welcome to VTRX Games! We hope you enjoy the experience.", stars: 5, date: "2026-04-01" },
+  { id: "preset-2", name: "eelizabeth", text: "i like it but add more games", stars: 3, date: "2026-04-01" },
+  { id: "preset-3", name: "183gfh4", text: "ts great", stars: 4, date: "2026-04-01" },
+  { id: "preset-4", name: "coolguy5", text: "add more games to this", stars: 5, date: "2026-04-01" },
+  { id: "preset-5", name: "police officer", text: "dis da policia", stars: 4, date: "2026-04-01" },
+  // Add more preset reviews below ↓ (copy the line above, change id, name, text, stars, date)
+  // { id: "preset-2", name: "PlayerName", text: "Your review text here!", stars: 5, date: "2026-04-04" },
+]; // <-- End of PRESET_REVIEWS (line ~668)
+// ══════════════════════════════════════════════════════════════
+
 // ─── API (shared reactions + online count) ────────────────────────────────────
 const API_URL = "https://fa458057-f594-40ac-a531-0e8547eb6920-00-2hllnmkn37yf.riker.replit.dev/api";
 
@@ -1056,23 +1331,11 @@ let coverData  = null;
 let codeFileActive = false;
 let donateRawAmount = "";
 let activePreset    = null;
+let searchQuery = "";
 
 // ─── Reviews State ────────────────────────────────────────────────────────────
-// ===== TO ADD YOUR OWN REVIEWS, EDIT THE ARRAY BELOW =====
-// Each review must have: name (string), text (string), stars (number 1-5), date (string)
-// Example: { name: "PlayerOne", text: "Amazing game site!", stars: 5, date: "2026-04-01" }
-// You can add as many as you want. They will show up for everyone.
 let reviews = JSON.parse(localStorage.getItem("vtrx_reviews") || "[]");
-
-// ===== PRE-LOADED REVIEWS (visible to everyone) =====
-// Add your own reviews here by adding more objects to this array:
-const PRESET_REVIEWS = [
-  // { id: "preset-1", name: "VTRX", text: "Welcome to VTRX Games! We hope you enjoy the experience.", stars: 5, date: "2026-04-01" }
-  { id: "preset-1", name: "VTRX Cooperation!", text: "Welcome to VTRX Games! We hope you enjoy the experience.", stars: 5, date: "2026-04-01" }
-];
-// Merge preset reviews with user reviews (presets first)
 let allReviews = [...PRESET_REVIEWS, ...reviews];
-
 let selectedStars = 0;
 
 function saveReviews() { localStorage.setItem("vtrx_reviews", JSON.stringify(reviews)); }
@@ -1163,6 +1426,58 @@ pingOnline();
 setInterval(pingOnline, 30000);
 setInterval(updateOnlineDisplay, 30000);
 
+// ─── Played Count Display ─────────────────────────────────────────────────────
+function formatPlayedCount(n) {
+  if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+  if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+  return n.toLocaleString();
+}
+document.getElementById("played-count-display").textContent = formatPlayedCount(PLAYED_COUNT);
+
+// ─── News/Announcements Box ───────────────────────────────────────────────────
+function buildNewsBox() {
+  const body = document.getElementById("news-box-body");
+  if (!body) return;
+  body.innerHTML = "";
+  if (!VTRX_NEWS || VTRX_NEWS.length === 0) {
+    document.getElementById("news-box").style.display = "none";
+    return;
+  }
+  VTRX_NEWS.forEach(function(item) {
+    const el = document.createElement("div");
+    el.className = "news-item";
+    el.innerHTML =
+      '<div class="news-item-icon">' + (item.icon || '📢') + '</div>' +
+      '<div class="news-item-content">' +
+        '<div class="news-item-title">' + esc(item.title) + '</div>' +
+        '<div class="news-item-text">' + esc(item.text) + '</div>' +
+        (item.date ? '<div class="news-item-date">' + esc(item.date) + '</div>' : '') +
+      '</div>';
+    body.appendChild(el);
+  });
+}
+
+// ─── Dark / Light Mode Toggle ─────────────────────────────────────────────────
+let isDarkMode = localStorage.getItem("vtrx_theme") !== "light";
+
+function applyTheme() {
+  if (isDarkMode) {
+    document.body.classList.remove("light-mode");
+    document.getElementById("theme-btn").textContent = "☀️";
+    document.getElementById("theme-btn").title = "Switch to light mode";
+  } else {
+    document.body.classList.add("light-mode");
+    document.getElementById("theme-btn").textContent = "🌙";
+    document.getElementById("theme-btn").title = "Switch to dark mode";
+  }
+}
+
+function toggleTheme() {
+  isDarkMode = !isDarkMode;
+  localStorage.setItem("vtrx_theme", isDarkMode ? "dark" : "light");
+  applyTheme();
+}
+
 // ─── Category Buttons ─────────────────────────────────────────────────────────
 function buildCats() {
   const sidebar = document.getElementById('cat-sidebar');
@@ -1222,22 +1537,63 @@ function selectCat(c) {
   });
 }
 
+// ─── Search ───────────────────────────────────────────────────────────────────
+function onSearch(val) {
+  searchQuery = val.trim().toLowerCase();
+  const clearBtn = document.getElementById("search-clear");
+  if (clearBtn) clearBtn.style.display = searchQuery ? "block" : "none";
+  renderGrid();
+}
+
+function clearSearch() {
+  searchQuery = "";
+  const input = document.getElementById("search-input");
+  if (input) input.value = "";
+  const clearBtn = document.getElementById("search-clear");
+  if (clearBtn) clearBtn.style.display = "none";
+  renderGrid();
+}
+
+// Slash key opens search
+document.addEventListener("keydown", function(e) {
+  if (e.key === "/" && document.activeElement.tagName !== "INPUT" && document.activeElement.tagName !== "TEXTAREA") {
+    e.preventDefault();
+    const input = document.getElementById("search-input");
+    if (input) { input.focus(); input.select(); }
+  }
+});
+
 // ─── Games Grid ───────────────────────────────────────────────────────────────
 function renderGrid() {
   const PHONE_GAMES = ["default-flippy-bird","default-vtrx-dash","vtrx-basketball-shots","vtrx-soccer-kick","vtrx-bowling-strike","vtrx-baseball-pitcher","vtrx-golf-rush","vtrx-volleyball-spike"];
-  const filtered = currentCat === "Continue Playing"
+  let filtered = currentCat === "Continue Playing"
     ? recentlyPlayed.map(id => games.find(g => g.id === id)).filter(Boolean)
     : currentCat === "All" || currentCat === "Computer Playable" ? games
     : currentCat === "Phone/Tablet Playable" ? games.filter(g => PHONE_GAMES.includes(g.id))
     : games.filter(g => g.category === currentCat);
+
+  // Apply search filter
+  if (searchQuery) {
+    filtered = filtered.filter(g =>
+      g.name.toLowerCase().includes(searchQuery) ||
+      (g.description && g.description.toLowerCase().includes(searchQuery)) ||
+      (g.category && g.category.toLowerCase().includes(searchQuery))
+    );
+  }
+
   const grid    = document.getElementById("grid");
   const empty   = document.getElementById("empty");
   grid.innerHTML = "";
 
   if (filtered.length === 0) {
     empty.style.display = "flex";
-    empty.querySelector("h2").textContent = currentCat === "Continue Playing" ? "No history yet" : currentCat !== "All" ? "No games found" : "No games yet";
-    empty.querySelector("p").textContent  = currentCat === "Continue Playing" ? "Play some games and they'll appear here" : currentCat !== "All" ? "Try a different category" : "Games will appear here once they're added";
+    if (searchQuery) {
+      empty.querySelector("h2").textContent = "No games found";
+      empty.querySelector("p").textContent  = 'No games match "' + searchQuery + '"';
+    } else {
+      empty.querySelector("h2").textContent = currentCat === "Continue Playing" ? "No history yet" : currentCat !== "All" ? "No games found" : "No games yet";
+      empty.querySelector("p").textContent  = currentCat === "Continue Playing" ? "Play some games and they'll appear here" : currentCat !== "All" ? "Try a different category" : "Games will appear here once they're added";
+    }
     return;
   }
   empty.style.display = "none";
@@ -1248,7 +1604,7 @@ function renderGrid() {
     card.innerHTML = `
       <div class="card-thumb">
         ${game.coverImage ? `<img src="${game.coverImage}" alt="${esc(game.name)}" />` : gamepadSVG(36)}
-        <div class="card-overlay"><button class="play-btn">▶ Play Now</button></div>
+        <div class="card-overlay"><button class="play-btn">&#9654; Play Now</button></div>
         ${game.hot ? `<span class="card-hot-badge">🔥 HOT</span>` : ""}
         <span class="card-cat-badge">${esc(game.category)}</span>
       </div>
@@ -1279,6 +1635,21 @@ function saveCredits() { localStorage.setItem("vtrx_credits", JSON.stringify(cre
 function saveVoted()   { localStorage.setItem("vtrx_voted",   JSON.stringify(voted));   }
 
 // ─── Game Player ──────────────────────────────────────────────────────────────
+let currentReactions = { thumbs: 0, heart: 0 };
+
+function updateReactionsUI(r) {
+  const g = currentGame;
+  const baseThumbs = (g && g.baseThumbs != null) ? g.baseThumbs : BASE_THUMBS;
+  const baseHeart  = (g && g.baseHeart  != null) ? g.baseHeart  : BASE_HEART;
+  document.getElementById("thumbs-count").textContent = baseThumbs + (r.thumbs || 0);
+  document.getElementById("heart-count").textContent  = baseHeart  + (r.heart  || 0);
+  if (currentGame) {
+    const myVotes = voted[currentGame.id] || {};
+    document.getElementById("thumbs-btn").classList.toggle("active", !!myVotes.thumbs);
+    document.getElementById("heart-btn").classList.toggle("active",  !!myVotes.heart);
+  }
+}
+
 function openGame(game) {
   currentGame = game;
   trackPlayed(game.id);
@@ -1292,50 +1663,31 @@ function openGame(game) {
 
   currentReactions = { thumbs: 0, heart: 0 };
   updateReactionsUI(currentReactions);
-  fetchReactions(game.id).then(counts => updateReactionsUI(counts));
 
-  const iframe = document.getElementById("game-frame");
-  if (game.url) {
-    iframe.src = game.url;
-  } else {
-    iframe.removeAttribute("src");
-    const doc = iframe.contentDocument || iframe.contentWindow.document;
-    doc.open(); doc.write(game.code); doc.close();
+  // Load game
+  const frame = document.getElementById("game-frame");
+  if (game.code) {
+    const blob = new Blob([game.code], { type: "text/html" });
+    frame.src = URL.createObjectURL(blob);
+  } else if (game.url) {
+    frame.src = game.url;
   }
 
   renderSuggestions(game);
+
+  fetchReactions(game.id).then(function(r) {
+    currentReactions = r;
+    updateReactionsUI(r);
+  });
 }
-
-let currentReactions = { thumbs: 0, heart: 0 };
-
-function updateReactionsUI(counts) {
-  if (counts) currentReactions = counts;
-  const game = currentGame;
-  if (!game) return;
-  const v = voted[game.id] || { thumbs: false, heart: false };
-  document.getElementById("thumbs-btn").className = "react-btn" + (v.thumbs ? " active" : "");
-  document.getElementById("heart-btn").className  = "react-btn" + (v.heart  ? " active" : "");
-  var bt = (game && game.baseThumbs != null) ? game.baseThumbs : BASE_THUMBS;
-  var bh = (game && game.baseHeart  != null) ? game.baseHeart  : BASE_HEART;
-  document.getElementById("thumbs-count").textContent = bt + currentReactions.thumbs;
-  document.getElementById("heart-count").textContent  = bh + currentReactions.heart;
-}
-
-function updateReactions(game) { updateReactionsUI(null); }
 
 async function react(type) {
   if (!currentGame) return;
-  if (isAdmin) {
-    currentReactions = { ...currentReactions, [type]: currentReactions[type] + 1 };
-    updateReactionsUI(currentReactions);
-    const updated = await postReaction(currentGame.id, type, 1);
-    if (updated) updateReactionsUI(updated);
-    return;
-  }
-  const v = voted[currentGame.id] || { thumbs: false, heart: false };
-  const already = v[type];
-  const delta = already ? -1 : 1;
-  voted[currentGame.id] = { ...v, [type]: !already };
+  const myVotes = voted[currentGame.id] || {};
+  const alreadyVoted = !!myVotes[type];
+  const delta = alreadyVoted ? -1 : 1;
+  if (!voted[currentGame.id]) voted[currentGame.id] = {};
+  voted[currentGame.id][type] = !alreadyVoted;
   saveVoted();
   currentReactions = { ...currentReactions, [type]: Math.max(0, currentReactions[type] + delta) };
   updateReactionsUI(currentReactions);
@@ -1640,7 +1992,6 @@ function renderReviews() {
   }
   emptyEl.style.display = "none";
 
-  // Show newest first
   const reversed = [...allReviews].reverse();
   reversed.forEach(function(r) {
     const card = document.createElement("div");
@@ -1745,26 +2096,24 @@ if (localStorage.getItem('vtrx_sidebar_collapsed') === '1') {
   const sb = document.getElementById('cat-sidebar');
   if (sb) sb.classList.add('collapsed');
 }
+applyTheme();
+buildNewsBox();
 buildCats();
 buildPresets();
 renderGrid();
 updateUserBtn();
 
 // ─── Premium ──────────────────────────────────────────────────────────────────
-// Change this code to whatever you want — share it with buyers after payment
 const PREMIUM_CODE = "VTRXPREM99";
-
 let isPremium = localStorage.getItem('vtrx_premium') === '1';
 
 function applyPremium() {
   const adWrap = document.getElementById('ads-wrap');
   if (adWrap) adWrap.style.display = isPremium ? 'none' : '';
-  // Update premium page UI if open
   const activeSection = document.getElementById('premium-active-section');
   const buySection    = document.getElementById('premium-buy-section');
   if (activeSection) activeSection.style.display = isPremium ? 'block' : 'none';
   if (buySection)    buySection.style.display    = isPremium ? 'none'  : 'block';
-  // Glow the header button when active
   const btn = document.getElementById('premium-btn');
   if (btn) {
     btn.style.boxShadow = isPremium
@@ -1817,7 +2166,6 @@ function premiumPay() {
   );
 }
 
-// Apply on page load
 applyPremium();
 </script>
 <div id="ads-wrap">
