@@ -1226,17 +1226,17 @@ async function apiFetch(path, opts) {
   return null;
 }
 
-let botCount = 101;
+let botCount = 111;
 let realOnlineCount = 0;
 
 function getScheduledBotCount() {
-  var CYCLE = 1600000;
+  var CYCLE = 1800000;
   var pos = Date.now() % CYCLE;
   var offset = 0;
-  if (pos >= 280000) offset = 38;
-  if (pos >= 280000) offset = 14;
-  if (pos >= 460000) offset = 36;
-  if (pos >= 580000) offset = 14;
+  if (pos >= 380000) offset = 38;
+  if (pos >= 380000) offset = 16;
+  if (pos >= 460000) offset = 38;
+  if (pos >= 580000) offset = 19;
   return botCount + offset;
 }
 
