@@ -6,7 +6,7 @@
 <title>VTRX Tower Defense!</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#111;color:#fff;font-family:'Segoe UI',sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;user-select:none;overflow:hidden}
+body{background:#111;color:#fff;font-family:'Segoe UI',sans-serif;display:flex;flex-dfoirection:column;align-items:center;justify-content:center;min-height:100vh;user-select:none;overflow:hidden}
 #wrap{display:flex;border:2px solid #222;box-shadow:0 0 40px rgba(220,38,38,0.3)}
 canvas{display:block;cursor:crosshair}
 #panel{width:190px;background:#0f0f0f;border-left:2px solid #222;padding:12px 10px;display:flex;flex-direction:column;gap:8px;overflow-y:auto}
@@ -39,7 +39,7 @@ canvas{display:block;cursor:crosshair}
     <div class="divider"></div>
     <div class="stat-row"><span>💰 Money</span><span class="sv y" id="s-money">$200</span></div>
     <div class="stat-row"><span>❤️ Base HP</span><span class="sv r" id="s-lives">5</span></div>
-    <div class="stat-row"><span>🌊 Wave</span><span class="sv w" id="s-wave">0 / 10</span></div>
+    <div class="stat-row"><span>🌊 Wave</span><span class="sv w" id="s-wave">0 / 30</span></div>
     <div class="stat-row"><span>💀 Kills</span><span class="sv g" id="s-kills">0</span></div>
     <div id="wave-progress"><div id="wave-bar"></div></div>
     <div class="divider"></div>
@@ -112,6 +112,7 @@ const E_DEFS = {
 
 // Waves: array of spawn groups
 const WAVES = [
+  // ── Waves 1–10 (Original) ────────────────────────────────────────────────
   [{t:'infantry',n:8,  gap:55}],
   [{t:'infantry',n:12, gap:45}],
   [{t:'infantry',n:10, gap:45},{t:'apc',n:2,gap:80}],
@@ -122,6 +123,28 @@ const WAVES = [
   [{t:'heli',n:6,gap:50},{t:'apc',n:8,gap:50},{t:'tank',n:2,gap:100}],
   [{t:'infantry',n:25, gap:28},{t:'apc',n:8,gap:45},{t:'tank',n:4,gap:90}],
   [{t:'infantry',n:30, gap:22},{t:'apc',n:12,gap:40},{t:'tank',n:6,gap:80},{t:'heli',n:8,gap:45}],
+  // ── Waves 11–20 (Advanced) ──────────────────────────────────────────────
+  [{t:'infantry',n:35, gap:20},{t:'heli',n:10,gap:42}],
+  [{t:'apc',n:15, gap:38},{t:'tank',n:4,gap:85}],
+  [{t:'infantry',n:30, gap:20},{t:'tank',n:7, gap:75},{t:'heli',n:6,gap:50}],
+  [{t:'heli',n:16,gap:35},{t:'apc',n:10,gap:45},{t:'tank',n:5,gap:80}],
+  [{t:'infantry',n:40, gap:18},{t:'apc',n:14,gap:38},{t:'tank',n:6,gap:78}],
+  [{t:'infantry',n:45, gap:16},{t:'heli',n:14,gap:32}],
+  [{t:'tank',n:10,gap:70},{t:'apc',n:16,gap:34},{t:'heli',n:8,gap:38}],
+  [{t:'infantry',n:50, gap:15},{t:'apc',n:18,gap:32},{t:'tank',n:8,gap:72}],
+  [{t:'heli',n:20,gap:28},{t:'tank',n:10,gap:65},{t:'apc',n:12,gap:36}],
+  [{t:'infantry',n:55, gap:14},{t:'apc',n:20,gap:30},{t:'tank',n:10,gap:65},{t:'heli',n:14,gap:32}],
+  // ── Waves 21–30 (Elite) ─────────────────────────────────────────────────
+  [{t:'infantry',n:60, gap:13},{t:'heli',n:18,gap:28},{t:'tank',n:8,gap:62}],
+  [{t:'apc',n:25, gap:26},{t:'tank',n:14,gap:58},{t:'infantry',n:40,gap:14}],
+  [{t:'infantry',n:65, gap:12},{t:'apc',n:22,gap:26},{t:'heli',n:20,gap:26}],
+  [{t:'tank',n:18,gap:54},{t:'heli',n:22,gap:24},{t:'apc',n:20,gap:28}],
+  [{t:'infantry',n:70, gap:11},{t:'apc',n:25,gap:24},{t:'tank',n:16,gap:56},{t:'heli',n:18,gap:26}],
+  [{t:'infantry',n:75, gap:10},{t:'heli',n:25,gap:22},{t:'tank',n:20,gap:52}],
+  [{t:'apc',n:30, gap:22},{t:'tank',n:22,gap:50},{t:'infantry',n:60,gap:11}],
+  [{t:'infantry',n:80, gap:9},{t:'apc',n:28,gap:20},{t:'heli',n:28,gap:20},{t:'tank',n:18,gap:50}],
+  [{t:'tank',n:25,gap:46},{t:'heli',n:30,gap:18},{t:'apc',n:30,gap:20},{t:'infantry',n:70,gap:10}],
+  [{t:'infantry',n:100,gap:8},{t:'apc',n:35,gap:18},{t:'tank',n:30,gap:42},{t:'heli',n:35,gap:18}],
 ];
 
 // ─── State ────────────────────────────────────────────────────────────────────
@@ -361,7 +384,7 @@ function draw() {
     ctx.fillText(gameOver ? '💀 BASE DESTROYED' : '🏆 MISSION COMPLETE', W/2, H/2 - 34);
     ctx.font = '18px Segoe UI';
     ctx.fillStyle = '#ddd';
-    ctx.fillText(gameOver ? 'Your base has fallen. Reload to try again!' : 'You defended all 10 waves!', W/2, H/2 + 4);
+    ctx.fillText(gameOver ? 'Your base has fallen. Reload to try again!' : 'You survived all 30 waves!', W/2, H/2 + 4);
     ctx.font = '14px Segoe UI';
     ctx.fillStyle = '#888';
     ctx.fillText('Kills: ' + kills + '  |  Press F5 to restart', W/2, H/2 + 36);
@@ -637,7 +660,7 @@ document.addEventListener('keydown', function(e) {
 function updateUI() {
   document.getElementById('s-money').textContent = '$' + money;
   document.getElementById('s-lives').textContent = lives;
-  document.getElementById('s-wave').textContent = wave + ' / 10';
+  document.getElementById('s-wave').textContent = wave + ' / 30';
   document.getElementById('s-kills').textContent = kills;
 }
 
