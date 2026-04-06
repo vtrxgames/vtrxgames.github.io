@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>VTRX Jump Force!</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0a14;display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:'Segoe UI',sans-serif;overflow:hidden}
+canvas{display:block;box-shadow:0 0 40px rgba(34,197,94,0.3)}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+const cvs = document.getElementById('c');
+const ctx = cvs.getContext('2d');
+const W = 800, H = 430;
+cvs.width = W; cvs.height = H;
+
+const PL_X = 130;
+const GRAVITY = 0.55;
+const JUMP_VEL = -13.5;
+const MAX_JUMPS = 2;
+
+let state = 'menu'; // menu, playing, dead
+let score = 0, coins = 0, tick = 0, speed = 4.5;
+let worldX = 0;
+let pl = {y:290, vy:0, jumps:0, grounded:false, dead:false, inv:0};
+let platforms = [], particles = [];
+let bgStars = [];
+
+for(let i=0;i<60;i++) bgStars.push({x:Math.random()*W,y:Math.random()*H,s:0.5+Math.random()*1.5});
+
+function init(){
+  pl={y:290,vy:0,jumps:0,grounded:false,dead:false,inv:0};
+  platforms=[];particles=[];worldX=0;tick=0;speed=4.5;score=0;coins=0;
+  // Seed initial ground platform
+  addPlatform(0, 320, 400, true);
+  let nx = 400;
+  while(nx < W+300){ nx = addPlatform(nx, -1, -1, false); }
+}
+
+function addPlatform(startX, fixY, fixW, isGround){
+  const gap = isGround ? 0 : 70 + Math.random()*100 + Math.min(tick*0.01, 60);
+  const w = fixW > 0 ? fixW : 110 + Math.random()*160;
+  const y = fixY > 0 ? fixY : 200 + Math.random()*130;
+  const clampY = Math.max(140, Math.min(350, y));
+  const plat = {x: startX + gap, y: clampY, w, coins:[], enemy:null};
+  // Coins
+  const nc = Math.floor(Math.random()*4);
+  for(let i=0;i<nc;i++) plat.coins.push({x: plat.x+30+i*34, collected:false});
+  // Enemy (~25% chance on wide platforms after some time)
+  if(!isGround && w>130 && Math.random()<0.28 && tick>0){
+    plat.enemy={x:plat.x+w/2, dir:1, dead:false, deadT:0};
+  }
+  platforms.push(plat);
+  return plat.x + w;
+}
+
+function jump(){
+  if(state==='menu'||state==='dead'){ init(); state='playing'; return; }
+  if(pl.jumps < MAX_JUMPS){
+    pl.vy = JUMP_VEL - (pl.jumps>0?1.5:0);
+    pl.jumps++;
+    pl.grounded=false;
+    for(let i=0;i<6;i++){
+      const a=Math.random()*Math.PI+Math.PI; // downward burst
+      particles.push({x:PL_X,y:pl.y,vx:Math.cos(a)*2,vy:Math.sin(a)*2+1,col:'#4ade80',life:16,ml:16});
+    }
+  }
+}
+
+function drawBG(){
+  const g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'#050512');g.addColorStop(1,'#0d1a08');
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  // Parallax stars
+  ctx.fillStyle='rgba(255,255,255,0.55)';
+  bgStars.forEach(s=>{
+    const sx=(s.x - worldX*0.05 + W*10)%W;
+    ctx.beginPath();ctx.arc(sx,s.y,s.s,0,Math.PI*2);ctx.fill();
+  });
+  // Distant mountains
+  ctx.fillStyle='rgba(30,50,20,0.5)';
+  for(let i=0;i<6;i++){
+    const mx=((i*180-worldX*0.15+W*10)%W)-20;
+    const mh=80+i%3*40;
+    ctx.beginPath();ctx.moveTo(mx,H);ctx.lineTo(mx+90,H-mh);ctx.lineTo(mx+180,H);ctx.fill();
+  }
+}
+
+function drawPlatform(p){
+  const sx=p.x-worldX;
+  if(sx>W+20||sx+p.w<-20)return;
+  // Shadow
+  ctx.fillStyle='rgba(0,0,0,0.25)';ctx.fillRect(sx+4,p.y+10,p.w,16);
+  // Body
+  ctx.fillStyle='#3d5c1a';ctx.fillRect(sx,p.y+10,p.w,18);
+  // Top grass
+  ctx.fillStyle='#4a8c22';ctx.fillRect(sx,p.y,p.w,12);
+  // Grass detail
+  ctx.fillStyle='#5aad28';
+  for(let i=0;i<p.w;i+=18){
+    ctx.fillRect(sx+i,p.y-3,6,4);ctx.fillRect(sx+i+8,p.y-2,4,3);
+  }
+}
+
+function drawCoins(p){
+  p.coins.forEach(c=>{
+    if(c.collected)return;
+    const cx=c.x-worldX;
+    if(cx<-20||cx>W+20)return;
+    const bob=Math.sin(tick*0.08+cx*0.05)*4;
+    ctx.shadowBlur=8;ctx.shadowColor='#facc15';
+    ctx.fillStyle='#facc15';ctx.beginPath();ctx.arc(cx,p.y-22+bob,8,0,Math.PI*2);ctx.fill();
+    ctx.shadowBlur=0;
+    ctx.fillStyle='#92400e';ctx.font='bold 9px sans-serif';
+    ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('$',cx,p.y-22+bob);
+  });
+}
+
+function drawEnemy(p){
+  if(!p.enemy)return;
+  const e=p.enemy;
+  const ex=e.x-worldX;
+  if(ex<-40||ex>W+40)return;
+  if(e.dead){
+    if(e.deadT<25){
+      ctx.globalAlpha=1-e.deadT/25;
+      ctx.font='22px serif';ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText('💀',ex,p.y-25-e.deadT*0.5);
+      ctx.globalAlpha=1;
+    }
+    return;
+  }
+  // Enemy soldier body
+  ctx.fillStyle='#991b1b';ctx.fillRect(ex-12,p.y-30,24,28);
+  ctx.fillStyle='#7f1d1d';ctx.fillRect(ex-13,p.y-38,26,10);
+  ctx.fillStyle='#fde68a';ctx.beginPath();ctx.arc(ex,p.y-40,8,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#dc2626';ctx.fillRect(ex-14,p.y-22,6,14);ctx.fillRect(ex+8,p.y-22,6,14);// arms
+  // direction arrow
+  ctx.fillStyle='rgba(255,100,100,0.6)';ctx.font='12px sans-serif';
+  ctx.textAlign='center';ctx.fillText(e.dir>0?'▶':'◀',ex,p.y-50);
+}
+
+function drawPlayer(){
+  if(pl.dead)return;
+  if(pl.inv>0&&Math.floor(pl.inv/6)%2===0)return;
+  const px=PL_X, py=pl.y;
+  // Shadow
+  ctx.fillStyle='rgba(0,0,0,0.25)';ctx.beginPath();ctx.ellipse(px,py+4,14,5,0,0,Math.PI*2);ctx.fill();
+  // Legs (animated)
+  const leg=pl.grounded?Math.sin(tick*0.25)*6:0;
+  ctx.fillStyle='#1a6b1a';
+  ctx.fillRect(px-10,py-10,8,16+leg);ctx.fillRect(px+2,py-10,8,16-leg);
+  // Body
+  ctx.fillStyle='#22c55e';ctx.fillRect(px-13,py-36,26,28);
+  // Backpack
+  ctx.fillStyle='#166534';ctx.fillRect(px-18,py-34,6,18);
+  // Arms
+  ctx.fillStyle='#22c55e';
+  ctx.fillRect(px-18,py-34,6,14);ctx.fillRect(px+12,py-34,6,14);
+  // Head
+  ctx.fillStyle='#fde68a';ctx.beginPath();ctx.arc(px,py-44,11,0,Math.PI*2);ctx.fill();
+  // Helmet
+  ctx.fillStyle='#15803d';ctx.fillRect(px-13,py-54,26,13);ctx.fillRect(px-10,py-57,20,5);
+  // Eyes
+  ctx.fillStyle='#1a1a1a';ctx.fillRect(px+2,py-47,5,4);
+}
+
+function drawHUD(){
+  ctx.fillStyle='rgba(0,0,0,0.6)';ctx.fillRect(0,0,W,36);
+  ctx.font='bold 15px Segoe UI';ctx.fillStyle='#fff';
+  ctx.textAlign='left';ctx.textBaseline='middle';
+  ctx.fillText('SCORE: '+score,12,18);
+  ctx.textAlign='center';ctx.fillText('💰 Coins: '+coins,W/2,18);
+  ctx.fillStyle='#aaa';ctx.font='12px Segoe UI';ctx.textAlign='right';
+  ctx.fillText('SPACE / Tap to jump (×2)',W-12,18);
+}
+
+function showOverlay(title,sub){
+  ctx.fillStyle='rgba(0,0,0,0.78)';ctx.fillRect(0,0,W,H);
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.font='bold 42px Segoe UI';ctx.fillStyle='#dc2626';ctx.fillText(title,W/2,H/2-55);
+  ctx.font='18px Segoe UI';ctx.fillStyle='#facc15';ctx.fillText(sub,W/2,H/2-10);
+  ctx.font='14px Segoe UI';ctx.fillStyle='#888';ctx.fillText('Press SPACE or Tap to '+(state==='menu'?'Start':'Retry'),W/2,H/2+30);
+  ctx.font='12px Segoe UI';ctx.fillStyle='#555';ctx.fillText('Double jump available · Stomp enemies for bonus!',W/2,H/2+58);
+}
+
+function update(){
+  if(state!=='playing')return;
+  tick++;
+  score=Math.floor(tick*0.18)+coins*10;
+  speed=Math.min(9,4.5+tick*0.0012);
+
+  // Gravity
+  pl.vy+=GRAVITY;pl.y+=pl.vy;pl.grounded=false;
+  if(pl.inv>0)pl.inv--;
+
+  // Platform collision & interactions
+  for(const p of platforms){
+    const sx=p.x-worldX;
+    if(sx>W||sx+p.w<PL_X-20)continue;
+
+    // Landing check
+    if(PL_X+12>p.x-worldX&&PL_X-12<p.x-worldX+p.w){
+      const prevY=pl.y-pl.vy;
+      if(pl.vy>=0&&prevY<=p.y&&pl.y>=p.y){
+        pl.y=p.y;pl.vy=0;pl.jumps=0;pl.grounded=true;
+      }
+    }
+
+    // Coins
+    p.coins.forEach(c=>{
+      if(c.collected)return;
+      const cx=c.x-worldX;
+      if(Math.abs(cx-PL_X)<22&&Math.abs((p.y-22)-pl.y)<36){
+        c.collected=true;coins++;
+        for(let i=0;i<8;i++){const a=Math.random()*Math.PI*2;
+          particles.push({x:cx,y:p.y-22,vx:Math.cos(a)*3,vy:Math.sin(a)*3-2,col:'#facc15',life:20,ml:20});}
+      }
+    });
+
+    // Enemy
+    if(p.enemy&&!p.enemy.dead){
+      const e=p.enemy;
+      e.x+=e.dir*1.4;
+      const elx=p.x-worldX;
+      if(e.x-worldX<elx+12||e.x-worldX>elx+p.w-12)e.dir*=-1;
+      const ex=e.x-worldX;
+      if(Math.abs(PL_X-ex)<24&&pl.y>p.y-38&&pl.y<=p.y+5){
+        if(pl.vy>1&&pl.y-pl.vy<p.y-20){
+          // Stomp
+          e.dead=true;e.deadT=0;pl.vy=JUMP_VEL*0.55;pl.jumps=1;coins+=3;score+=30;
+          for(let i=0;i<10;i++){const a=Math.random()*Math.PI*2;
+            particles.push({x:ex,y:p.y-20,vx:Math.cos(a)*3,vy:Math.sin(a)*3,col:'#f87171',life:20,ml:20});}
+        }else if(pl.inv===0){
+          pl.inv=140;lives=Math.max(0,lives-1);// no lives in this game, just slow effect
+          for(let i=0;i<10;i++){const a=Math.random()*Math.PI*2;
+            particles.push({x:PL_X,y:pl.y,vx:Math.cos(a)*3,vy:Math.sin(a)*3,col:'#f87171',life:18,ml:18});}
+          if(score>30)score-=30;
+        }
+      }
+      if(e.dead)e.deadT++;
+    }
+  }
+
+  // Fall = die
+  if(pl.y>H+60){state='dead';pl.dead=true;}
+  // Ceiling clamp
+  if(pl.y<36){pl.y=36;pl.vy=0;}
+
+  // Scroll
+  worldX+=speed;
+
+  // Generate ahead
+  const last=platforms[platforms.length-1];
+  if(last&&last.x-worldX<W+200) addPlatform(last.x+last.w,-1,-1,false);
+  platforms=platforms.filter(p=>p.x-worldX>-400);
+
+  // Particles
+  particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=0.18;p.life--;});
+  particles=particles.filter(p=>p.life>0);
+}
+
+function frame(){
+  drawBG();
+  if(state==='menu'){showOverlay('⚔️ VTRX JUMP FORCE!','Run, jump and survive the gauntlet!');}
+  else{
+    platforms.forEach(p=>{drawPlatform(p);drawCoins(p);drawEnemy(p);});
+    particles.forEach(p=>{
+      ctx.globalAlpha=p.life/p.ml;ctx.fillStyle=p.col;
+      ctx.beginPath();ctx.arc(p.x,p.y,3.5,0,Math.PI*2);ctx.fill();
+    });ctx.globalAlpha=1;
+    drawPlayer();drawHUD();
+    if(state==='dead') showOverlay('💀 GAME OVER','Score: '+score+'  |  Coins: '+coins);
+  }
+  update();
+  requestAnimationFrame(frame);
+}
+
+document.addEventListener('keydown',e=>{if(e.key===' '||e.key==='ArrowUp'){jump();e.preventDefault();}});
+document.addEventListener('click',jump);
+document.addEventListener('touchstart',e=>{jump();e.preventDefault();},{passive:false});
+
+frame();
+</script>
+</body>
+</html>
