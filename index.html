@@ -1499,9 +1499,9 @@ function getScheduledBotCount() {
   var pos = Date.now() % CYCLE;
   var offset = 0;
   if (pos >= 280000) offset = 38;
-  if (pos >= 280000) offset = 14;
-  if (pos >= 460000) offset = 36;
-  if (pos >= 580000) offset = 14;
+  if (pos >= 280000) offset = 44;
+  if (pos >= 460000) offset = 26;
+  if (pos >= 580000) offset = 34;
   return botCount + offset;
 }
 
