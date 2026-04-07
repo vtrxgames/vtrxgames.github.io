@@ -1376,7 +1376,7 @@ var VTRX_NEWS = [
   {
     icon: "🏴⚔♠",
     title: "Updates:",
-    text: "New colour themes. ,VTRX Tower Defense! ,Clans",
+    text: "New colour themes. ,VTRX Tower Defense! ,Clans ,VTRX Turret Defense!",
     date: "2026-04-04"
   }
   // Add more below — copy the block above, paste here, add a comma after the } above it
@@ -1639,7 +1639,16 @@ const DEFAULT_GAMES = [
     url: 'games/vtrx-road-rush.html',
       coverImage: 'VTRX%20Road%20Rush!%20Coverpage.PNG',
     thumbsDelta: 0, heartDelta: 0, baseThumbs: 188, baseHeart: 187, isDefault: true, hot: true
-  }
+  },
+  {
+    id: 'default-turret-defence',
+    name: 'VTRX Turret Defence!',
+    description: 'VTRX Turret Defense! is an intense action game where you control a 360-degree rotating turret. Aim with your mouse, hold to fire, and mow down waves of infantry and armoured vehicles before they reach your base. Watch your heat — fire too long and you'll overheat!',
+    category: 'Action',
+    url: 'vtrx-turret-defence.html',
+    coverImage: 'VTRX%20Turret%20Defence!%20Coverpage.PNG',',
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 112, baseHeart: 114, isDefault: true, hot: true
+  },
 ];
 
 const defaultUrls  = new Set(DEFAULT_GAMES.map(g => g.url));
@@ -2651,7 +2660,7 @@ renderGrid();
 updateUserBtn();
 
 // ─── Premium ──────────────────────────────────────────────────────────────────
-const PREMIUM_CODE = "VTRXPREM99";
+const PREMIUM_CODE = "VTRXGAMES";
 let isPremium = localStorage.getItem('vtrx_premium') === '1';
 
 function applyPremium() {
