@@ -1643,7 +1643,7 @@ const DEFAULT_GAMES = [
   {
     id: 'default-turret-defence',
     name: 'VTRX Turret Defence!',
-    description: 'VTRX Turret Defense! is an intense action game where you control a 360-degree rotating turret. Aim with your mouse, hold to fire, and mow down waves of infantry and armoured vehicles before they reach your base. Watch your heat — fire too long and youll overheat!',
+    description: 'VTRX Turret Defense! is an intense action game where you control a 360-degree rotating turret. Aim with your mouse, hold to fire, and mow down waves of infantry and armoured vehicles before they reach your base. Watch your heat — fire too long and you'll overheat!',
     category: 'Action',
     url: 'games/vtrx-turret-defence.html',
     coverImage: 'VTRX%20Turret%20Defence!%20Coverpage.PNG',
@@ -2732,4 +2732,73 @@ applyPremium();
   <a href="https://beta.publishers.adsterra.com/referral/LspgUrHWhe" rel="nofollow">VTRX Cooperation! Referral link</a>
 <a href="https://beta.publishers.adsterra.com/referral/LspgUrHWhe" rel="nofollow"><img alt="banner" src="https://landings-cdn.adsterratech.com/referralBanners/png/300%20x%20425.png" /></a>
 </div>
+
+<canvas id="embers-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;"></canvas>
+<script>
+(function(){
+  const canvas = document.getElementById('embers-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H;
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const EMBER_COUNT = 80;
+  const embers = [];
+
+  function randBetween(a, b) { return a + Math.random() * (b - a); }
+
+  function createEmber(born) {
+    const size = randBetween(1.2, 3.8);
+    return {
+      x: randBetween(0, W),
+      y: born ? randBetween(0, H) : randBetween(H * 0.6, H + 20),
+      vx: randBetween(-0.5, 0.5),
+      vy: randBetween(-0.6, -1.6),
+      size,
+      alpha: randBetween(0.3, 0.9),
+      alphaDir: Math.random() < 0.5 ? 0.008 : -0.008,
+      wobble: randBetween(0, Math.PI * 2),
+      wobbleSpeed: randBetween(0.02, 0.06),
+      color: Math.random() < 0.6 ? '#dc2626' : (Math.random() < 0.5 ? '#f97316' : '#fbbf24')
+    };
+  }
+
+  for (let i = 0; i < EMBER_COUNT; i++) embers.push(createEmber(true));
+
+  function tick() {
+    ctx.clearRect(0, 0, W, H);
+    for (let i = 0; i < embers.length; i++) {
+      const e = embers[i];
+      e.wobble += e.wobbleSpeed;
+      e.x += e.vx + Math.sin(e.wobble) * 0.4;
+      e.y += e.vy;
+      e.alpha += e.alphaDir;
+      if (e.alpha >= 0.9) { e.alpha = 0.9; e.alphaDir = -Math.abs(e.alphaDir); }
+      if (e.alpha <= 0.1) { e.alpha = 0.1; e.alphaDir =  Math.abs(e.alphaDir); }
+
+      if (e.y < -10 || e.x < -20 || e.x > W + 20) {
+        embers[i] = createEmber(false);
+        continue;
+      }
+
+      ctx.save();
+      ctx.globalAlpha = e.alpha;
+      ctx.shadowColor = e.color;
+      ctx.shadowBlur = e.size * 4;
+      ctx.fillStyle = e.color;
+      ctx.beginPath();
+      ctx.ellipse(e.x, e.y, e.size, e.size * 1.5, e.wobble, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
+</script>
 </html>
