@@ -250,6 +250,13 @@
 
     body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; min-height: 100vh; transition: background .25s, color .25s; }
 
+    #home-page, #player, #credits-page, #reviews-page, #clans-page, #premium-page,
+    .backdrop, .social-sidebar, #exit-fs-btn, #ads-wrap {
+      position: relative;
+      z-index: 2;
+    }
+    #embers-canvas { z-index: 0 !important; }
+
     /* ── Header ─────────────────────────────────────────── */
     #header {
       position: sticky; top: 0; z-index: 100;
@@ -2733,9 +2740,7 @@ applyPremium();
 <a href="https://beta.publishers.adsterra.com/referral/LspgUrHWhe" rel="nofollow"><img alt="banner" src="https://landings-cdn.adsterratech.com/referralBanners/png/300%20x%20425.png" /></a>
 </div>
 
-<style>
-#home-page, #player, #credits-page, #reviews-page, #clans-page, #premium-page, .social-sidebar, #ads-wrap { position: relative; z-index: 1; }
-</style><canvas id="embers-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;"></canvas>
+<canvas id="embers-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;"></canvas>
 <script>
 (function(){
   const canvas = document.getElementById('embers-canvas');
@@ -2804,4 +2809,3 @@ applyPremium();
 })();
 </script>
 </html>
-
