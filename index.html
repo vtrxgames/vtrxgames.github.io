@@ -250,7 +250,6 @@
 
     body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; min-height: 100vh; transition: background .25s, color .25s; }
 
-
     /* ── Header ─────────────────────────────────────────── */
     #header {
       position: sticky; top: 0; z-index: 100;
@@ -1154,7 +1153,7 @@
     <div class="premium-hero">
       <div class="premium-crown">&#9733;</div>
       <h1>VTRX PREMIUM</h1>
-      <p>Upgrade your experience. Play ad-free, forever. 4 user bought!</p>
+      <p>Upgrade your experience. Play ad-free, forever.</p>
     </div>
     <div class="premium-perks">
       <h2>What you get</h2>
@@ -1377,7 +1376,7 @@ var VTRX_NEWS = [
   {
     icon: "🏴⚔♠",
     title: "Updates:",
-    text: "New colour themes. ,VTRX Tower Defense! ,Clans ,VTRX Turret Defense!",
+    text: "New colour themes. ,VTRX Tower Defense! ,Clans",
     date: "2026-04-04"
   }
   // Add more below — copy the block above, paste here, add a comma after the } above it
@@ -1458,6 +1457,7 @@ var PRESET_CLANS = [
 </script>
 
 <script>
+
 // ─── State ────────────────────────────────────────────────────────────────────
 const ADMIN_PW   = "VultorexVTRX!";
 const PAYPAL     = "fahadatawi42@gmail.com";
@@ -1499,9 +1499,9 @@ function getScheduledBotCount() {
   var pos = Date.now() % CYCLE;
   var offset = 0;
   if (pos >= 280000) offset = 38;
-  if (pos >= 280000) offset = 44;
-  if (pos >= 460000) offset = 26;
-  if (pos >= 580000) offset = 34;
+  if (pos >= 280000) offset = 14;
+  if (pos >= 460000) offset = 36;
+  if (pos >= 580000) offset = 14;
   return botCount + offset;
 }
 
@@ -1537,8 +1537,8 @@ const DEFAULT_GAMES = [
     description: 'VTRX Stickman War! is a strategic army-builder where you command waves of stickman soldiers through escalating battles against increasingly powerful enemies. Earn coins, upgrade your army, and conquer every level!',
     category: 'Action',
     url: 'games/stickman-war.html',
-    coverImage: 'VTRX%20Stickman%20War!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 882, baseHeart: 888, isDefault: true
+    coverImage: 'VTRX%20Stickman%20War!%20Cover%20page.PNG',
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 582, baseHeart: 588, isDefault: true
   },
   {
     id: 'default-mech-fps',
@@ -1547,7 +1547,7 @@ const DEFAULT_GAMES = [
     category: 'Action',
     url: 'games/mech-fps.html',
     coverImage: 'VTRX%20Boss%20Mech%20FPS!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 849, baseHeart: 841, isDefault: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 549, baseHeart: 541, isDefault: true
   },
   {
     id: 'default-nuke-tycoon',
@@ -1556,7 +1556,7 @@ const DEFAULT_GAMES = [
     category: 'Action',
     url: 'games/nuke-tycoon.html',
     coverImage: 'VTRX%20Nuke%20Tycoon!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 874, baseHeart: 847, isDefault: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 574, baseHeart: 547, isDefault: true
   },
   {
     id: 'default-drone-strike',
@@ -1565,7 +1565,7 @@ const DEFAULT_GAMES = [
     category: 'Action',
     url: 'games/drone-strike.html',
     coverImage: 'VTRX%20Drone%20Strike!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 829, baseHeart: 883, isDefault: true, hot: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 529, baseHeart: 583, isDefault: true, hot: true
   },
   {
     id: 'default-flippy-bird',
@@ -1574,7 +1574,7 @@ const DEFAULT_GAMES = [
     category: 'Arcade',
     url: 'games/vtrx-flippy-bird.html',
     coverImage: 'VTRX%20FlippyBird!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 366, baseHeart: 342, isDefault: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 266, baseHeart: 242, isDefault: true
   },
   {
     id: 'default-vtrx-dash',
@@ -1583,7 +1583,7 @@ const DEFAULT_GAMES = [
     category: 'Arcade',
     url: 'games/vtrx-dash.html',
     coverImage: 'VTRX%20Dash!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 322, baseHeart: 308, isDefault: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 222, baseHeart: 208, isDefault: true
   },
   {
     id: 'default-snipe-shot',
@@ -1592,7 +1592,7 @@ const DEFAULT_GAMES = [
     category: 'Action',
     url: 'games/vtrx-snipe-shot.html',
     coverImage: 'VTRX%20SnipeShot!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 878, baseHeart: 895, isDefault: true, hot: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 678, baseHeart: 695, isDefault: true, hot: true
   },
   {
     id: 'default-paper-clash',
@@ -1601,7 +1601,7 @@ const DEFAULT_GAMES = [
     category: 'Arcade',
     url: 'games/vtrx-paper-clash.html',
     coverImage: 'VTRX%20Paper%20Clash!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 394, baseHeart: 388, isDefault: true, hot: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 294, baseHeart: 288, isDefault: true, hot: true
   },
   {
     id: 'default-tower-defense',
@@ -1610,45 +1610,17 @@ const DEFAULT_GAMES = [
     category: 'Strategy',
     url: 'games/vtrx-tower-defense.html',
     coverImage: 'VTRX%20Tower%20Defence!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 812, baseHeart: 899, isDefault: true, hot: true
-  },
-    {
-    id: 'default-space-assault',
-    name: 'VTRX Space Assault!',
-    description: 'VTRX Space Assault! is an intense space shooter. Pilot your fighter ship, blast through waves of alien invaders, collect shield and rapid-fire power-ups, and defend Earth across endless waves!',
-    category: 'Arcade',
-    url: 'games/vtrx-space-assualt.html',
-      coverImage: 'VTRX%20Space%20Assualt!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 276, baseHeart: 278, isDefault: true, hot: true
-  
-  },
-     {
-    id: 'default-jump-force',
-    name: 'VTRX Jump Force!',
-    description: 'VTRX Jump Force! is an infinite military runner. Sprint through a never-ending battlefield, leap between platforms, collect coins, stomp enemy soldiers, and double-jump your way to the highest score!',
-    category: 'Arcade',
-    url: 'games/vtrx-jump-force.html',
-      coverImage: 'VTRX%20Jump%20Force!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 179, baseHeart: 181, isDefault: true, hot: true
-  },
-   {
-    id: 'default-road-rush',
-    name: 'VTRX Road Rush!',
-    description: 'VTRX Road Rush! is a fast-paced lane-dodging game. Switch between 3 lanes to avoid oncoming traffic, grab shield power-ups, and survive as long as you can as the speed keeps climbing!',
-    category: 'Racing',
-    url: 'games/vtrx-road-rush.html',
-      coverImage: 'VTRX%20Road%20Rush!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 188, baseHeart: 187, isDefault: true, hot: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 512, baseHeart: 599, isDefault: true, hot: true
   },
   {
     id: 'default-turret-defence',
     name: 'VTRX Turret Defence!',
-    description: 'VTRX Turret Defense! is an intense action game where you control a 360-degree rotating turret. Aim with your mouse, hold to fire, and mow down waves of infantry and armoured vehicles before they reach your base. Watch your heat — fire too long and you'll overheat!',
+    description: 'VTRX Turret Defence! is a fast-paced turret shooter where you aim and fire to survive waves of infantry and vehicles. Manage your heat, protect your base, and rack up the highest score!',
     category: 'Action',
     url: 'games/vtrx-turret-defence.html',
     coverImage: 'VTRX%20Turret%20Defence!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 112, baseHeart: 114, isDefault: true, hot: true
-  },
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 467, baseHeart: 491, isDefault: true
+  }
 ];
 
 const defaultUrls  = new Set(DEFAULT_GAMES.map(g => g.url));
@@ -2660,7 +2632,7 @@ renderGrid();
 updateUserBtn();
 
 // ─── Premium ──────────────────────────────────────────────────────────────────
-const PREMIUM_CODE = "VTRXGAMES";
+const PREMIUM_CODE = "VTRXPREM99";
 let isPremium = localStorage.getItem('vtrx_premium') === '1';
 
 function applyPremium() {
@@ -2732,6 +2704,4 @@ applyPremium();
   <a href="https://beta.publishers.adsterra.com/referral/LspgUrHWhe" rel="nofollow">VTRX Cooperation! Referral link</a>
 <a href="https://beta.publishers.adsterra.com/referral/LspgUrHWhe" rel="nofollow"><img alt="banner" src="https://landings-cdn.adsterratech.com/referralBanners/png/300%20x%20425.png" /></a>
 </div>
-
 </html>
-
