@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>VTRX Tank Operative</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <style>
+        body { margin: 0; background: #0a0a0a; overflow: hidden; font-family: 'Courier New', monospace; }
+        canvas { display: block; touch-action: none; }
+        #stats { position: absolute; top: 10px; left: 10px; color: #0f0; pointer-events: none; }
+    </style>
+</head>
+<body>
+    <div id="stats">DATA COLLECTED: <span id="score">0</span></div>
+    <canvas id="gameCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
+
+        let score = 0;
+        let gameActive = true;
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        const player = {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            angle: 0,
+            speed: 0,
+            maxSpeed: 4,
+            size: 30
+        };
+
+        const mouse = { x: canvas.width / 2, y: canvas.height / 2, down: false };
+        const enemies = [];
+        const collectibles = [];
+
+        // Input Handling
+        window.addEventListener('pointerdown', () => mouse.down = true);
+        window.addEventListener('pointerup', () => mouse.down = false);
+        window.addEventListener('pointermove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+        window.addEventListener('keydown', (e) => { if(e.code === 'KeyW') mouse.down = true; });
+        window.addEventListener('keyup', (e) => { if(e.code === 'KeyW') mouse.down = false; });
+
+        function spawnItem() {
+            collectibles.push({
+                x: Math.random() * (canvas.width - 40) + 20,
+                y: Math.random() * (canvas.height - 40) + 20,
+                size: 10
+            });
+        }
+
+        function spawnEnemy() {
+            if (enemies.length < 5 + (score / 50)) {
+                enemies.push({
+                    x: Math.random() < 0.5 ? 0 : canvas.width,
+                    y: Math.random() * canvas.height,
+                    speed: 1.5 + Math.random()
+                });
+            }
+        }
+
+        setInterval(spawnEnemy, 2000);
+        for(let i=0; i<3; i++) spawnItem();
+
+        function update() {
+            if (!gameActive) return;
+
+            // Rotate player toward mouse/touch
+            const dx = mouse.x - player.x;
+            const dy = mouse.y - player.y;
+            player.angle = Math.atan2(dy, dx);
+
+            // Move forward if clicking/pressing
+            if (mouse.down) {
+                player.speed = Math.min(player.speed + 0.2, player.maxSpeed);
+            } else {
+                player.speed *= 0.95;
+            }
+
+            player.x += Math.cos(player.angle) * player.speed;
+            player.y += Math.sin(player.angle) * player.speed;
+
+            // Screen boundaries
+            player.x = Math.max(0, Math.min(canvas.width, player.x));
+            player.y = Math.max(0, Math.min(canvas.height, player.y));
+
+            // Check Collectibles
+            collectibles.forEach((item, i) => {
+                const dist = Math.hypot(player.x - item.x, player.y - item.y);
+                if (dist < player.size/2 + item.size) {
+                    collectibles.splice(i, 1);
+                    score += 10;
+                    scoreElement.innerText = score;
+                    spawnItem();
+                }
+            });
+
+            // Update Enemies
+            enemies.forEach((en, i) => {
+                const edx = player.x - en.x;
+                const edy = player.y - en.y;
+                const eDist = Math.hypot(edx, edy);
+                en.x += (edx / eDist) * en.speed;
+                en.y += (edy / eDist) * en.speed;
+
+                if (eDist < player.size/2 + 10) {
+                    gameActive = false;
+                    alert("SYSTEM OVERRIDE. Data lost: " + score);
+                    location.reload();
+                }
+            });
+        }
+
+        function draw() {
+            ctx.fillStyle = '#050505';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw Collectibles
+            ctx.fillStyle = '#0f0';
+            collectibles.forEach(item => {
+                ctx.beginPath();
+                ctx.arc(item.x, item.y, item.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Draw Enemies
+            ctx.fillStyle = '#f00';
+            enemies.forEach(en => {
+                ctx.fillRect(en.x - 10, en.y - 10, 20, 20);
+            });
+
+            // Draw Player Tank
+            ctx.save();
+            ctx.translate(player.x, player.y);
+            ctx.rotate(player.angle);
+            ctx.strokeStyle = '#0f0';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(-15, -15, 30, 30); // Body
+            ctx.fillStyle = '#0f0';
+            ctx.fillRect(0, -5, 20, 10); // Barrel
+            ctx.restore();
+
+            update();
+            requestAnimationFrame(draw);
+        }
+
+        draw();
+    </script>
+</body>
+</html>
