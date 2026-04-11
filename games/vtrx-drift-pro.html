@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>VTRX DRIFT PRO</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <style>
+        body { margin: 0; background: #1a1a1a; overflow: hidden; font-family: monospace; }
+        canvas { display: block; touch-action: none; }
+        #ui { position: absolute; top: 10px; left: 10px; color: #0f0; font-size: 20px; pointer-events: none; }
+    </style>
+</head>
+<body>
+    <div id="ui">DRIFT SCORE: <span id="score">0</span></div>
+    <canvas id="c"></canvas>
+    <script>
+        const canvas = document.getElementById('c'), ctx = canvas.getContext('2d');
+        let w, h, score = 0, active = true;
+
+        function res() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
+        window.onresize = res; res();
+
+        const car = {
+            x: w/2, y: h/2,
+            angle: 0,
+            speed: 5,
+            vx: 0, vy: 0,
+            drift: 0.94 // Friction
+        };
+
+        const keys = { l: false, r: false };
+        window.onkeydown = e => { if(e.key==='ArrowLeft') keys.l=true; if(e.key==='ArrowRight') keys.r=true; };
+        window.onkeyup = e => { if(e.key==='ArrowLeft') keys.l=false; if(e.key==='ArrowRight') keys.r=false; };
+        canvas.addEventListener('pointerdown', e => { if(e.clientX < w/2) keys.l=true; else keys.r=true; });
+        canvas.addEventListener('pointerup', () => keys.l = keys.r = false);
+
+        const trackPoints = [];
+        function createTrack() {
+            for(let i=0; i<10; i++) trackPoints.push({x: Math.random()*w, y: Math.random()*h});
+        }
+        createTrack();
+
+        function loop() {
+            if(!active) return;
+            ctx.fillStyle = 'rgba(26, 26, 26, 0.2)';
+            ctx.fillRect(0,0,w,h);
+
+            // Physics Logic
+            if(keys.l) car.angle -= 0.08;
+            if(keys.r) car.angle += 0.08;
+
+            // Apply forward thrust based on angle
+            car.vx += Math.cos(car.angle) * 0.5;
+            car.vy += Math.sin(car.angle) * 0.5;
+
+            // Apply "Drift" Friction
+            car.vx *= car.drift;
+            car.vy *= car.drift;
+
+            car.x += car.vx;
+            car.y += car.vy;
+
+            // Screen Wrap
+            if(car.x < 0) car.x = w; if(car.x > w) car.x = 0;
+            if(car.y < 0) car.y = h; if(car.y > h) car.y = 0;
+
+            // Score increases when moving fast and turning
+            if(Math.abs(car.vx) + Math.abs(car.vy) > 5 && (keys.l || keys.r)) {
+                score++;
+                document.getElementById('score').innerText = score;
+            }
+
+            // Draw Car
+            ctx.save();
+            ctx.translate(car.x, car.y);
+            ctx.rotate(car.angle);
+            ctx.fillStyle = '#0f0';
+            ctx.fillRect(-15, -10, 30, 20); // Car Body
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(10, -8, 5, 16); // Headlights
+            ctx.restore();
+
+            requestAnimationFrame(loop);
+        }
+        loop();
+    </script>
+</body>
+</html>
