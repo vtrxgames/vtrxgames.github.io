@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>VTRX GRAVITY FALL</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <style>
+        body { margin: 0; background: #111; overflow: hidden; font-family: sans-serif; }
+        canvas { display: block; touch-action: none; }
+    </style>
+</head>
+<body>
+    <canvas id="c"></canvas>
+    <script>
+        const c = document.getElementById('c'), x = c.getContext('2d');
+        let w, h, score = 0, running = true;
+        const p = { x: 0, y: 50, r: 10, vx: 0, vy: 0 };
+        const platforms = [];
+
+        function res() { w = c.width = window.innerWidth; h = c.height = window.innerHeight; p.x = w/2; }
+        window.onresize = res; res();
+
+        // Controls
+        const input = { l: false, r: false };
+        window.onkeydown=(e)=>{if(e.code==='ArrowLeft')input.l=true;if(e.code==='ArrowRight')input.r=true;};
+        window.onkeyup=(e)=>{if(e.code==='ArrowLeft')input.l=false;if(e.code==='ArrowRight')input.r=false;};
+        c.addEventListener('pointerdown', (e)=> { if(e.clientX < w/2) input.l=true; else input.r=true; });
+        c.addEventListener('pointerup', ()=> input.l=input.r=false);
+
+        function spawn() { platforms.push({ y: h, h: 15, gapX: Math.random()*(w-100), gapW: 80 }); }
+        setInterval(spawn, 1500); spawn();
+
+        function loop() {
+            if(!running) return;
+            x.fillStyle = '#111'; x.fillRect(0,0,w,h);
+            
+            // Player Physics
+            if(input.l) p.vx = -6; else if(input.r) p.vx = 6; else p.vx *= 0.8;
+            p.vy += 0.8; // Gravity
+            p.x += p.vx; p.y += p.vy;
+            if(p.x < 0) p.x = w; if(p.x > w) p.x = 0; // Screen wrap
+
+            let onPlatform = false;
+            x.fillStyle = '#0f0';
+            platforms.forEach((plat, i) => {
+                plat.y -= 3; // Platforms move UP
+                
+                // Draw platform parts
+                x.fillRect(0, plat.y, plat.gapX, plat.h);
+                x.fillRect(plat.gapX + plat.gapW, plat.y, w - (plat.gapX + plat.gapW), plat.h);
+
+                // Collision Detection
+                if(p.vy > 0 && p.y+p.r > plat.y && p.y < plat.y+plat.h && (p.x < plat.gapX || p.x > plat.gapX+plat.gapW)) {
+                    p.y = plat.y - p.r; p.vy = 0; onPlatform = true;
+                }
+                if(plat.y < - plat.h) { platforms.splice(i,1); score++; }
+            });
+
+            // Ceiling/Floor Death
+            if(p.y < 0 || p.y > h) { running = false; alert("CRUSHED. SCORE: " + score); location.reload(); }
+
+            // Draw Player
+            x.fillStyle = '#fff'; x.beginPath(); x.arc(p.x, p.y, p.r, 0, 7); x.fill();
+            requestAnimationFrame(loop);
+        }
+        loop();
+    </script>
+</body>
+</html>
