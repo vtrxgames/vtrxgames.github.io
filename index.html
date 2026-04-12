@@ -1381,7 +1381,7 @@ var VTRX_NEWS = [
   {
     icon: "🛠",
     title: "GAME DEVELOPERS!!",
-    text: "We are looking for game developers to add more games to VTRX Games! If u are interested email me: vtrx1.official@gmail.com",
+    text: "We are currently looking for game developers to add more games to VTRX Games! If u are interested email me: vtrx1.official@gmail.com", "If you are looking forward to being a partner in the VTRX Cooperation company then email me at vtrx1.official@gmail.com or join the disc server.,
     date: "2026-04-04"
   },
   {
@@ -1609,13 +1609,13 @@ let botCount = 143;
 let realOnlineCount = 0;
 
 function getScheduledBotCount() {
-  var CYCLE = 1600000;
+  var CYCLE = 2000000;
   var pos = Date.now() % CYCLE;
   var offset = 0;
-  if (pos >= 280000) offset = 38;
-  if (pos >= 280000) offset = 14;
-  if (pos >= 460000) offset = 36;
-  if (pos >= 580000) offset = 14;
+  if (pos >= 320000) offset = 48;
+  if (pos >= 410000) offset = 36;
+  if (pos >= 580000) offset = 59;
+  if (pos >= 690000) offset = 37;
   return botCount + offset;
 }
 
