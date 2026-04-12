@@ -1065,7 +1065,7 @@
         <button class="credit-save" onclick="saveCredit()">Save</button>
       </div>
     </div>
-    <p id="credits-empty" style="color:#6b4040;font-size:14px">VTRX Cooperation/VTRX/Vultorex/StoneKiller/(Me).................... DESCRPTIONS AND COVERPAGES ARE GEMENI GENERATED!!!!!</p>
+    <p id="credits-empty" style="color:#6b4040;font-size:14px">VTRX Cooperation/VTRX/Vultorex/StoneKiller/(Me)................................... DESCRIPTIONS AND COVERPAGES ARE GEMENI GENERATED!!!!!</p>
     <ul id="credits-list"></ul>
   </div>
 </div>
@@ -1362,6 +1362,20 @@
 // ── PLAYED COUNT ──────────────────────────────────────────────
 // Change the number below to update the "X people played" badge
 var PLAYED_COUNT = 21287;
+// ─────────────────────────────────────────────────────────────
+
+// ── GAME OF THE WEEK ──────────────────────────────────────
+// Set this to any game's id to show it in the sidebar.
+// Set to null to hide the section. Game IDs:
+//   'default-stickman-war'    'default-mech-fps'       'default-nuke-tycoon'
+//   'default-drone-strike'    'default-flippy-bird'    'default-vtrx-dash'
+//   'default-snipe-shot'      'default-paper-clash'    'default-tower-defense'
+//   'default-turret-defence'  'default-zombie-survival' 'default-assault-blitz'
+//   'default-drift-pro'       'default-gravity-fall'   'default-tank-operative'
+var GAME_OF_THE_WEEK = 'default-stickman-war';
+  var GAME_OF_THE_WEEK = 'default-nuke-tycoon';
+  var GAME_OF_THE_WEEK = 'default-tower-defense';
+   var GAME_OF_THE_WEEK = 'default-assault-blitz';
 // ─────────────────────────────────────────────────────────────
 
 // ── NEWS / ANNOUNCEMENTS ──────────────────────────────────────
@@ -2774,10 +2788,36 @@ if (localStorage.getItem('vtrx_sidebar_collapsed') === '1') {
 }
 applyTheme();
 buildNewsBox();
+
+// ─── Game of the Week ────────────────────────────────────────────────────────
+function initGotw() {
+  var id = (typeof GAME_OF_THE_WEEK !== 'undefined') ? GAME_OF_THE_WEEK : null;
+  var section = document.getElementById('gotw-section');
+  if (!section) return;
+  if (!id) { section.style.display = 'none'; return; }
+  var game = games.find(function(g) { return g.id === id; });
+  if (!game) { section.style.display = 'none'; return; }
+  document.getElementById('gotw-name').textContent = game.name;
+  document.getElementById('gotw-desc').textContent = game.description || '';
+  var img = document.getElementById('gotw-cover');
+  var fallback = document.getElementById('gotw-cover-fallback');
+  if (game.coverImage) {
+    img.src = game.coverImage; img.alt = game.name;
+    img.style.display = ''; fallback.style.display = 'none';
+  } else {
+    img.style.display = 'none'; fallback.style.display = 'flex';
+  }
+  section.style.display = 'block';
+  window._gotwGame = game;
+}
+function gotwPlay() { if (window._gotwGame) openGame(window._gotwGame); }
+// ─────────────────────────────────────────────────────────────────────────────
+
 buildCats();
 buildPresets();
 renderGrid();
 updateUserBtn();
+initGotw();
 
 // ─── Premium ──────────────────────────────────────────────────────────────────
 const PREMIUM_CODE = "VTRXPREM99";
