@@ -884,9 +884,13 @@
     #kb-hint { font-size:11px; color:#6b4040; margin-top:14px; }
     #kb-hint kbd { background:rgba(255,255,255,0.08); border:1px solid var(--border); border-radius:3px; padding:1px 5px; font-family:monospace; font-size:10px; }
 
-  </style>
+  
+    /* NETWORK CANVAS */
+    #network-canvas { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; opacity: 0.45; }
+</style>
 </head>
 <body>
+<canvas id="network-canvas"></canvas>
 
 <!-- ══════════════════ SOCIAL SIDEBAR ══════════════════ -->
 <div class="social-sidebar">
@@ -900,7 +904,7 @@
     <i class="fas fa-envelope"></i>
   </a>
   <a href="https://vtrxai.github.io" target="_blank" class="vtrxai" title="VTRX AI">
-    <img src="vtrx-logo.png" alt="VTRX AI" />
+    <img src="favicon.png" alt="VTRX AI" />
   </a>
 </div>
 
@@ -3112,4 +3116,21 @@ applyPremium();
   <a href="https://beta.publishers.adsterra.com/referral/LspgUrHWhe" rel="nofollow">VTRX Cooperation! Referral link</a>
 <a href="https://beta.publishers.adsterra.com/referral/LspgUrHWhe" rel="nofollow"><img alt="banner" src="https://landings-cdn.adsterratech.com/referralBanners/png/300%20x%20425.png" /></a>
 </div>
+<script>
+(function(){
+  const canvas=document.getElementById('network-canvas'), ctx=canvas.getContext('2d');
+  let dots=[];
+  function resize(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
+  function mkDots(){dots=[];for(let i=0;i<55;i++)dots.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,vx:(Math.random()-.5)*.5,vy:(Math.random()-.5)*.5,r:Math.random()*1.5+1});}
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    for(const d of dots){d.x+=d.vx;d.y+=d.vy;if(d.x<0||d.x>canvas.width)d.vx*=-1;if(d.y<0||d.y>canvas.height)d.vy*=-1;}
+    for(let i=0;i<dots.length;i++)for(let j=i+1;j<dots.length;j++){const dx=dots[i].x-dots[j].x,dy=dots[i].y-dots[j].y,dist=Math.sqrt(dx*dx+dy*dy);if(dist<160){ctx.beginPath();ctx.moveTo(dots[i].x,dots[i].y);ctx.lineTo(dots[j].x,dots[j].y);ctx.strokeStyle='rgba(220,38,38,'+(1-dist/160)*.38+')';ctx.lineWidth=1;ctx.stroke();}}
+    for(const d of dots){ctx.shadowColor='rgba(220,38,38,0.9)';ctx.shadowBlur=8;ctx.beginPath();ctx.arc(d.x,d.y,d.r,0,Math.PI*2);ctx.fillStyle='rgba(220,38,38,0.85)';ctx.fill();ctx.shadowBlur=0;}
+    requestAnimationFrame(draw);
+  }
+  window.addEventListener('resize',function(){resize();mkDots();});
+  resize();mkDots();draw();
+})();
+</script>
 </html>
