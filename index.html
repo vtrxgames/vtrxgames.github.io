@@ -1371,7 +1371,7 @@
 
 // ── PLAYED COUNT ──────────────────────────────────────────────
 // Change the number below to update the "X people played" badge
-var PLAYED_COUNT = 25287;
+var PLAYED_COUNT = 49287;
 // ─────────────────────────────────────────────────────────────
 
 // ── GAME OF THE WEEK ──────────────────────────────────────
@@ -1833,17 +1833,17 @@ async function apiFetch(path, opts) {
   return null;
 }
 
-let botCount = 143;
+let botCount = 183;
 let realOnlineCount = 0;
 
 function getScheduledBotCount() {
   var CYCLE = 2000000;
   var pos = Date.now() % CYCLE;
   var offset = 0;
-  if (pos >= 320000) offset = 48;
-  if (pos >= 410000) offset = 36;
-  if (pos >= 580000) offset = 59;
-  if (pos >= 690000) offset = 37;
+  if (pos >= 320000) offset = 68;
+  if (pos >= 410000) offset = 46;
+  if (pos >= 580000) offset = 79;
+  if (pos >= 690000) offset = 57;
   return botCount + offset;
 }
 
@@ -1880,7 +1880,7 @@ const DEFAULT_GAMES = [
     category: 'Action',
     url: 'games/stickman-war.html',
     coverImage: 'VTRX%20Stickman%20War!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 1182, baseHeart: 1188, isDefault: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 8182, baseHeart: 8188, isDefault: true
   },
   {
     id: 'default-mech-fps',
@@ -1889,7 +1889,7 @@ const DEFAULT_GAMES = [
     category: 'Action',
     url: 'games/mech-fps.html',
     coverImage: 'VTRX%20Boss%20Mech%20FPS!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 1249, baseHeart: 1241, isDefault: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 8249, baseHeart: 8241, isDefault: true
   },
   {
     id: 'default-nuke-tycoon',
@@ -1898,7 +1898,7 @@ const DEFAULT_GAMES = [
     category: 'Action',
     url: 'games/nuke-tycoon.html',
     coverImage: 'VTRX%20Nuke%20Tycoon!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 1474, baseHeart: 1447, isDefault: true, hot: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 8474, baseHeart: 8447, isDefault: true, hot: true
   },
   {
     id: 'default-drone-strike',
@@ -1907,7 +1907,7 @@ const DEFAULT_GAMES = [
     category: 'Action',
     url: 'games/drone-strike.html',
     coverImage: 'VTRX%20Drone%20Strike!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 1129, baseHeart: 1183, isDefault: true, hot: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 8129, baseHeart: 8183, isDefault: true, hot: true
   },
   {
     id: 'default-flippy-bird',
@@ -1916,7 +1916,7 @@ const DEFAULT_GAMES = [
     category: 'Arcade',
     url: 'games/vtrx-flippy-bird.html',
     coverImage: 'VTRX%20FlippyBird!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 566, baseHeart: 542, isDefault: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 5566, baseHeart: 5642, isDefault: true
   },
   {
     id: 'default-vtrx-dash',
@@ -1925,7 +1925,7 @@ const DEFAULT_GAMES = [
     category: 'Arcade',
     url: 'games/vtrx-dash.html',
     coverImage: 'VTRX%20Dash!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 522, baseHeart: 508, isDefault: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 5822, baseHeart: 5608, isDefault: true
   },
   {
     id: 'default-snipe-shot',
@@ -1934,7 +1934,7 @@ const DEFAULT_GAMES = [
     category: 'Action',
     url: 'games/vtrx-snipe-shot.html',
     coverImage: 'VTRX%20SnipeShot!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 1278, baseHeart: 1295, isDefault: true, hot: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 8278, baseHeart: 8295, isDefault: true, hot: true
   },
   {
     id: 'default-paper-clash',
@@ -1943,7 +1943,7 @@ const DEFAULT_GAMES = [
     category: 'Arcade',
     url: 'games/vtrx-paper-clash.html',
     coverImage: 'VTRX%20Paper%20Clash!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 594, baseHeart: 588, isDefault: true, hot: false
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 5694, baseHeart: 5688, isDefault: true, hot: false
   },
   {
     id: 'default-tower-defense',
@@ -1952,7 +1952,7 @@ const DEFAULT_GAMES = [
     category: 'Strategy',
     url: 'games/vtrx-tower-defense.html',
     coverImage: 'VTRX%20Tower%20Defence!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 1212, baseHeart: 1299, isDefault: true, hot: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 9212, baseHeart: 9299, isDefault: true, hot: true
   },
   {
     id: 'default-turret-defence',
@@ -1961,7 +1961,7 @@ const DEFAULT_GAMES = [
     category: 'Action',
     url: 'games/vtrx-turret-defence.html',
     coverImage: 'VTRX%20Turret%20Defence!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 1267, baseHeart: 1291, isDefault: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 8267, baseHeart: 8291, isDefault: true
   },
   {
     id: 'default-zombie-survival',
@@ -1970,7 +1970,7 @@ const DEFAULT_GAMES = [
     category: 'Action',
     url: 'games/vtrx-zombie-survival.html',
     coverImage: 'VTRX%20Zombie%20Survival!%20Coverpage.png',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 1003, baseHeart: 1018, isDefault: true, hot: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 7003, baseHeart: 7018, isDefault: true, hot: true
   },
   {
     id: 'default-assault-blitz',
@@ -1979,7 +1979,7 @@ const DEFAULT_GAMES = [
     category: 'Action',
     url: 'games/vtrx-assault-blitz.html',
     coverImage: 'VTRX%20Assault%20Blitz!%20Coverpage.png',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 845, baseHeart: 861, isDefault: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 6645, baseHeart: 6861, isDefault: true
   },
   {
     id: 'default-drift-pro',
@@ -1988,7 +1988,7 @@ const DEFAULT_GAMES = [
     category: 'Racing',
     url: 'games/vtrx-drift-pro.html',
     coverImage: 'VTRX%20Drift%20Pro!%20Coverpage.png',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 531, baseHeart: 519, isDefault: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 4531, baseHeart: 4519, isDefault: true
   },
   {
     id: 'default-gravity-fall',
@@ -1997,7 +1997,7 @@ const DEFAULT_GAMES = [
     category: 'Arcade',
     url: 'games/vtrx-gravity-fall.html',
     coverImage: 'VTRX%20Gravity%20Fall!%20Coverpage.png',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 587, baseHeart: 542, isDefault: true, hot: false
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 4587, baseHeart: 4542, isDefault: true, hot: false
   },
   {
     id: 'default-tank-operative',
@@ -2006,7 +2006,7 @@ const DEFAULT_GAMES = [
     category: 'Action',
     url: 'games/vtrx-tank-operative.html',
     coverImage: 'VTRX%20Tank%20Operative!%20Coverpage.png',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 612, baseHeart: 638, isDefault: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 4612, baseHeart: 4638, isDefault: true
   }
 ];
 
