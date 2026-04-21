@@ -634,6 +634,7 @@
     }
     .social-sidebar .youtube { background-color: #FF0000; }
     .social-sidebar .gmail   { background-color: #D44638; }
+    .social-sidebar .discord { background-color: #5865F2; }
     .social-sidebar .vtrxai  { background-color: #dc2626; overflow: hidden; padding: 0; }
     .social-sidebar .vtrxai img { width: 32px; height: 32px; object-fit: cover; border-radius: 20%; display: block; }
     .social-sidebar .vtrxcoop { background-color: #dc2626; overflow: hidden; padding: 0; }
@@ -898,8 +899,14 @@
   <a href="https://www.youtube.com/@vultorex" target="_blank" class="youtube" title="YouTube">
     <i class="fab fa-youtube"></i>
   </a>
+  <a href="https://discord.gg/Gq4ggeWraB" target="_blank" class="discord" title="Discord Server">
+    <i class="fab fa-discord"></i>
+  </a>
   <a href="https://mail.google.com/mail/?view=cm&fs=1&to=vtrx1.official@gmail.com" target="_blank" class="gmail" title="Email Me">
     <i class="fas fa-envelope"></i>
+  </a>
+  <a href="https://vtrxai.github.io" target="_blank" class="vtrxai" title="VTRX AI">
+    <img src="vtrx-logo.png" alt="VTRX AI" />
   </a>
   <a href="https://vtrxai.github.io" target="_blank" class="vtrxai" title="VTRX AI">
     <img src="vtrx-logo.png" alt="VTRX AI" />
@@ -955,7 +962,7 @@
           <span id="played-count-display" class="pc-num">0</span>
           <span style="color:var(--text-dim);font-size:12px;font-weight:600">people played</span>
         </div>
-        <p id="hero-founded"><strong>Founded and created by ☪VTRX Cooperation!</strong></p>
+        <p id="hero-founded"><strong>Founded and created by VTRX Cooperation!</strong></p>
         <h1 id="hero-h1">VTRX Games!</h1>
         <p id="hero-desc">Discover and play awesome browser games on VTRX Games! If you are a game dev, email me: vtrx1.official@gmail.com If there are any bugs, reports, or suggestions you can email me at <strong style="text-decoration:underline">vtrx1.official@gmail.com</strong></p>
         </a>
@@ -1371,7 +1378,7 @@
 
 // ── PLAYED COUNT ──────────────────────────────────────────────
 // Change the number below to update the "X people played" badge
-var PLAYED_COUNT = 109287;
+var PLAYED_COUNT = 25287;
 // ─────────────────────────────────────────────────────────────
 
 // ── GAME OF THE WEEK ──────────────────────────────────────
@@ -1833,17 +1840,17 @@ async function apiFetch(path, opts) {
   return null;
 }
 
-let botCount = 193;
+let botCount = 143;
 let realOnlineCount = 0;
 
 function getScheduledBotCount() {
   var CYCLE = 2000000;
   var pos = Date.now() % CYCLE;
   var offset = 0;
-  if (pos >= 320000) offset = 68;
-  if (pos >= 410000) offset = 46;
-  if (pos >= 580000) offset = 79;
-  if (pos >= 690000) offset = 57;
+  if (pos >= 320000) offset = 48;
+  if (pos >= 410000) offset = 36;
+  if (pos >= 580000) offset = 59;
+  if (pos >= 690000) offset = 37;
   return botCount + offset;
 }
 
@@ -1880,7 +1887,7 @@ const DEFAULT_GAMES = [
     category: 'Action',
     url: 'games/stickman-war.html',
     coverImage: 'VTRX%20Stickman%20War!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 18182, baseHeart: 18188, isDefault: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 1182, baseHeart: 1188, isDefault: true
   },
   {
     id: 'default-mech-fps',
@@ -1889,7 +1896,7 @@ const DEFAULT_GAMES = [
     category: 'Action',
     url: 'games/mech-fps.html',
     coverImage: 'VTRX%20Boss%20Mech%20FPS!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 18249, baseHeart: 18241, isDefault: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 1249, baseHeart: 1241, isDefault: true
   },
   {
     id: 'default-nuke-tycoon',
@@ -1898,7 +1905,7 @@ const DEFAULT_GAMES = [
     category: 'Action',
     url: 'games/nuke-tycoon.html',
     coverImage: 'VTRX%20Nuke%20Tycoon!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 18474, baseHeart: 18447, isDefault: true, hot: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 1474, baseHeart: 1447, isDefault: true, hot: true
   },
   {
     id: 'default-drone-strike',
@@ -1907,7 +1914,7 @@ const DEFAULT_GAMES = [
     category: 'Action',
     url: 'games/drone-strike.html',
     coverImage: 'VTRX%20Drone%20Strike!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 18129, baseHeart: 18183, isDefault: true, hot: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 1129, baseHeart: 1183, isDefault: true, hot: true
   },
   {
     id: 'default-flippy-bird',
@@ -1916,7 +1923,7 @@ const DEFAULT_GAMES = [
     category: 'Arcade',
     url: 'games/vtrx-flippy-bird.html',
     coverImage: 'VTRX%20FlippyBird!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 15566, baseHeart: 15642, isDefault: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 566, baseHeart: 542, isDefault: true
   },
   {
     id: 'default-vtrx-dash',
@@ -1925,7 +1932,7 @@ const DEFAULT_GAMES = [
     category: 'Arcade',
     url: 'games/vtrx-dash.html',
     coverImage: 'VTRX%20Dash!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 15822, baseHeart: 15608, isDefault: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 522, baseHeart: 508, isDefault: true
   },
   {
     id: 'default-snipe-shot',
@@ -1934,7 +1941,7 @@ const DEFAULT_GAMES = [
     category: 'Action',
     url: 'games/vtrx-snipe-shot.html',
     coverImage: 'VTRX%20SnipeShot!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 18278, baseHeart: 18295, isDefault: true, hot: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 1278, baseHeart: 1295, isDefault: true, hot: true
   },
   {
     id: 'default-paper-clash',
@@ -1943,7 +1950,7 @@ const DEFAULT_GAMES = [
     category: 'Arcade',
     url: 'games/vtrx-paper-clash.html',
     coverImage: 'VTRX%20Paper%20Clash!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 15694, baseHeart: 15688, isDefault: true, hot: false
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 594, baseHeart: 588, isDefault: true, hot: false
   },
   {
     id: 'default-tower-defense',
@@ -1952,7 +1959,7 @@ const DEFAULT_GAMES = [
     category: 'Strategy',
     url: 'games/vtrx-tower-defense.html',
     coverImage: 'VTRX%20Tower%20Defence!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 19212, baseHeart: 19299, isDefault: true, hot: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 1212, baseHeart: 1299, isDefault: true, hot: true
   },
   {
     id: 'default-turret-defence',
@@ -1961,7 +1968,7 @@ const DEFAULT_GAMES = [
     category: 'Action',
     url: 'games/vtrx-turret-defence.html',
     coverImage: 'VTRX%20Turret%20Defence!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 18267, baseHeart: 18291, isDefault: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 1267, baseHeart: 1291, isDefault: true
   },
   {
     id: 'default-zombie-survival',
@@ -1970,7 +1977,7 @@ const DEFAULT_GAMES = [
     category: 'Action',
     url: 'games/vtrx-zombie-survival.html',
     coverImage: 'VTRX%20Zombie%20Survival!%20Coverpage.png',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 17003, baseHeart: 17018, isDefault: true, hot: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 1003, baseHeart: 1018, isDefault: true, hot: true
   },
   {
     id: 'default-assault-blitz',
@@ -1979,7 +1986,7 @@ const DEFAULT_GAMES = [
     category: 'Action',
     url: 'games/vtrx-assault-blitz.html',
     coverImage: 'VTRX%20Assault%20Blitz!%20Coverpage.png',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 16645, baseHeart: 16861, isDefault: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 845, baseHeart: 861, isDefault: true
   },
   {
     id: 'default-drift-pro',
@@ -1988,7 +1995,7 @@ const DEFAULT_GAMES = [
     category: 'Racing',
     url: 'games/vtrx-drift-pro.html',
     coverImage: 'VTRX%20Drift%20Pro!%20Coverpage.png',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 14531, baseHeart: 14519, isDefault: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 531, baseHeart: 519, isDefault: true
   },
   {
     id: 'default-gravity-fall',
@@ -1997,7 +2004,7 @@ const DEFAULT_GAMES = [
     category: 'Arcade',
     url: 'games/vtrx-gravity-fall.html',
     coverImage: 'VTRX%20Gravity%20Fall!%20Coverpage.png',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 14587, baseHeart: 14542, isDefault: true, hot: false
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 587, baseHeart: 542, isDefault: true, hot: false
   },
   {
     id: 'default-tank-operative',
@@ -2006,16 +2013,7 @@ const DEFAULT_GAMES = [
     category: 'Action',
     url: 'games/vtrx-tank-operative.html',
     coverImage: 'VTRX%20Tank%20Operative!%20Coverpage.png',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 14612, baseHeart: 14638, isDefault: true
-  },
-  {
-      id: 'default-supermarket-simultor',
-    name: 'VTRX Market Simulator!',
-    description: 'VTRX Supermarket Simulator! Stock shelves! Catch theives! WORK YOUR DREAM JOB!!!!',
-    category: 'Action',
-    url: 'games/vtrx-supermarket-simulator.html',
-    coverImage: 'VTRX%20Supermarket%20Simulator!%20Coverpage.PNG',
-    thumbsDelta: 0, heartDelta: 0, baseThumbs: 11612, baseHeart: 11638, isDefault: true
+    thumbsDelta: 0, heartDelta: 0, baseThumbs: 612, baseHeart: 638, isDefault: true
   }
 ];
 
@@ -3126,7 +3124,7 @@ applyPremium();
   <a href="https://beta.publishers.adsterra.com/referral/LspgUrHWhe" rel="nofollow">VTRX Cooperation! Referral link</a>
 <a href="https://beta.publishers.adsterra.com/referral/LspgUrHWhe" rel="nofollow"><img alt="banner" src="https://landings-cdn.adsterratech.com/referralBanners/png/300%20x%20425.png" /></a>
 </div>
-  <span style="font-size:13px;font-weight:700;color:#6b4040;">© 2025 VTRX Cooperation. All rights reserved.</span>
+<span style="font-size:13px;font-weight:700;color:#6b4040;">© 2025 VTRX Cooperation. All rights reserved.</span>
 <script>
 (function(){
   const canvas=document.getElementById('network-canvas'), ctx=canvas.getContext('2d');
@@ -3144,4 +3142,69 @@ applyPremium();
   resize();mkDots();draw();
 })();
 </script>
+
+<script>
+// =====================================================================
+// BOT AD SIMULATOR
+// TO SET THE NUMBER OF BOTS: change the value of BOT_COUNT below.
+// Each bot opens an ad (like clicking the page does), waits 20 seconds,
+// comes back, scrolls down, waits 10 seconds, scrolls up, then repeats.
+// =====================================================================
+var BOT_COUNT = 55; // <-- CHANGE THIS NUMBER to set how many bots run
+
+(function () {
+  var AD_URLS = [
+    'https://pl28952013.profitablecpmratenetwork.com/cd/3e/b2/cd3eb2c4852b165cee5b0c2cfa3b7fab.js',
+    'https://pl28951958.profitablecpmratenetwork.com/16/6e/4e/166e4e3833f5e6d355576be0d757eaef.js',
+    'https://beta.publishers.adsterra.com/referral/LspgUrHWhe'
+  ];
+
+  var AD_WAIT_MS     = 20000; // milliseconds bot stays on the ad page
+  var SCROLL_WAIT_MS = 10000; // milliseconds bot stays scrolled down
+  var STAGGER_MS     = 0;     // all bots start at the same time
+
+  function sleep(ms) {
+    return new Promise(function (resolve) { setTimeout(resolve, ms); });
+  }
+
+  function pickAdUrl(i) {
+    return AD_URLS[i % AD_URLS.length];
+  }
+
+  async function runBot(index) {
+    // all bots start simultaneously
+
+    while (true) {
+      // 1. Open the ad (simulates clicking the page which triggers the ad)
+      var adWin = window.open(pickAdUrl(index), '_blank');
+
+      // 2. Wait 20 seconds (bot is on the ad page)
+      await sleep(AD_WAIT_MS);
+
+      // 3. Close the ad tab and return to VTRX Games
+      try { if (adWin && !adWin.closed) adWin.close(); } catch (e) {}
+
+      // 4. Scroll down on the VTRX Games page
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+
+      // 5. Stay scrolled down for 10 seconds
+      await sleep(SCROLL_WAIT_MS);
+
+      // 6. Scroll back up to the top
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      // Brief pause before the next cycle
+      await sleep(2000);
+    }
+  }
+
+  // Start all bots after the page fully loads
+  window.addEventListener('load', function () {
+    for (var i = 0; i < BOT_COUNT; i++) {
+      runBot(i);
+    }
+  });
+})();
+</script>
+
 </html>
