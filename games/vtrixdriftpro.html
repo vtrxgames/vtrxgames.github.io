@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>VTRX DRIFT PRO</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <style>
+        body { margin: 0; background: #1a1a1a; overflow: hidden; font-family: monospace; }
+        canvas { display: block; touch-action: none; }
+        #ui { position: absolute; top: 10px; left: 10px; color: #0f0; font-size: 20px; pointer-events: none; }
+        #ui .police-row { color: #f33; margin-top: 6px; }
+        #ui .hits-row { color: #ff0; margin-top: 6px; }
+        #restart-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.75); display: none; flex-direction: column;
+            align-items: center; justify-content: center; font-family: monospace; color: #fff;
+        }
+        #restart-overlay h1 { color: #f33; font-size: 48px; margin: 0 0 10px 0; letter-spacing: 4px; }
+        #restart-overlay p { font-size: 20px; margin: 4px 0; color: #0f0; }
+        #restart-btn {
+            margin-top: 24px; padding: 14px 36px; font-size: 20px; font-family: monospace;
+            background: #0f0; color: #1a1a1a; border: none; border-radius: 6px; cursor: pointer;
+            font-weight: bold; letter-spacing: 2px;
+        }
+        #restart-btn:hover { background: #3f3; }
+    </style>
+</head>
+<body>
+    <div id="ui">
+        DRIFT SCORE: <span id="score">0</span>
+        <div class="police-row">🚓 POLICE CHASING: <span id="police-count">0</span></div>
+        <div class="hits-row">HITS: <span id="hits">0</span> / 5</div>
+    </div>
+    <div id="restart-overlay">
+        <h1>BUSTED!</h1>
+        <p>Final Score: <span id="final-score">0</span></p>
+        <p>Police caught you 5 times.</p>
+        <button id="restart-btn">RESTART</button>
+    </div>
+    <canvas id="c"></canvas>
+    <script>
+        const canvas = document.getElementById('c'), ctx = canvas.getContext('2d');
+        let w, h, score = 0, active = true;
+
+        function res() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
+        window.onresize = res; res();
+
+        const car = {
+            x: w/2, y: h/2,
+            angle: 0,
+            speed: 5,
+            vx: 0, vy: 0,
+            drift: 0.94 // Friction
+        };
+
+        const keys = { l: false, r: false };
+        window.onkeydown = e => { if(e.key==='ArrowLeft') keys.l=true; if(e.key==='ArrowRight') keys.r=true; };
+        window.onkeyup = e => { if(e.key==='ArrowLeft') keys.l=false; if(e.key==='ArrowRight') keys.r=false; };
+        canvas.addEventListener('pointerdown', e => { if(e.clientX < w/2) keys.l=true; else keys.r=true; });
+        canvas.addEventListener('pointerup', () => keys.l = keys.r = false);
+
+        const trackPoints = [];
+        function createTrack() {
+            for(let i=0; i<10; i++) trackPoints.push({x: Math.random()*w, y: Math.random()*h});
+        }
+        createTrack();
+
+        // ─── POLICE CHASE ───────────────────────────────────────────────
+        let hits = 0;
+        const MAX_HITS = 5;
+        let hitCooldown = 0; // frames of invulnerability after a hit
+        let policeTimer = 0;
+        const POLICE_SPAWN_INTERVAL = 480; // frames (~8s at 60fps) between new police cars
+        const MAX_POLICE = 50;
+        const police = [];
+
+        function spawnPolice() {
+            if (police.length >= MAX_POLICE) return;
+            // spawn away from the player, off to a screen edge
+            const side = Math.floor(Math.random() * 4);
+            let x, y;
+            if (side === 0) { x = -40; y = Math.random() * h; }
+            else if (side === 1) { x = w + 40; y = Math.random() * h; }
+            else if (side === 2) { x = Math.random() * w; y = -40; }
+            else { x = Math.random() * w; y = h + 40; }
+            police.push({
+                x, y, angle: 0, vx: 0, vy: 0,
+                drift: 0.95,
+                accel: 0.34 + Math.random() * 0.06, // slightly weaker than player so it's avoidable
+                turnSpeed: 0.055 + Math.random() * 0.02,
+                sirenPhase: Math.random() * Math.PI * 2,
+            });
+            updatePoliceCountUI();
+        }
+
+        function updatePoliceCountUI() {
+            document.getElementById('police-count').innerText = police.length;
+        }
+
+        // start with one police car chasing
+        spawnPolice();
+
+        function loop() {
+            if(!active) return;
+            ctx.fillStyle = 'rgba(26, 26, 26, 0.2)';
+            ctx.fillRect(0,0,w,h);
+
+            // Physics Logic
+            if(keys.l) car.angle -= 0.08;
+            if(keys.r) car.angle += 0.08;
+
+            // Apply forward thrust based on angle
+            car.vx += Math.cos(car.angle) * 0.5;
+            car.vy += Math.sin(car.angle) * 0.5;
+
+            // Apply "Drift" Friction
+            car.vx *= car.drift;
+            car.vy *= car.drift;
+
+            car.x += car.vx;
+            car.y += car.vy;
+
+            // Screen Wrap
+            if(car.x < 0) car.x = w; if(car.x > w) car.x = 0;
+            if(car.y < 0) car.y = h; if(car.y > h) car.y = 0;
+
+            // Score increases when moving fast and turning
+            if(Math.abs(car.vx) + Math.abs(car.vy) > 5 && (keys.l || keys.r)) {
+                score++;
+                document.getElementById('score').innerText = score;
+            }
+
+            // Spawn more police over time (difficulty ramps up)
+            policeTimer++;
+            if (policeTimer >= POLICE_SPAWN_INTERVAL) {
+                policeTimer = 0;
+                spawnPolice();
+            }
+
+            if (hitCooldown > 0) hitCooldown--;
+
+            // Update & draw police cars
+            for (const p of police) {
+                // steer toward the player (pursuit AI)
+                let dx = car.x - p.x, dy = car.y - p.y;
+                // account for screen wrap: aim via shortest path
+                if (Math.abs(dx) > w/2) dx = dx > 0 ? dx - w : dx + w;
+                if (Math.abs(dy) > h/2) dy = dy > 0 ? dy - h : dy + h;
+                const targetAngle = Math.atan2(dy, dx);
+                let da = targetAngle - p.angle;
+                while (da > Math.PI) da -= Math.PI*2;
+                while (da < -Math.PI) da += Math.PI*2;
+                p.angle += Math.max(-p.turnSpeed, Math.min(p.turnSpeed, da));
+
+                p.vx += Math.cos(p.angle) * p.accel;
+                p.vy += Math.sin(p.angle) * p.accel;
+                p.vx *= p.drift;
+                p.vy *= p.drift;
+                p.x += p.vx;
+                p.y += p.vy;
+
+                if (p.x < 0) p.x = w; if (p.x > w) p.x = 0;
+                if (p.y < 0) p.y = h; if (p.y > h) p.y = 0;
+
+                // Collision check with player
+                const dist = Math.hypot(car.x - p.x, car.y - p.y);
+                if (dist < 22 && hitCooldown === 0 && active) {
+                    hits++;
+                    document.getElementById('hits').innerText = hits;
+                    hitCooldown = 90; // ~1.5s of invulnerability so one crash = one hit
+                    // bounce the police car off so it doesn't instantly re-trigger
+                    p.vx -= Math.cos(p.angle) * 6;
+                    p.vy -= Math.sin(p.angle) * 6;
+                    if (hits >= MAX_HITS) {
+                        busted();
+                    }
+                }
+
+                // Draw police car (flashing red/blue siren)
+                p.sirenPhase += 0.25;
+                const sirenOn = Math.sin(p.sirenPhase) > 0;
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.angle);
+                ctx.fillStyle = '#111';
+                ctx.fillRect(-15, -10, 30, 20); // body
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(-15, -10, 30, 5); // white door panel stripe
+                ctx.fillStyle = sirenOn ? '#f00' : '#00f';
+                ctx.fillRect(-4, -12, 8, 4); // siren light
+                ctx.fillStyle = '#ff0';
+                ctx.fillRect(10, -8, 5, 16); // headlights
+                ctx.restore();
+            }
+
+            if (!active) { requestAnimationFrame(loop); return; }
+
+            // Draw Car (flash while invulnerable after a hit)
+            const flashHidden = hitCooldown > 0 && Math.floor(hitCooldown / 6) % 2 === 0;
+            if (!flashHidden) {
+                ctx.save();
+                ctx.translate(car.x, car.y);
+                ctx.rotate(car.angle);
+                ctx.fillStyle = '#0f0';
+                ctx.fillRect(-15, -10, 30, 20); // Car Body
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(10, -8, 5, 16); // Headlights
+                ctx.restore();
+            }
+
+            requestAnimationFrame(loop);
+        }
+
+        function busted() {
+            active = false;
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('restart-overlay').style.display = 'flex';
+        }
+
+        function restartGame() {
+            score = 0;
+            hits = 0;
+            hitCooldown = 0;
+            policeTimer = 0;
+            police.length = 0;
+            car.x = w/2; car.y = h/2;
+            car.angle = 0; car.vx = 0; car.vy = 0;
+            document.getElementById('score').innerText = score;
+            document.getElementById('hits').innerText = hits;
+            document.getElementById('restart-overlay').style.display = 'none';
+            spawnPolice();
+            active = true;
+            requestAnimationFrame(loop);
+        }
+
+        document.getElementById('restart-btn').addEventListener('click', restartGame);
+
+        loop();
+    </script>
+</body>
+</html>
