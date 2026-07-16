@@ -1828,17 +1828,17 @@ async function apiFetch(path, opts) {
   return null;
 }
 
-let botCount = 483;
+let botCount = 383;
 let realOnlineCount = 0;
 
 function getScheduledBotCount() {
   var CYCLE = 2400000;
   var pos = Date.now() % CYCLE;
   var offset = 0;
-  if (pos >= 420000) offset = 38;
-  if (pos >= 510000) offset = 86;
-  if (pos >= 680000) offset = 29;
-  if (pos >= 790000) offset = 77;
+  if (pos >= 420000) offset = 81;
+  if (pos >= 510000) offset = 46;
+  if (pos >= 680000) offset = 99;
+  if (pos >= 790000) offset = 107;
   return botCount + offset;
 }
 
